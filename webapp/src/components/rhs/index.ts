@@ -18,6 +18,7 @@ import {
 import {
     getInstalledInstances,
     getRHSActiveInstanceID,
+    getRHSAttachPostId,
     getRHSError,
     getRHSIssueKey,
     getRHSSection,
@@ -38,6 +39,7 @@ const mapStateToProps = (state: GlobalState) => {
         activeInstanceID: getRHSActiveInstanceID(state),
         section: getRHSSection(state),
         issueKey: getRHSIssueKey(state),
+        attachPostId: getRHSAttachPostId(state),
         issuesError: getRHSError(state),
         isAdmin: isJiraSystemAdmin(state),
         channelId: getCurrentChannelId(state) || '',

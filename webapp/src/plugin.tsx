@@ -36,6 +36,7 @@ import {
     handleInstanceStatusChange,
     openAttachCommentToIssueModal,
     openCreateModal,
+    openRHSAttach,
     openRHSCreate,
 } from './actions';
 
@@ -103,7 +104,11 @@ export const setupUILater = (registry: any, store: Store<object, Action<object>>
                         return;
                     }
 
-                    store.dispatch<any>(openAttachCommentToIssueModal(postId));
+                    if (getRHSPluginActions()) {
+                        store.dispatch<any>(openRHSAttach(postId));
+                    } else {
+                        store.dispatch<any>(openAttachCommentToIssueModal(postId));
+                    }
                 },
                 filter: (postId: string): boolean => {
                     const state = store.getState() as GlobalState;

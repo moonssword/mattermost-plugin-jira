@@ -39,6 +39,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         activeInstanceID: serverOne.instance_id,
         section: 'my_issues',
         issueKey: '',
+        attachPostId: '',
         issuesError: null,
         isAdmin: false,
         channelId: 'channel-1',
