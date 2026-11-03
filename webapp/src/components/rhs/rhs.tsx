@@ -14,6 +14,8 @@ import RHSPanelHeader from './rhs_panel_header';
 import RHSSectionTabs, {RHS_SECTION_PANEL_ID, rhsSectionDomId} from './rhs_section_tabs';
 import {RHS_SECTIONS, findRHSSection} from './rhs_sections';
 import {RHSLoadingState} from './rhs_states';
+import {RHS_STRINGS} from './rhs_strings';
+import SettingsView from './settings_view';
 
 import './rhs.scss';
 
@@ -24,6 +26,7 @@ export type Props = {
     section: RHSSectionID;
     issueKey: string;
     attachPostId: string;
+    settingsOpen: boolean;
     issuesError: RHSErrorCode | null;
     isAdmin: boolean;
     channelId: string;
@@ -32,6 +35,7 @@ export type Props = {
     restoreRHSViewState: () => {data: RHSViewState | null};
     setRHSSection: (section: RHSSectionID) => void;
     selectRHSInstance: (instanceID: string) => void;
+    openRHSSettings: () => void;
     handleConnectFlow: (instanceID?: string) => void;
     startJiraSetupWizard: (channelId: string, teamId: string) => Promise<{data?: unknown; error?: unknown}>;
 };
@@ -138,20 +142,39 @@ export default function Rhs(props: Props): JSX.Element {
 
         // The card covers the sections; they stay mounted to keep the list
         // and its scroll position for "back".
-        const attachOpen = Boolean(props.attachPostId);
-        const cardOpen = !attachOpen && Boolean(props.issueKey);
+        // Settings, attach and the card are views over the sections; at most
+        // one shows, settings first.
+        const settingsOpen = props.settingsOpen;
+        const attachOpen = !settingsOpen && Boolean(props.attachPostId);
+        const cardOpen = !settingsOpen && !attachOpen && Boolean(props.issueKey);
         content = (
             <>
+                {settingsOpen && <SettingsView/>}
                 {attachOpen && <AttachView/>}
                 {cardOpen && <IssueCard/>}
                 <div
                     className='jira-rhs-main'
-                    hidden={cardOpen || attachOpen}
+                    hidden={cardOpen || attachOpen || settingsOpen}
                 >
                     <RHSPanelHeader
                         instances={connectedInstances}
                         activeInstanceID={activeInstanceID}
                         onInstanceChange={props.selectRHSInstance}
+                        actions={(
+                            <button
+                                type='button'
+                                className='jira-rhs-icon-button'
+                                aria-label={RHS_STRINGS.settingsOpen}
+                                title={RHS_STRINGS.settingsOpen}
+                                data-testid='rhs-open-settings'
+                                onClick={props.openRHSSettings}
+                            >
+                                <i
+                                    className='icon icon-cog-outline'
+                                    aria-hidden={true}
+                                />
+                            </button>
+                        )}
                     />
                     <RHSSectionTabs
                         sections={RHS_SECTIONS}

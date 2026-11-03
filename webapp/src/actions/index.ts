@@ -735,3 +735,10 @@ export {
     loadRHSChannelSubscriptions,
     setRHSSubscriptionPaused,
 } from './rhs_channel';
+
+export {
+    closeRHSSettings,
+    loadRHSSettings,
+    openRHSSettings,
+    setRHSNotificationRole,
+} from './rhs_settings';

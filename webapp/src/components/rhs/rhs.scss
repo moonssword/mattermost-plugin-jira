@@ -1223,3 +1223,136 @@
 .jira-rhs-subscription-editor-body h2 {
     display: none;
 }
+
+/* Settings. */
+.jira-rhs-settings {
+    overflow-y: auto;
+    flex: 1;
+    padding: 4px 0 12px;
+}
+
+.jira-rhs-settings-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.08);
+}
+
+.jira-rhs-settings-title {
+    margin: 0 0 2px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+}
+
+.jira-rhs-settings-title .jira-rhs-small {
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.jira-rhs-settings-account {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.jira-rhs-settings-account .jira-rhs-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+
+.jira-rhs-settings-account-main,
+.jira-rhs-settings-col {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.jira-rhs-settings-account .btn,
+.jira-rhs-settings-row .btn {
+    margin: 0;
+}
+
+.jira-rhs-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.jira-rhs-settings-row--top {
+    align-items: flex-start;
+}
+
+.jira-rhs-settings-code {
+    overflow: hidden;
+    padding: 2px 4px;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--center-channel-color);
+    background: rgba(var(--center-channel-color-rgb), 0.08);
+}
+
+.jira-rhs-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.jira-rhs-switch {
+    position: relative;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 18px;
+    margin: 0;
+    border-radius: 9px;
+    appearance: none;
+    background: rgba(var(--center-channel-color-rgb), 0.24);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.jira-rhs-switch::after {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--center-channel-bg);
+    content: '';
+    transition: transform 0.15s;
+}
+
+.jira-rhs-switch:checked {
+    background: var(--button-bg);
+}
+
+.jira-rhs-switch:checked::after {
+    transform: translateX(14px);
+}
+
+.jira-rhs-switch:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+.jira-rhs-switch:focus-visible {
+    outline: 2px solid var(--sidebar-text-active-border);
+    outline-offset: 2px;
+}
+
+.jira-rhs-settings-version {
+    margin: 12px 16px 0;
+}

@@ -174,6 +174,7 @@ func (p *Plugin) initializeRouter() {
 	apiRouter.HandleFunc(routeAPIRHSStatuses, p.checkAuth(p.handleResponse(p.httpRHSListStatuses))).Methods(http.MethodGet)
 	p.registerRHSIssueRoutes(apiRouter)
 	p.registerRHSChannelRoutes(apiRouter)
+	p.registerRHSSettingsRoutes(apiRouter)
 }
 
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {

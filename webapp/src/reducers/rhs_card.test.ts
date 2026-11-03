@@ -77,7 +77,7 @@ describe('reducers/rhs_card', () => {
 
 describe('reducers/rhs_nav issue key', () => {
     test('opening and closing a card, and switching sections closes it', () => {
-        let state = rhsNav({section: 'my_issues', issueKey: '', attachPostId: ''}, {type: ActionTypes.OPEN_RHS_ISSUE, data: 'TES-1'});
+        let state = rhsNav({section: 'my_issues', issueKey: '', attachPostId: '', settingsOpen: false}, {type: ActionTypes.OPEN_RHS_ISSUE, data: 'TES-1'});
         expect(state.issueKey).toBe('TES-1');
         state = rhsNav(state, {type: ActionTypes.SET_RHS_SECTION, data: 'my_issues'});
         expect(state.issueKey).toBe('');
@@ -89,7 +89,7 @@ describe('reducers/rhs_nav issue key', () => {
 });
 
 describe('reducers/rhs_nav attach', () => {
-    const base = {section: 'my_issues' as const, issueKey: '', attachPostId: ''};
+    const base = {section: 'my_issues' as const, issueKey: '', attachPostId: '', settingsOpen: false};
 
     test('attach view replaces an open card and closes on section change', () => {
         let state = rhsNav({...base, issueKey: 'TES-1'}, {type: ActionTypes.OPEN_RHS_ATTACH, data: 'p1'});
@@ -103,5 +103,18 @@ describe('reducers/rhs_nav attach', () => {
         const state = rhsNav({...base, attachPostId: 'p1'}, {type: ActionTypes.OPEN_RHS_ISSUE, data: 'TES-2'});
         expect(state).toEqual({...base, issueKey: 'TES-2'});
         expect(rhsNav(state, {type: ActionTypes.CLOSE_RHS_ATTACH})).toBe(state);
+    });
+});
+
+describe('reducers/rhs_nav settings', () => {
+    const base = {section: 'my_issues' as const, issueKey: '', attachPostId: '', settingsOpen: false};
+
+    test('settings close other views and close on section change or a card', () => {
+        let state = rhsNav({...base, issueKey: 'TES-1'}, {type: ActionTypes.OPEN_RHS_SETTINGS});
+        expect(state).toEqual({...base, settingsOpen: true});
+        expect(rhsNav(state, {type: ActionTypes.SET_RHS_SECTION, data: 'my_issues'}).settingsOpen).toBe(false);
+        expect(rhsNav(state, {type: ActionTypes.OPEN_RHS_ISSUE, data: 'TES-2'}).settingsOpen).toBe(false);
+        state = rhsNav(state, {type: ActionTypes.CLOSE_RHS_SETTINGS});
+        expect(state.settingsOpen).toBe(false);
     });
 });
