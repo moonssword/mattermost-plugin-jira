@@ -103,3 +103,17 @@ func TestRHSSettingsNotificationToggle(t *testing.T) {
 	w = doRHSHTTPPost(t, p, routeAPIRHSSettingsNotifications, rhsNotificationRequest{InstanceID: mockInstance1URL, Role: "everything", Enabled: true})
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
+
+func TestRHSSettingsForUnconnectedUser(t *testing.T) {
+	api := &plugintest.API{}
+	p, store := setupRHSSettingsPlugin(t, api, false)
+	store.connection = &Connection{}
+
+	w := doRHSHTTPGet(t, p, makeAPIRoute(routeAPIRHSSettings)+"?instance_id="+url.QueryEscape(mockInstance1URL), "connected_user")
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Equal(t, rhsErrNotConnected, decodeRHSError(t, w).Error)
+
+	w = doRHSHTTPPost(t, p, routeAPIRHSSettingsNotifications, rhsNotificationRequest{InstanceID: mockInstance1URL, Role: "watching", Enabled: true})
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.Nil(t, store.connection.Settings, "nothing is stored for a user who never connected")
+}

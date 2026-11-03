@@ -11,6 +11,7 @@ import (
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/pkg/errors"
 
+	"github.com/mattermost/mattermost-plugin-jira/server/utils/kvstore"
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
 
@@ -48,6 +49,20 @@ type RHSSettings struct {
 	Admin         *RHSAdminSettings `json:"admin,omitempty"`
 }
 
+// loadRHSConnection loads the user's Jira connection and treats the empty
+// record the store returns for users who never connected as "not connected",
+// so nothing is shown for it and nothing is stored on top of it.
+func (p *Plugin) loadRHSConnection(instanceID types.ID, userID string) (*Connection, error) {
+	connection, err := p.userStore.LoadConnection(instanceID, types.ID(userID))
+	if err != nil {
+		return nil, err
+	}
+	if connection == nil || (connection.AccountID == "" && connection.Name == "" && connection.Oauth1AccessToken == "" && connection.OAuth2Token == nil) {
+		return nil, kvstore.ErrNotFound
+	}
+	return connection, nil
+}
+
 func notificationSettings(connection *Connection) map[string]bool {
 	out := make(map[string]bool, len(rhsNotificationRoles))
 	for _, role := range rhsNotificationRoles {
@@ -77,7 +92,7 @@ func (p *Plugin) getRHSSettings(instanceID types.ID, userID string) (*RHSSetting
 	if _, err := p.loadRHSInstance(instanceID); err != nil {
 		return nil, err
 	}
-	connection, err := p.userStore.LoadConnection(instanceID, types.ID(userID))
+	connection, err := p.loadRHSConnection(instanceID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +136,7 @@ func (p *Plugin) httpRHSSettingsNotifications(w http.ResponseWriter, r *http.Req
 	if _, err := p.loadRHSInstance(instanceID); err != nil {
 		return respondRHSErr(w, err)
 	}
-	connection, err := p.userStore.LoadConnection(instanceID, types.ID(userID))
+	connection, err := p.loadRHSConnection(instanceID, userID)
 	if err != nil {
 		return respondRHSErr(w, err)
 	}

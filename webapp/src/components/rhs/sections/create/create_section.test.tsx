@@ -13,7 +13,12 @@ import {IssueMetadata, JiraField} from 'types/model';
 
 import {RHS_STRINGS} from '../../rhs_strings';
 
-import CreateSection, {Props, panelFieldDefs, unsupportedRequiredFields} from './create_section';
+import CreateSection, {
+    Props,
+    defaultIssueType,
+    panelFieldDefs,
+    unsupportedRequiredFields,
+} from './create_section';
 
 jest.mock('components/react_select_setting', () => (props: any) => (
     <label>
@@ -87,6 +92,36 @@ function makeProps(overrides: Partial<Props> = {}): Props {
 }
 
 describe('components/rhs/sections/create', () => {
+    test('defaultIssueType skips types with extra required fields', () => {
+        const epic = {id: 'e', fields: {summary: textField('summary', true), customfield_1: textField('Epic Name', true)}};
+        const task = {id: 't', fields: {summary: textField('summary', true), reporter: textField('reporter', true), labels: textField('labels')}};
+        expect(defaultIssueType([epic, task])?.id).toBe('t');
+        expect(defaultIssueType([epic])?.id).toBe('e');
+        expect(defaultIssueType([])).toBeUndefined();
+    });
+
+    test('without a saved type in the project the simple type is preselected', async () => {
+        const meta = {
+            projects: [{
+                key: 'BACK',
+                issuetypes: [
+                    {id: '9', name: 'Epic', subtask: false, fields: {summary: textField('summary', true), customfield_1: textField('Epic Name', true)}},
+                    {id: '2', name: 'Задача', subtask: false, fields: {summary: textField('summary', true)}},
+                ],
+            }],
+        } as unknown as IssueMetadata;
+        render(
+            <CreateSection
+                {...makeProps({
+                    fetchJiraIssueMetadataForProjects: jest.fn(async () => ({data: meta})),
+                    fetchJiraProjectMetadata: jest.fn(async () => ({data: {projects: [{label: 'Backend', value: 'BACK'}], issues_per_project: {}, saved_field_values: {project_key: 'BACK', issue_type: '404'}}})),
+                })}
+            />,
+        );
+        await screen.findByTestId('jira-fields');
+        expect(screen.getByTestId('select-issue_type')).toHaveValue('2');
+    });
+
     test('panelFieldDefs relaxes only the required reporter', () => {
         const defs = panelFieldDefs({reporter: textField('reporter', true), summary: textField('summary', true)});
         expect(defs.reporter.required).toBe(false);
