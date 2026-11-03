@@ -33,6 +33,9 @@ export type Props = {
 
     // Instance whose issues are in the store; differs right after a switch.
     loadedInstanceID: string;
+
+    // Live updates arrived while the panel was closed.
+    stale: boolean;
     resolveAndFetchRHSIssues: (overrides?: ResolveAndFetchArgs) => Promise<unknown>;
     loadMoreRHSIssues: () => Promise<unknown>;
     openRHSIssue: (key: string) => unknown;
@@ -93,7 +96,7 @@ export default function MyIssues(props: Props): JSX.Element {
         }
         const firstRun = seenInstance.current === null;
         seenInstance.current = instanceID;
-        const cached = loadedInstanceID === instanceID && issues.length > 0 && error === null;
+        const cached = loadedInstanceID === instanceID && issues.length > 0 && error === null && !props.stale;
         if (firstRun && cached) {
             return;
         }

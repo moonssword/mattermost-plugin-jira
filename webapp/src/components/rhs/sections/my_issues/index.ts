@@ -15,6 +15,7 @@ import {
     getRHSLoading,
     getRHSQuery,
     getRHSTotal,
+    isRHSListStale,
 } from 'selectors';
 
 import {GlobalState} from 'types/store';
@@ -34,6 +35,7 @@ const mapStateToProps = (state: GlobalState) => ({
     error: getRHSError(state),
     errorMessage: getRHSErrorMessage(state),
     loadedInstanceID: getRHSInstanceID(state),
+    stale: isRHSListStale(state),
 });
 
 const actionCreators = {

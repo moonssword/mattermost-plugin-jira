@@ -292,6 +292,9 @@ export type RHSState = {
     error: RHSErrorCode | null;
     errorMessage: string;
     requestId: number;
+
+    // Set by live updates while the panel is closed: refetch on next open.
+    stale: boolean;
 };
 
 const defaultRHSState: RHSState = {
@@ -307,6 +310,7 @@ const defaultRHSState: RHSState = {
     error: null,
     errorMessage: '',
     requestId: 0,
+    stale: false,
 };
 
 function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSState {
@@ -347,6 +351,7 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
             total: typeof action.data.total === 'number' ? action.data.total : null,
             loading: false,
             error: null,
+            stale: false,
         };
     case ActionTypes.RECEIVED_RHS_ISSUES_APPEND:
         if (action.requestId !== state.requestId) {
@@ -361,6 +366,13 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
             loading: false,
             error: null,
         };
+    case ActionTypes.RHS_ISSUES_STALE:
+        return state.stale ? state : {...state, stale: true};
+    case ActionTypes.RHS_ISSUES_REFRESH_FAILED:
+        if (action.requestId !== state.requestId) {
+            return state;
+        }
+        return {...state, loading: false, stale: true};
     case ActionTypes.RECEIVED_RHS_CARD: {
         const card = action.data as RHSIssue | undefined;
         if (!card || !state.issues.some((issue) => issue.key === card.key)) {
