@@ -46,6 +46,8 @@ export const defaultMockState = {
         },
         rhsNav: {
             section: 'my_issues',
+            issueKey: '',
+            attachPostId: '',
         },
     },
     entities: {

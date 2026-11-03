@@ -130,4 +130,16 @@ export const RHS_STRINGS = {
     createPostToChannel: 'Написать в канал о новой задаче',
     createUnsupportedFields: 'Обязательные поля этого типа нельзя заполнить в Mattermost: {fields}. Создайте задачу в Jira.',
     createFrom: 'Из сообщения',
+
+    // Attach a message to an issue
+    attachTitle: 'Приложить к задаче',
+    attachSearch: 'Ключ, тема или JQL',
+    attachMine: 'Мои открытые задачи',
+    attachSubmit: 'Приложить к {key}',
+    attachChoose: 'Выберите задачу',
+    attachSending: 'Прикладываем…',
+    attachDone: 'Сообщение приложено к {key}',
+    attachDoneHint: 'Комментарий добавлен в Jira, в треде появился ответ со ссылкой на задачу.',
+    attachClose: 'Готово',
+    attachPostMissing: 'Сообщение не найдено. Откройте его в канале и попробуйте ещё раз.',
 };

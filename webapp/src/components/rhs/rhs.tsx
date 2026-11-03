@@ -7,6 +7,7 @@ import {Instance} from 'types/model';
 import {RHSErrorCode, RHSViewState} from 'types/rhs';
 import {RHSSectionID} from 'types/rhs_nav';
 
+import AttachView from './attach_view';
 import IssueCard from './issue_card';
 import {RHSConnectScreen, RHSNoInstanceScreen} from './rhs_connect_screen';
 import RHSPanelHeader from './rhs_panel_header';
@@ -22,6 +23,7 @@ export type Props = {
     activeInstanceID: string;
     section: RHSSectionID;
     issueKey: string;
+    attachPostId: string;
     issuesError: RHSErrorCode | null;
     isAdmin: boolean;
     channelId: string;
@@ -136,13 +138,15 @@ export default function Rhs(props: Props): JSX.Element {
 
         // The card covers the sections; they stay mounted to keep the list
         // and its scroll position for "back".
-        const cardOpen = Boolean(props.issueKey);
+        const attachOpen = Boolean(props.attachPostId);
+        const cardOpen = !attachOpen && Boolean(props.issueKey);
         content = (
             <>
+                {attachOpen && <AttachView/>}
                 {cardOpen && <IssueCard/>}
                 <div
                     className='jira-rhs-main'
-                    hidden={cardOpen}
+                    hidden={cardOpen || attachOpen}
                 >
                     <RHSPanelHeader
                         instances={connectedInstances}

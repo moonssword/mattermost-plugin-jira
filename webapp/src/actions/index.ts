@@ -723,3 +723,10 @@ export {
     clearRHSCreate,
     openRHSCreate,
 } from './rhs_create';
+
+export {
+    attachPostToIssue,
+    closeRHSAttach,
+    openRHSAttach,
+    searchRHSAttachIssues,
+} from './rhs_attach';

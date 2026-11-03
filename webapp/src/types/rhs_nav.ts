@@ -18,4 +18,7 @@ export type RHSNavState = {
 
     // Key of the issue whose card is open over the sections, '' when none.
     issueKey: string;
+
+    // Post being attached to an issue ("Приложить к задаче"), '' when none.
+    attachPostId: string;
 };

@@ -149,3 +149,5 @@ export const getRHSIssueKey = (state: GlobalState): string => getPluginState(sta
 export const getRHSCard = (state: GlobalState) => getPluginState(state).rhsCard;
 
 export const getRHSCreatePrefill = (state: GlobalState) => getPluginState(state).rhsCreate;
+
+export const getRHSAttachPostId = (state: GlobalState): string => getPluginState(state).rhsNav?.attachPostId || '';
