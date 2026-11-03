@@ -48,6 +48,7 @@ export const defaultMockState = {
             section: 'my_issues',
             issueKey: '',
             attachPostId: '',
+            settingsOpen: false,
         },
     },
     entities: {

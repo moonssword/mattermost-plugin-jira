@@ -21,4 +21,7 @@ export type RHSNavState = {
 
     // Post being attached to an issue ("Приложить к задаче"), '' when none.
     attachPostId: string;
+
+    // Whether the settings screen is open over the sections.
+    settingsOpen: boolean;
 };

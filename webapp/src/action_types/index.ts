@@ -56,6 +56,8 @@ export default {
     RHS_CARD_ACTION_DONE: `${PluginId}_rhs_card_action_done`,
     SET_RHS_CREATE: `${PluginId}_set_rhs_create`,
     OPEN_RHS_ATTACH: `${PluginId}_open_rhs_attach`,
+    OPEN_RHS_SETTINGS: `${PluginId}_open_rhs_settings`,
+    CLOSE_RHS_SETTINGS: `${PluginId}_close_rhs_settings`,
     CLOSE_RHS_ATTACH: `${PluginId}_close_rhs_attach`,
     CLEAR_RHS_CREATE: `${PluginId}_clear_rhs_create`,
 };

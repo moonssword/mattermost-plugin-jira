@@ -40,6 +40,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         section: 'my_issues',
         issueKey: '',
         attachPostId: '',
+        settingsOpen: false,
         issuesError: null,
         isAdmin: false,
         channelId: 'channel-1',
@@ -48,6 +49,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         restoreRHSViewState: jest.fn(() => ({data: null})),
         setRHSSection: jest.fn(),
         selectRHSInstance: jest.fn(),
+        openRHSSettings: jest.fn(),
         handleConnectFlow: jest.fn(),
         startJiraSetupWizard: jest.fn(async () => ({data: {}})),
         ...overrides,
@@ -107,6 +109,12 @@ describe('components/rhs', () => {
         expect(screen.getByTestId('rhs-instance-name')).toHaveTextContent(RHS_STRINGS.instanceServer);
         expect(screen.getByRole('tab', {name: 'Мои задачи'})).toHaveAttribute('aria-selected', 'true');
         expect(screen.getByTestId('stub-my_issues')).toHaveTextContent(serverOne.instance_id);
+    });
+
+    test('the gear opens the settings', async () => {
+        const {props} = await renderSettled();
+        fireEvent.click(screen.getByTestId('rhs-open-settings'));
+        expect(props.openRHSSettings).toHaveBeenCalled();
     });
 
     test('clicking a section tab selects it', async () => {

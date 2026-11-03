@@ -10,6 +10,7 @@ import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 import {
     getConnected,
     handleConnectFlow,
+    openRHSSettings,
     restoreRHSViewState,
     selectRHSInstance,
     setRHSSection,
@@ -24,13 +25,14 @@ import {
     getRHSSection,
     getUserConnectedInstances,
     isJiraSystemAdmin,
+    isRHSSettingsOpen,
 } from 'selectors';
 
 import {GlobalState} from 'types/store';
 
 import Rhs, {Props} from './rhs';
 
-type DispatchProps = Pick<Props, 'getConnected' | 'handleConnectFlow' | 'restoreRHSViewState' | 'selectRHSInstance' | 'setRHSSection' | 'startJiraSetupWizard'>;
+type DispatchProps = Pick<Props, 'getConnected' | 'handleConnectFlow' | 'openRHSSettings' | 'restoreRHSViewState' | 'selectRHSInstance' | 'setRHSSection' | 'startJiraSetupWizard'>;
 
 const mapStateToProps = (state: GlobalState) => {
     return {
@@ -40,6 +42,7 @@ const mapStateToProps = (state: GlobalState) => {
         section: getRHSSection(state),
         issueKey: getRHSIssueKey(state),
         attachPostId: getRHSAttachPostId(state),
+        settingsOpen: isRHSSettingsOpen(state),
         issuesError: getRHSError(state),
         isAdmin: isJiraSystemAdmin(state),
         channelId: getCurrentChannelId(state) || '',
@@ -50,6 +53,7 @@ const mapStateToProps = (state: GlobalState) => {
 const rhsDispatch = {
     getConnected,
     handleConnectFlow,
+    openRHSSettings,
     restoreRHSViewState,
     selectRHSInstance,
     setRHSSection,
