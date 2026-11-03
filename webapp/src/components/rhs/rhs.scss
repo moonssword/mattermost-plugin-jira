@@ -2231,3 +2231,16 @@
 .jira-rhs-form--dense .help-text:empty {
     display: none;
 }
+
+/* A long lane must scroll, not squeeze the column chips or the cards. */
+.jira-rhs-lanes,
+.jira-rhs-bcard {
+    flex: 0 0 auto;
+}
+
+.jira-rhs-lanes {
+    position: sticky;
+    z-index: 1;
+    top: 0;
+    background: var(--center-channel-bg);
+}
