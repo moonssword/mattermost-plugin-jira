@@ -730,3 +730,8 @@ export {
     openRHSAttach,
     searchRHSAttachIssues,
 } from './rhs_attach';
+
+export {
+    loadRHSChannelSubscriptions,
+    setRHSSubscriptionPaused,
+} from './rhs_channel';

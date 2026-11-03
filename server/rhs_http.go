@@ -57,6 +57,8 @@ func respondRHSErr(w http.ResponseWriter, err error) (int, error) {
 		return respondJSONErr(w, http.StatusTooManyRequests, rhsErrRateLimited, "Jira is rate limiting requests, try again shortly")
 	case errors.Is(err, ErrRHSUnsupportedInstance):
 		return respondJSONErr(w, http.StatusBadRequest, rhsErrUnsupported, "Jira RHS is not supported for this instance")
+	case errors.Is(err, ErrRHSNotChannelMember):
+		return respondJSONErr(w, http.StatusForbidden, rhsErrForbidden, "you are not a member of this channel")
 	case errors.Is(err, ErrRHSIssueNotFound):
 		return respondJSONErr(w, http.StatusNotFound, rhsErrNotFound, "Jira issue not found or not visible to you")
 	case errors.Is(err, ErrRHSForbidden):

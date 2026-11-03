@@ -241,13 +241,13 @@ const channelSubscriptions = (state = {} as AnyState, action = {} as AnyAction) 
     }
     case ActionTypes.DELETED_CHANNEL_SUBSCRIPTION: {
         const sub = action.data;
-        const newSubs = state[sub.channel_id].concat([]);
 
-        if (!newSubs) {
-            return {...state};
+        // The panel can delete before the modal ever loaded this channel.
+        const newSubs = (state[sub.channel_id] || []).concat([]);
+        const index = newSubs.findIndex((s: ChannelSubscription) => s.id === sub.id);
+        if (index >= 0) {
+            newSubs.splice(index, 1);
         }
-
-        newSubs.splice(newSubs.findIndex((s: ChannelSubscription) => s.id === sub.id), 1);
 
         return {
             ...state,
