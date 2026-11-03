@@ -18,13 +18,27 @@ export function RHSLoadingState(): JSX.Element {
     );
 }
 
-export function RHSEmptyState(): JSX.Element {
+export function RHSEmptyState(props: {message?: string}): JSX.Element {
     return (
         <div
             className='jira-rhs-state'
             data-testid='rhs-state-empty'
         >
-            <p>{RHS_STRINGS.empty}</p>
+            <p>{props.message || RHS_STRINGS.empty}</p>
+        </div>
+    );
+}
+
+// Jira rejected the user's search, usually a JQL syntax error; show its text.
+export function RHSQueryErrorState(props: {message: string}): JSX.Element {
+    return (
+        <div
+            className='jira-rhs-state jira-rhs-state--query-error'
+            data-testid='rhs-state-query-error'
+            role='alert'
+        >
+            <p className='jira-rhs-state-title'>{RHS_STRINGS.queryRejected}</p>
+            {props.message && <p className='jira-rhs-state-detail'>{props.message}</p>}
         </div>
     );
 }

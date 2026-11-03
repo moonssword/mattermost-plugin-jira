@@ -121,9 +121,11 @@ func normalizeServerSearchResult(requestedStartAt int, result serverSearchResult
 	next := startAt + len(result.Issues)
 	isLast := len(result.Issues) == 0 || next >= result.Total
 
+	total := result.Total
 	out := &CloudSearchResult{
 		Issues: result.Issues,
 		IsLast: isLast,
+		Total:  &total,
 	}
 	if !isLast {
 		out.NextPageToken = strconv.Itoa(next)

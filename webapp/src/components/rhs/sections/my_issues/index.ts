@@ -7,12 +7,14 @@ import {Dispatch, bindActionCreators} from 'redux';
 import {loadMoreRHSIssues, resolveAndFetchRHSIssues} from 'actions';
 import {
     getRHSError,
+    getRHSErrorMessage,
+    getRHSFilter,
+    getRHSInstanceID,
     getRHSIsLast,
     getRHSIssues,
     getRHSLoading,
-    getRHSSort,
-    getRHSTab,
-    getRHSTabs,
+    getRHSQuery,
+    getRHSTotal,
 } from 'selectors';
 
 import {GlobalState} from 'types/store';
@@ -23,13 +25,15 @@ type OwnProps = Pick<Props, 'instanceID'>;
 type DispatchProps = Pick<Props, 'loadMoreRHSIssues' | 'resolveAndFetchRHSIssues'>;
 
 const mapStateToProps = (state: GlobalState) => ({
-    tab: getRHSTab(state),
-    sort: getRHSSort(state),
+    filter: getRHSFilter(state),
+    query: getRHSQuery(state),
     issues: getRHSIssues(state),
-    tabs: getRHSTabs(state),
     isLast: getRHSIsLast(state),
+    total: getRHSTotal(state),
     loading: getRHSLoading(state),
     error: getRHSError(state),
+    errorMessage: getRHSErrorMessage(state),
+    loadedInstanceID: getRHSInstanceID(state),
 });
 
 const actionCreators = {

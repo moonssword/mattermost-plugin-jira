@@ -183,6 +183,8 @@ type CloudSearchResult struct {
 	Issues        []jira.Issue `json:"issues"`
 	NextPageToken string       `json:"nextPageToken"`
 	IsLast        bool         `json:"isLast"`
+	// Total is set by Server/DC only; Cloud's enhanced search has no count.
+	Total *int `json:"total,omitempty"`
 }
 
 var ErrRateLimited = errors.New("jira rate limited")
@@ -219,4 +221,8 @@ type RHSIssue struct {
 	IssueTypeIconURL string         `json:"issueTypeIconUrl,omitempty"`
 	Project          string         `json:"project"`
 	Updated          string         `json:"updated"`
+	Created          string         `json:"created,omitempty"`
+	DueDate          string         `json:"dueDate,omitempty"`
+	Priority         string         `json:"priority,omitempty"`
+	PriorityIconURL  string         `json:"priorityIconUrl,omitempty"`
 }

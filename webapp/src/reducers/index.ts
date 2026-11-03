@@ -8,11 +8,11 @@ import ActionTypes from '../action_types';
 import {ChannelSubscription, PluginSettings} from 'types/model';
 import {
     RHSErrorCode,
+    RHSFilter,
     RHSIssue,
     RHSSort,
-    RHSTab,
+    RHS_DEFAULT_FILTER,
     RHS_DEFAULT_SORT,
-    RHS_DEFAULT_TAB,
 } from 'types/rhs';
 
 import rhsNav from './rhs_nav';
@@ -279,27 +279,31 @@ const channelSubscriptions = (state = {} as AnyState, action = {} as AnyAction) 
 
 export type RHSState = {
     instanceID: string;
-    tab: RHSTab;
+    filter: RHSFilter;
+    query: string;
     sort: RHSSort;
     issues: RHSIssue[];
-    tabs: RHSTab[];
     nextPageToken: string;
     isLast: boolean;
+    total: number | null;
     loading: boolean;
     error: RHSErrorCode | null;
+    errorMessage: string;
     requestId: number;
 };
 
 const defaultRHSState: RHSState = {
     instanceID: '',
-    tab: RHS_DEFAULT_TAB,
+    filter: RHS_DEFAULT_FILTER,
+    query: '',
     sort: RHS_DEFAULT_SORT,
     issues: [],
-    tabs: [],
     nextPageToken: '',
     isLast: true,
+    total: null,
     loading: false,
     error: null,
+    errorMessage: '',
     requestId: 0,
 };
 
@@ -309,7 +313,8 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
         return {
             ...state,
             instanceID: action.data.instanceID,
-            tab: action.data.tab,
+            filter: action.data.filter,
+            query: action.data.query,
             sort: action.data.sort,
         };
     case ActionTypes.RHS_ISSUES_LOADING: {
@@ -319,10 +324,12 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
             requestId: state.requestId + 1,
             loading: true,
             error: null,
+            errorMessage: '',
             ...(reset ? {
                 issues: [],
                 nextPageToken: '',
                 isLast: true,
+                total: null,
             } : {}),
         };
     }
@@ -333,9 +340,9 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
         return {
             ...state,
             issues: action.data.issues ? action.data.issues : [],
-            tabs: action.data.tabs ? action.data.tabs : [],
             nextPageToken: action.data.nextPageToken ? action.data.nextPageToken : '',
             isLast: Boolean(action.data.isLast),
+            total: typeof action.data.total === 'number' ? action.data.total : null,
             loading: false,
             error: null,
         };
@@ -346,9 +353,9 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
         return {
             ...state,
             issues: state.issues.concat(action.data.issues ? action.data.issues : []),
-            tabs: action.data.tabs ? action.data.tabs : state.tabs,
             nextPageToken: action.data.nextPageToken ? action.data.nextPageToken : '',
             isLast: Boolean(action.data.isLast),
+            total: typeof action.data.total === 'number' ? action.data.total : state.total,
             loading: false,
             error: null,
         };
@@ -360,6 +367,7 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
             ...state,
             loading: false,
             error: action.data,
+            errorMessage: typeof action.message === 'string' ? action.message : '',
         };
     default:
         return state;

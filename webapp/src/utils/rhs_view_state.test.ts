@@ -11,10 +11,10 @@ describe('rhs_view_state', () => {
         jest.restoreAllMocks();
     });
 
-    test('rhs_view_state round-trips instance tab sort', () => {
+    test('rhs_view_state round-trips instance filter sort', () => {
         const view: RHSViewState = {
             instance: 'https://example.atlassian.net',
-            tab: {kind: 'category', name: 'In Progress', key: 'indeterminate'},
+            filter: 'watching',
             sort: 'created',
         };
 
@@ -23,12 +23,7 @@ describe('rhs_view_state', () => {
     });
 
     test('rhs_view_state isolates keys by user id', () => {
-        saveRHSViewState('u1', {
-            instance: 'https://example.atlassian.net',
-            tab: {kind: 'assigned', name: 'Assigned'},
-            sort: 'updated',
-        });
-
+        saveRHSViewState('u1', {instance: 'https://example.atlassian.net', filter: 'assigned', sort: 'updated'});
         expect(loadRHSViewState('u2')).toBeNull();
     });
 
@@ -46,55 +41,32 @@ describe('rhs_view_state', () => {
         });
 
         expect(() => {
-            saveRHSViewState('u1', {
-                instance: 'https://example.atlassian.net',
-                tab: {kind: 'assigned', name: 'Assigned'},
-                sort: 'updated',
-            });
+            saveRHSViewState('u1', {instance: 'https://example.atlassian.net', filter: 'assigned', sort: 'updated'});
         }).not.toThrow();
     });
 
-    test('validateRHSViewState rewrites a stored assigned label to Assigned to me', () => {
+    test('validateRHSViewState upgrades an old entry with a status tab to the default filter', () => {
         expect(validateRHSViewState({
             instance: 'x',
-            tab: {kind: 'assigned', name: 'Assigned'},
-            sort: 'updated',
-        })).toEqual({
+            tab: {kind: 'category', name: 'In Progress', key: 'indeterminate'},
+            sort: 'created',
+        })).toEqual({instance: 'x', filter: 'assigned', sort: 'created'});
+    });
+
+    test('validateRHSViewState replaces an unknown filter with the default', () => {
+        expect(validateRHSViewState({instance: 'x', filter: 'everything', sort: 'updated'})).toEqual({
             instance: 'x',
-            tab: {kind: 'assigned', name: 'Assigned to me'},
+            filter: 'assigned',
             sort: 'updated',
         });
     });
 
-    test('validateRHSViewState rejects an unknown tab kind', () => {
-        expect(validateRHSViewState({
-            instance: 'x',
-            tab: {kind: 'nope', name: 'X'},
-            sort: 'updated',
-        })).toBeNull();
-    });
-
     test('validateRHSViewState rejects a sort outside updated or created', () => {
-        expect(validateRHSViewState({
-            instance: 'x',
-            tab: {kind: 'assigned', name: 'Assigned'},
-            sort: 'priority',
-        })).toBeNull();
+        expect(validateRHSViewState({instance: 'x', filter: 'assigned', sort: 'priority'})).toBeNull();
     });
 
-    test('validateRHSViewState rejects a category tab without key', () => {
-        expect(validateRHSViewState({
-            instance: 'x',
-            tab: {kind: 'category', name: 'In Progress'},
-            sort: 'updated',
-        })).toBeNull();
-    });
-
-    test('validateRHSViewState rejects a status tab without id', () => {
-        expect(validateRHSViewState({
-            instance: 'x',
-            tab: {kind: 'status', name: 'Blocked'},
-            sort: 'updated',
-        })).toBeNull();
+    test('validateRHSViewState rejects a missing instance', () => {
+        expect(validateRHSViewState({filter: 'assigned', sort: 'updated'})).toBeNull();
+        expect(validateRHSViewState(null)).toBeNull();
     });
 });

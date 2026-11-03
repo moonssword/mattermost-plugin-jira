@@ -32,6 +32,31 @@ export const RHS_STRINGS = {
     sortCreated: 'По созданию',
     assignedTab: 'Назначены мне',
 
+    // Quick filters and search
+    filtersLabel: 'Быстрые фильтры',
+    filterAssigned: 'Назначены мне',
+    filterReported: 'Я автор',
+    filterWatching: 'Слежу',
+    filterSprint: 'Текущий спринт',
+    searchPlaceholder: 'Поиск по ключу, теме или JQL',
+    searchLabel: 'Поиск задач',
+    searchClear: 'Очистить поиск',
+    found: 'Найдено',
+    emptyFilter: 'Нет задач по этому фильтру',
+    emptySearch: 'Ничего не найдено',
+    queryRejected: 'Jira не приняла запрос',
+
+    // Groups by status category
+    groupInProgress: 'В работе',
+    groupToDo: 'К выполнению',
+    groupDone: 'Готово',
+    groupOther: 'Без категории',
+
+    // Issue row
+    updatedPrefix: 'Обновлено',
+    duePrefix: 'Срок:',
+    overdue: 'просрочено',
+
     // Connect screen
     connectTitle: 'Подключите Jira',
     connectText: 'Чтобы видеть свои задачи, создавать и менять их из Mattermost, свяжите аккаунт. Вход происходит на сайте Jira.',

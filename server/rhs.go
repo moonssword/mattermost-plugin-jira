@@ -17,7 +17,7 @@ import (
 const rhsIssuesPageSize = 20
 
 var rhsSearchFields = []string{
-	"summary", "status", "issuetype", "updated", "project",
+	"summary", "status", "issuetype", "updated", "project", "created", "duedate", "priority",
 }
 
 // rhsClient is the RHS API implemented by both the Cloud and the Server/DC
@@ -115,6 +115,14 @@ func normalizeRHSIssue(instance Instance, issue jira.Issue) RHSIssue {
 	out.IssueTypeIconURL = f.Type.IconURL
 	out.Project = f.Project.Key
 	out.Updated = rhsTimeRFC3339(f.Updated)
+	out.Created = rhsTimeRFC3339(f.Created)
+	if due := time.Time(f.Duedate); !due.IsZero() {
+		out.DueDate = due.Format("2006-01-02")
+	}
+	if f.Priority != nil {
+		out.Priority = f.Priority.Name
+		out.PriorityIconURL = f.Priority.IconURL
+	}
 	if f.Status != nil {
 		out.Status = RHSIssueStatus{
 			Name:        f.Status.Name,
@@ -151,6 +159,7 @@ type rhsIssuesResult struct {
 	Tabs          []RHSTabEntry `json:"tabs"`
 	NextPageToken string        `json:"nextPageToken"`
 	IsLast        bool          `json:"isLast"`
+	Total         *int          `json:"total,omitempty"`
 }
 
 func (p *Plugin) getRHSIssues(instanceID, mattermostUserID types.ID, tabIdentity, sort, nextPageToken string) (*rhsIssuesResult, error) {
