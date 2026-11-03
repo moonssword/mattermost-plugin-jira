@@ -2293,3 +2293,16 @@
         display: none;
     }
 }
+
+/* The section body clips; the board view and the board picker scroll on
+   their own, like the list. */
+.jira-rhs-board,
+.jira-rhs-board-picker {
+    overflow-y: auto;
+    flex: 1 1 0;
+    min-height: 0;
+}
+
+.jira-rhs-board .jira-rhs-lanebg {
+    flex: 1 0 auto;
+}
