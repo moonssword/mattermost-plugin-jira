@@ -32,6 +32,9 @@ export function coerceRHSErrorCode(value: string): RHSErrorCode {
     case 'unsupported_instance':
     case 'invalid_request':
     case 'invalid_query':
+    case 'not_found':
+    case 'forbidden':
+    case 'jira_rejected':
     case 'internal_error':
         return value;
     default:
@@ -59,8 +62,10 @@ export function parseRHSErrorBody(text: string, statusCode: number): RHSFetchErr
     return new RHSFetchError('internal_error', text || '', statusCode);
 }
 
-const doFetchJSON = async <T>(url: string): Promise<T> => {
-    const response = await fetch(url, Client4.getOptions({method: 'get'}));
+// rhsRequest sends an authenticated request to the plugin and turns error
+// bodies into RHSFetchError with the server's error code.
+export const rhsRequest = async <T>(url: string, options: {method: string; body?: string} = {method: 'get'}): Promise<T> => {
+    const response = await fetch(url, Client4.getOptions(options));
     if (response.ok) {
         return response.json();
     }
@@ -68,6 +73,8 @@ const doFetchJSON = async <T>(url: string): Promise<T> => {
     const text = await response.text();
     throw parseRHSErrorBody(text, response.status);
 };
+
+const doFetchJSON = <T>(url: string): Promise<T> => rhsRequest<T>(url);
 
 export function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
     const query: {[key: string]: string} = {

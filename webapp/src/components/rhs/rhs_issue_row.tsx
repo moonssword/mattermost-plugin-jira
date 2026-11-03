@@ -25,6 +25,10 @@ export function rhsStatusClass(categoryKey: string): string {
 export type Props = {
     issue: RHSIssue;
     nowMs: number;
+
+    // Opens the card in the panel. Modified clicks (new tab, middle button)
+    // still follow the link to Jira.
+    onOpen?: (key: string) => void;
 };
 
 function issueMeta(issue: RHSIssue, nowMs: number): {text: string; overdue: boolean} {
@@ -53,6 +57,13 @@ export default function RHSIssueRow(props: Props): JSX.Element {
                 href={issue.browseUrl}
                 target='_blank'
                 rel='noopener noreferrer'
+                onClick={(event) => {
+                    if (!props.onOpen || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+                        return;
+                    }
+                    event.preventDefault();
+                    props.onOpen(issue.key);
+                }}
             >
                 <RHSIssueTypeIcon
                     issueType={issue.issueType}

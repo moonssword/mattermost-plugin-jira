@@ -38,6 +38,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         connectedInstances: [serverOne],
         activeInstanceID: serverOne.instance_id,
         section: 'my_issues',
+        issueKey: '',
         issuesError: null,
         isAdmin: false,
         channelId: 'channel-1',

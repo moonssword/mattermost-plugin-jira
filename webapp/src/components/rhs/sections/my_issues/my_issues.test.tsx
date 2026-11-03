@@ -47,6 +47,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         loadedInstanceID: instanceID,
         resolveAndFetchRHSIssues: jest.fn(async () => ({})),
         loadMoreRHSIssues: jest.fn(async () => ({})),
+        openRHSIssue: jest.fn(),
         ...overrides,
     };
 }

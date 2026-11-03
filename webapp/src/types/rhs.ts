@@ -8,6 +8,9 @@ export type RHSErrorCode =
     'unsupported_instance' |
     'invalid_request' |
     'invalid_query' |
+    'not_found' |
+    'forbidden' |
+    'jira_rejected' |
     'internal_error';
 
 export type RHSSort = 'updated' | 'created';

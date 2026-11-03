@@ -22,6 +22,9 @@ const (
 	rhsErrUnsupported    = "unsupported_instance"
 	rhsErrInvalidRequest = "invalid_request"
 	rhsErrInvalidQuery   = "invalid_query"
+	rhsErrNotFound       = "not_found"
+	rhsErrForbidden      = "forbidden"
+	rhsErrJiraRejected   = "jira_rejected"
 	rhsErrInternal       = "internal_error"
 
 	queryRHSTab           = "tab"
@@ -54,6 +57,12 @@ func respondRHSErr(w http.ResponseWriter, err error) (int, error) {
 		return respondJSONErr(w, http.StatusTooManyRequests, rhsErrRateLimited, "Jira is rate limiting requests, try again shortly")
 	case errors.Is(err, ErrRHSUnsupportedInstance):
 		return respondJSONErr(w, http.StatusBadRequest, rhsErrUnsupported, "Jira RHS is not supported for this instance")
+	case errors.Is(err, ErrRHSIssueNotFound):
+		return respondJSONErr(w, http.StatusNotFound, rhsErrNotFound, "Jira issue not found or not visible to you")
+	case errors.Is(err, ErrRHSForbidden):
+		return respondJSONErr(w, http.StatusForbidden, rhsErrForbidden, "Jira does not allow this action for your account")
+	case errors.Is(err, ErrRHSJiraRejected):
+		return respondJSONErr(w, http.StatusBadRequest, rhsErrJiraRejected, strings.TrimSpace(strings.TrimPrefix(err.Error(), ErrRHSJiraRejected.Error()+":")))
 	case errors.Is(err, ErrInvalidRHSQuery):
 		return respondJSONErr(w, http.StatusBadRequest, rhsErrInvalidQuery, strings.TrimSpace(strings.TrimPrefix(err.Error(), ErrInvalidRHSQuery.Error()+":")))
 	case errors.Is(err, ErrInvalidStatusCategory),

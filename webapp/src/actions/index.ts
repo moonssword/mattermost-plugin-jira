@@ -707,3 +707,14 @@ export {
     startJiraSetupWizard,
     toggleJiraRHS,
 } from './rhs_nav';
+
+export {
+    assignRHSCard,
+    closeRHSIssue,
+    commentRHSCard,
+    fetchRHSIssueCard,
+    openRHSIssue,
+    searchRHSCardAssignees,
+    shareRHSCard,
+    transitionRHSCard,
+} from './rhs_card';
