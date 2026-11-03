@@ -15,6 +15,8 @@ import {
     createIssue,
     fetchJiraIssueMetadataForProjects,
     fetchJiraProjectMetadata,
+    openCreateModal,
+    openCreateModalWithoutPost,
     openRHSIssue,
 } from 'actions';
 import {getRHSCreatePrefill} from 'selectors';
@@ -24,7 +26,7 @@ import {GlobalState} from 'types/store';
 import CreateSection, {Props} from './create_section';
 
 type OwnProps = Pick<Props, 'instanceID'>;
-type DispatchProps = Pick<Props, 'clearRHSCreate' | 'createIssue' | 'fetchJiraIssueMetadataForProjects' | 'fetchJiraProjectMetadata' | 'openRHSIssue'>;
+type DispatchProps = Pick<Props, 'clearRHSCreate' | 'createIssue' | 'fetchJiraIssueMetadataForProjects' | 'fetchJiraProjectMetadata' | 'openCreateModal' | 'openCreateModalWithoutPost' | 'openRHSIssue'>;
 
 const mapStateToProps = (state: GlobalState) => {
     const prefill = getRHSCreatePrefill(state);
@@ -45,6 +47,8 @@ const actionCreators = {
     createIssue,
     fetchJiraIssueMetadataForProjects,
     fetchJiraProjectMetadata,
+    openCreateModal,
+    openCreateModalWithoutPost,
     openRHSIssue,
 };
 
