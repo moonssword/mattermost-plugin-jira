@@ -25,7 +25,7 @@ import {GlobalState} from 'types/store';
 
 import CreateSection, {Props} from './create_section';
 
-type OwnProps = Pick<Props, 'instanceID'>;
+type OwnProps = Pick<Props, 'instanceID' | 'onBack'>;
 type DispatchProps = Pick<Props, 'clearRHSCreate' | 'createIssue' | 'fetchJiraIssueMetadataForProjects' | 'fetchJiraProjectMetadata' | 'openCreateModal' | 'openCreateModalWithoutPost' | 'openRHSIssue'>;
 
 const mapStateToProps = (state: GlobalState) => {

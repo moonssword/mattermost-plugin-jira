@@ -4,12 +4,13 @@
 import {AnyAction, Dispatch} from 'redux';
 
 import ActionTypes from '../action_types';
-import {getRHSIssues} from '../client/rhs';
-import {getPluginServerRoute, getRHSActiveInstanceID} from '../selectors';
+import {getRHSActiveInstanceID} from '../selectors';
 
 import {isRHSMounted} from 'utils/rhs_controller';
 import {GlobalState, pluginStateKey} from 'types/store';
 
+import {refreshRHSIssuesInPlace} from './rhs';
+import {fetchRHSBoard} from './rhs_board';
 import {fetchRHSIssueCard} from './rhs_card';
 
 // Bursts of webhook events (a transition plus a comment) arrive together;
@@ -28,31 +29,7 @@ type IssueChangedMessage = {
     };
 };
 
-// refreshRHSIssuesInPlace reloads the first page of the current list without
-// clearing it, so the panel does not flash; failures only mark it stale.
-export const refreshRHSIssuesInPlace = () => {
-    return async (dispatch: Dispatch, getState: () => GlobalState) => {
-        const rhs = getState()[pluginStateKey].rhs;
-        if (!rhs.instanceID) {
-            return {data: null};
-        }
-        dispatch({type: ActionTypes.RHS_ISSUES_LOADING, data: {reset: false}});
-        const requestId = getState()[pluginStateKey].rhs.requestId;
-        try {
-            const data = await getRHSIssues(getPluginServerRoute(getState()), {
-                instanceID: rhs.instanceID,
-                filter: rhs.filter,
-                query: rhs.query,
-                sort: rhs.sort,
-            });
-            dispatch({type: ActionTypes.RECEIVED_RHS_ISSUES, data, requestId});
-            return {data};
-        } catch (error) {
-            dispatch({type: ActionTypes.RHS_ISSUES_REFRESH_FAILED, requestId});
-            return {error};
-        }
-    };
-};
+export {refreshRHSIssuesInPlace};
 
 export function createRHSLiveHandler(store: LiveStore, delayMs = RHS_LIVE_DELAY_MS) {
     const pending = new Set<string>();
@@ -76,6 +53,7 @@ export function createRHSLiveHandler(store: LiveStore, delayMs = RHS_LIVE_DELAY_
         }
         if (isRHSMounted() && !plugin.rhs.loading) {
             store.dispatch(refreshRHSIssuesInPlace());
+            store.dispatch(fetchRHSBoard());
         } else {
             store.dispatch({type: ActionTypes.RHS_ISSUES_STALE});
         }

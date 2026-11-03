@@ -6,7 +6,7 @@ import {fireEvent, render, screen} from '@testing-library/react';
 
 import {RHSIssue} from 'types/rhs';
 
-import RHSIssueRow from './rhs_issue_row';
+import RHSIssueRow, {rhsStatusClass} from './rhs_issue_row';
 
 const nowMs = Date.parse('2026-01-02T01:00:00Z');
 
@@ -21,7 +21,7 @@ const issueOne: RHSIssue = {
 };
 
 describe('components/rhs/rhs_issue_row', () => {
-    test('row has one browse link and keeps the summary as text', () => {
+    test('compact row is one browse link with key and summary', () => {
         const {container} = render(
             <RHSIssueRow
                 issue={issueOne}
@@ -33,37 +33,29 @@ describe('components/rhs/rhs_issue_row', () => {
         expect(links).toHaveLength(1);
         expect(links[0]).toHaveAttribute('href', 'https://example.atlassian.net/browse/TES-1');
         expect(links[0]).toHaveTextContent('TES-1');
-        expect(links[0]).toHaveTextContent('One');
-        expect(screen.getByText('One')).toHaveClass('jira-rhs-issue-summary');
+        expect(screen.getByText('One')).toHaveClass('jira-rhs-row-summary');
         expect(container.innerHTML).not.toContain('api.atlassian.com');
     });
 
-    test('long summary keeps full text and uses the clamp class', () => {
+    test('the tooltip carries the full summary, status and dates', () => {
         const summary = 'x'.repeat(400);
         render(
             <RHSIssueRow
-                issue={{...issueOne, summary}}
+                issue={{...issueOne, summary, assigneeName: 'Иван Петров'}}
                 nowMs={nowMs}
             />,
         );
-
-        const summaryEl = screen.getByTitle(summary);
-        expect(summaryEl).toHaveClass('jira-rhs-issue-summary');
-        expect(summaryEl.textContent).toHaveLength(400);
+        const title = screen.getByRole('link').getAttribute('title') || '';
+        expect(title).toContain(summary);
+        expect(title).toContain('Статус: In Progress');
+        expect(title).toContain('Обновлено 1 ч назад');
+        expect(title).toContain('Исполнитель: Иван Петров');
+        expect(screen.getByTitle('Иван Петров')).toHaveTextContent('ИП');
     });
 
-    test('status pill class follows statusCategory key', () => {
-        render(
-            <RHSIssueRow
-                issue={{
-                    ...issueOne,
-                    status: {name: 'Done', categoryKey: 'done'},
-                }}
-                nowMs={nowMs}
-            />,
-        );
-
-        expect(screen.getByText('Done')).toHaveClass('jira-rhs-status--done');
+    test('rhsStatusClass follows statusCategory key', () => {
+        expect(rhsStatusClass('done')).toBe('jira-rhs-status jira-rhs-status--done');
+        expect(rhsStatusClass('weird')).toBe('jira-rhs-status jira-rhs-status--default');
     });
 });
 
@@ -79,24 +71,15 @@ describe('components/rhs/rhs_issue_row meta', () => {
         updated: new Date(now - (2 * 60 * 60 * 1000)).toISOString(),
     };
 
-    test('shows when the issue was updated without a due date', () => {
-        render(
-            <RHSIssueRow
-                issue={base}
-                nowMs={now}
-            />,
-        );
-        expect(screen.getByText('Обновлено 2 ч назад')).toBeInTheDocument();
-    });
-
-    test('shows the due date and marks an overdue one', () => {
+    test('marks an overdue issue and puts the due date in the tooltip', () => {
         const {rerender} = render(
             <RHSIssueRow
                 issue={{...base, dueDate: '2026-11-07'}}
                 nowMs={now}
             />,
         );
-        expect(screen.getByText('Срок: 7 ноя')).not.toHaveClass('jira-rhs-issue-time--overdue');
+        expect(screen.queryByTestId('rhs-overdue-TES-2')).not.toBeInTheDocument();
+        expect(screen.getByRole('link').getAttribute('title')).toContain('Срок: 7 ноя');
 
         rerender(
             <RHSIssueRow
@@ -104,7 +87,7 @@ describe('components/rhs/rhs_issue_row meta', () => {
                 nowMs={now}
             />,
         );
-        expect(screen.getByText('Срок: 1 ноя, просрочено')).toHaveClass('jira-rhs-issue-time--overdue');
+        expect(screen.getByTestId('rhs-overdue-TES-2')).toHaveTextContent('просрочено');
     });
 
     test('shows the priority icon with its name', () => {

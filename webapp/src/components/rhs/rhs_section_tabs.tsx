@@ -18,6 +18,9 @@ export type Props = {
     sections: RHSSectionDef[];
     selected: RHSSectionID;
     onSelect: (id: RHSSectionID) => void;
+
+    // Optional counters shown next to tab titles ("Мои 12").
+    counts?: Partial<Record<RHSSectionID, number | null>>;
 };
 
 export default function RHSSectionTabs(props: Props): JSX.Element {
@@ -73,6 +76,14 @@ export default function RHSSectionTabs(props: Props): JSX.Element {
                         onKeyDown={(event) => onKeyDown(event, index)}
                     >
                         {section.title}
+                        {typeof props.counts?.[section.id] === 'number' && (
+                            <span
+                                className='jira-rhs-section-count'
+                                data-testid={'rhs-section-count-' + section.id}
+                            >
+                                {props.counts[section.id]}
+                            </span>
+                        )}
                     </button>
                 );
             })}

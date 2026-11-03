@@ -154,4 +154,15 @@ export const getRHSAttachPostId = (state: GlobalState): string => getPluginState
 
 export const isRHSSettingsOpen = (state: GlobalState): boolean => Boolean(getPluginState(state).rhsNav?.settingsOpen);
 
+export const getRHSBoardState = (state: GlobalState) => getPluginState(state).rhsBoard;
+
+// Story points field of the loaded board, sent along with list requests.
+export const getRHSEstimateField = (state: GlobalState): string => {
+    const board = getPluginState(state).rhsBoard;
+    if (!board || !board.board || board.board.id !== board.boardId) {
+        return '';
+    }
+    return board.board.estimateField || '';
+};
+
 export const isRHSListStale = (state: GlobalState): boolean => Boolean(getPluginState(state).rhs?.stale);

@@ -208,6 +208,8 @@ var ErrRHSUnsupportedInstance = errors.New("jira rhs is not supported for this i
 var ErrInvalidRHSPageToken = errors.New("invalid rhs page token")
 
 type RHSIssueStatus struct {
+	// ID places the issue in a board column; empty in older payloads.
+	ID          string `json:"id,omitempty"`
 	Name        string `json:"name"`
 	CategoryKey string `json:"categoryKey"`
 }
@@ -225,4 +227,10 @@ type RHSIssue struct {
 	DueDate          string         `json:"dueDate,omitempty"`
 	Priority         string         `json:"priority,omitempty"`
 	PriorityIconURL  string         `json:"priorityIconUrl,omitempty"`
+
+	// Assignee is the display name; avatars need the user's Jira session.
+	AssigneeName string `json:"assigneeName,omitempty"`
+
+	// Estimate is the board's estimation field (story points), when asked for.
+	Estimate *float64 `json:"estimate,omitempty"`
 }

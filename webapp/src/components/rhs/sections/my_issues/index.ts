@@ -4,8 +4,20 @@
 import {connect} from 'react-redux';
 import {Dispatch, bindActionCreators} from 'redux';
 
-import {loadMoreRHSIssues, openRHSIssue, resolveAndFetchRHSIssues} from 'actions';
 import {
+    fetchRHSBoard,
+    initRHSBoard,
+    listRHSBoards,
+    loadMoreRHSIssues,
+    loadRHSIssueTransitions,
+    moveRHSIssue,
+    openRHSIssue,
+    resolveAndFetchRHSIssues,
+    selectRHSBoard,
+    setRHSListView,
+} from 'actions';
+import {
+    getRHSBoardState,
     getRHSError,
     getRHSErrorMessage,
     getRHSFilter,
@@ -14,6 +26,7 @@ import {
     getRHSIssues,
     getRHSLoading,
     getRHSQuery,
+    getRHSSort,
     getRHSTotal,
     isRHSListStale,
 } from 'selectors';
@@ -23,27 +36,44 @@ import {GlobalState} from 'types/store';
 import MyIssues, {Props} from './my_issues';
 
 type OwnProps = Pick<Props, 'instanceID'>;
-type DispatchProps = Pick<Props, 'loadMoreRHSIssues' | 'openRHSIssue' | 'resolveAndFetchRHSIssues'>;
+type DispatchProps = Pick<Props, 'fetchRHSBoard' | 'initRHSBoard' | 'listRHSBoards' | 'loadMoreRHSIssues' | 'loadRHSIssueTransitions' | 'moveRHSIssue' | 'openRHSIssue' | 'resolveAndFetchRHSIssues' | 'selectRHSBoard' | 'setRHSListView'>;
 
-const mapStateToProps = (state: GlobalState) => ({
-    filter: getRHSFilter(state),
-    query: getRHSQuery(state),
-    issues: getRHSIssues(state),
-    isLast: getRHSIsLast(state),
-    total: getRHSTotal(state),
-    loading: getRHSLoading(state),
-    error: getRHSError(state),
-    errorMessage: getRHSErrorMessage(state),
-    loadedInstanceID: getRHSInstanceID(state),
-    stale: isRHSListStale(state),
-});
-
-const actionCreators = {
-    loadMoreRHSIssues,
-    openRHSIssue,
-    resolveAndFetchRHSIssues,
+const mapStateToProps = (state: GlobalState) => {
+    const board = getRHSBoardState(state);
+    return {
+        filter: getRHSFilter(state),
+        query: getRHSQuery(state),
+        sort: getRHSSort(state),
+        issues: getRHSIssues(state),
+        isLast: getRHSIsLast(state),
+        total: getRHSTotal(state),
+        loading: getRHSLoading(state),
+        error: getRHSError(state),
+        errorMessage: getRHSErrorMessage(state),
+        loadedInstanceID: getRHSInstanceID(state),
+        stale: isRHSListStale(state),
+        boardId: board.boardId,
+        boardName: board.boardName,
+        board: board.board,
+        boardLoading: board.loading,
+        boardError: board.error,
+        view: board.view,
+    };
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => bindActionCreators<typeof actionCreators, DispatchProps>(actionCreators, dispatch);
+const actionCreators = {
+    fetchRHSBoard,
+    initRHSBoard,
+    listRHSBoards,
+    loadMoreRHSIssues,
+    loadRHSIssueTransitions,
+    moveRHSIssue,
+    openRHSIssue,
+    resolveAndFetchRHSIssues,
+    selectRHSBoard,
+    setRHSListView,
+};
+
+const mapDispatchToProps = (dispatch: Dispatch) => bindActionCreators(actionCreators, dispatch) as unknown as DispatchProps;
 
 export default connect<ReturnType<typeof mapStateToProps>, DispatchProps, OwnProps, GlobalState>(mapStateToProps, mapDispatchToProps)(MyIssues);

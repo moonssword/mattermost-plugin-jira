@@ -742,3 +742,13 @@ export {
     openRHSSettings,
     setRHSNotificationRole,
 } from './rhs_settings';
+
+export {
+    fetchRHSBoard,
+    initRHSBoard,
+    listRHSBoards,
+    loadRHSIssueTransitions,
+    moveRHSIssue,
+    selectRHSBoard,
+    setRHSListView,
+} from './rhs_board';

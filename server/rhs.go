@@ -17,7 +17,7 @@ import (
 const rhsIssuesPageSize = 20
 
 var rhsSearchFields = []string{
-	"summary", "status", "issuetype", "updated", "project", "created", "duedate", "priority",
+	"summary", "status", "issuetype", "updated", "project", "created", "duedate", "priority", "assignee",
 }
 
 // rhsClient is the RHS API implemented by both the Cloud and the Server/DC
@@ -123,8 +123,12 @@ func normalizeRHSIssue(instance Instance, issue jira.Issue) RHSIssue {
 		out.Priority = f.Priority.Name
 		out.PriorityIconURL = f.Priority.IconURL
 	}
+	if f.Assignee != nil {
+		out.AssigneeName = f.Assignee.DisplayName
+	}
 	if f.Status != nil {
 		out.Status = RHSIssueStatus{
+			ID:          f.Status.ID,
 			Name:        f.Status.Name,
 			CategoryKey: f.Status.StatusCategory.Key,
 		}

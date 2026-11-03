@@ -30,6 +30,7 @@ const (
 	queryRHSTab           = "tab"
 	queryRHSSort          = "sort"
 	queryRHSNextPageToken = "next_page_token"
+	queryRHSEstimateField = "estimate_field"
 
 	rhsDefaultSort = "updated"
 )
@@ -72,7 +73,8 @@ func respondRHSErr(w http.ResponseWriter, err error) (int, error) {
 		errors.Is(err, ErrInvalidRHSSort),
 		errors.Is(err, ErrUnknownRHSTabKind),
 		errors.Is(err, ErrInvalidRHSTab),
-		errors.Is(err, ErrInvalidRHSPageToken):
+		errors.Is(err, ErrInvalidRHSPageToken),
+		errors.Is(err, ErrInvalidRHSBoard):
 		return respondJSONErr(w, http.StatusBadRequest, rhsErrInvalidRequest, err.Error())
 	default:
 		status, _ := respondJSONErr(w, http.StatusInternalServerError, rhsErrInternal, "internal error")
@@ -93,6 +95,7 @@ func (p *Plugin) httpRHSGetIssues(w http.ResponseWriter, r *http.Request) (int, 
 			query:            r.FormValue(queryRHSQuery),
 			sort:             r.FormValue(queryRHSSort),
 			nextPageToken:    r.FormValue(queryRHSNextPageToken),
+			estimateField:    r.FormValue(queryRHSEstimateField),
 		})
 		if err != nil {
 			return respondRHSErr(w, err)

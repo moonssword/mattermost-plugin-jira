@@ -15,16 +15,25 @@ import Rhs, {Props, rhsScreen} from './rhs';
 import {RHS_STRINGS} from './rhs_strings';
 
 jest.mock('./rhs_sections', () => {
-    const section = (id: string) => (props: {instanceID: string}) => (
-        <div data-testid={'stub-' + id}>{props.instanceID}</div>
+    const section = (id: string) => (props: {instanceID: string; onBack?: () => void}) => (
+        <div data-testid={'stub-' + id}>
+            {props.instanceID}
+            {props.onBack && (
+                <button
+                    data-testid={'stub-back-' + id}
+                    onClick={props.onBack}
+                />
+            )}
+        </div>
     );
     const sections = [
         {id: 'my_issues', title: 'Мои задачи', component: section('my_issues')},
         {id: 'channel', title: 'Канал', component: section('channel')},
-        {id: 'create', title: 'Создать', component: section('create')},
+        {id: 'create', title: 'Создать', component: section('create'), tab: false},
     ];
     return {
         RHS_SECTIONS: sections,
+        RHS_TAB_SECTIONS: sections.filter((s) => s.tab !== false),
         findRHSSection: (id: string) => sections.find((s) => s.id === id) || sections[0],
     };
 });
@@ -45,6 +54,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         isAdmin: false,
         channelId: 'channel-1',
         teamId: 'team-1',
+        myIssuesCount: null,
         getConnected: jest.fn(async () => ({})),
         restoreRHSViewState: jest.fn(() => ({data: null})),
         setRHSSection: jest.fn(),
@@ -123,16 +133,38 @@ describe('components/rhs', () => {
         expect(props.setRHSSection).toHaveBeenCalledWith('channel');
     });
 
-    test('the selected section from the store is rendered', async () => {
-        await renderSettled({section: 'create'});
+    test('the create form takes the whole panel, without tabs, and goes back', async () => {
+        const {props} = await renderSettled({section: 'create'});
         expect(screen.getByTestId('stub-create')).toBeInTheDocument();
-        expect(screen.getByRole('tab', {name: 'Создать'})).toHaveAttribute('aria-selected', 'true');
+        expect(screen.queryByTestId('rhs-section-tabs')).toBeNull();
+        expect(screen.queryByTestId('rhs-quick-create')).toBeNull();
+        fireEvent.click(screen.getByTestId('stub-back-create'));
+        expect(props.setRHSSection).toHaveBeenCalledWith('my_issues');
     });
 
     test('arrow keys move between section tabs', async () => {
         const {props} = await renderSettled();
         fireEvent.keyDown(screen.getByRole('tab', {name: 'Мои задачи'}), {key: 'ArrowLeft'});
+        expect(props.setRHSSection).toHaveBeenCalledWith('channel');
+    });
+
+    test('the bottom bar and the C key open the create form', async () => {
+        const {props} = await renderSettled({myIssuesCount: 12});
+        expect(screen.getByTestId('rhs-section-count-my_issues')).toHaveTextContent('12');
+        fireEvent.click(screen.getByTestId('rhs-quick-create'));
         expect(props.setRHSSection).toHaveBeenCalledWith('create');
+
+        (props.setRHSSection as jest.Mock).mockClear();
+        fireEvent.keyDown(screen.getByTestId('stub-my_issues'), {key: 'с'});
+        expect(props.setRHSSection).toHaveBeenCalledWith('create');
+    });
+
+    test('typing in a field does not trigger shortcuts', async () => {
+        const {props} = await renderSettled();
+        const input = document.createElement('input');
+        screen.getByTestId('stub-my_issues').appendChild(input);
+        fireEvent.keyDown(input, {key: 'c'});
+        expect(props.setRHSSection).not.toHaveBeenCalled();
     });
 
     test('instance picker appears with two connected instances', async () => {

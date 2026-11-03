@@ -175,6 +175,7 @@ func (p *Plugin) initializeRouter() {
 	p.registerRHSIssueRoutes(apiRouter)
 	p.registerRHSChannelRoutes(apiRouter)
 	p.registerRHSSettingsRoutes(apiRouter)
+	p.registerRHSBoardRoutes(apiRouter)
 }
 
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {

@@ -19,6 +19,7 @@ import CreateSection, {
     panelFieldDefs,
     unsupportedRequiredFields,
 } from './create_section';
+import {isWideField, sortPanelFields} from './panel_fields';
 
 jest.mock('components/react_select_setting', () => (props: any) => (
     <label>
@@ -41,17 +42,21 @@ jest.mock('components/react_select_setting', () => (props: any) => (
     </label>
 ));
 
-jest.mock('components/jira_fields', () => (props: any) => (
-    <div data-testid='jira-fields'>
-        <input
-            data-testid='field-summary'
-            value={props.values.summary || ''}
-            onChange={(e) => props.onChange('summary', e.target.value)}
-        />
-        <span data-testid='field-description'>{props.values.description}</span>
-        <span data-testid='field-keys'>{Object.keys(props.fields).join(',')}</span>
-    </div>
-));
+jest.mock('./panel_fields', () => ({
+    ...jest.requireActual('./panel_fields'),
+    __esModule: true,
+    default: (props: any) => (
+        <div data-testid='jira-fields'>
+            <input
+                data-testid='field-summary'
+                value={props.values.summary || ''}
+                onChange={(e) => props.onChange('summary', e.target.value)}
+            />
+            <span data-testid='field-description'>{props.values.description}</span>
+            <span data-testid='field-keys'>{Object.keys(props.fields).join(',')}</span>
+        </div>
+    ),
+}));
 
 const textField = (name: string, required = false, extra: Partial<JiraField> = {}) => ({
     name,
@@ -142,12 +147,12 @@ describe('components/rhs/sections/create', () => {
         render(<CreateSection {...props}/>);
 
         expect(await screen.findByTestId('jira-fields')).toBeInTheDocument();
-        expect(screen.getByTestId('rhs-create-quote')).toHaveTextContent('Из сообщения @anna');
+        expect(screen.getByTestId('rhs-create-quote')).toHaveTextContent('@anna · Экспорт падает детали');
         expect(screen.getByTestId('select-project')).toHaveValue('BACK');
         expect(screen.getByTestId('select-issue_type')).toHaveValue('1');
         expect(screen.getByTestId('field-summary')).toHaveValue('Экспорт падает');
         expect(screen.getByTestId('field-description')).toHaveTextContent('детали');
-        expect(screen.getByText(RHS_STRINGS.createReplyInThread)).toBeInTheDocument();
+        expect(screen.getByText(RHS_STRINGS.createReplyShort)).toBeInTheDocument();
         expect(props.fetchJiraIssueMetadataForProjects).toHaveBeenCalledWith(['BACK'], 'http://jira.example.com');
     });
 
@@ -182,7 +187,7 @@ describe('components/rhs/sections/create', () => {
         render(<CreateSection {...props}/>);
         await screen.findByTestId('jira-fields');
         expect(screen.queryByTestId('rhs-create-quote')).toBeNull();
-        expect(screen.getByText(RHS_STRINGS.createPostToChannel)).toBeInTheDocument();
+        expect(screen.getByText(RHS_STRINGS.createPostShort)).toBeInTheDocument();
         fireEvent.change(screen.getByTestId('field-summary'), {target: {value: 'Новая'}});
         fireEvent.click(screen.getByTestId('rhs-create-submit'));
         await screen.findByTestId('rhs-create-done');
@@ -243,5 +248,40 @@ describe('components/rhs/sections/create', () => {
     test('no projects shows a hint', async () => {
         render(<CreateSection {...makeProps({fetchJiraProjectMetadata: jest.fn(async () => ({data: {projects: [], issues_per_project: {}}}))})}/>);
         expect(await screen.findByText(RHS_STRINGS.createNoProjects)).toBeInTheDocument();
+    });
+
+    test('back and cancel return to the list; Ctrl+Enter creates', async () => {
+        const onBack = jest.fn();
+        const props = makeProps({onBack, prefill: {postId: '', summary: 'S', description: '', nonce: 1}});
+        render(<CreateSection {...props}/>);
+        await screen.findByTestId('jira-fields');
+
+        fireEvent.keyDown(screen.getByTestId('field-summary'), {key: 'Enter', ctrlKey: true});
+        await waitFor(() => expect(props.createIssue).toHaveBeenCalled());
+
+        fireEvent.click(screen.getByTestId('rhs-create-back'));
+        expect(onBack).toHaveBeenCalledTimes(1);
+        expect(props.clearRHSCreate).toHaveBeenCalled();
+    });
+});
+
+describe('components/rhs/sections/create/panel_fields', () => {
+    test('long fields take the full width, short ones sit in pairs', () => {
+        expect(isWideField('summary', textField('summary'))).toBe(true);
+        expect(isWideField('labels', textField('labels', false, {schema: {type: 'array', system: 'labels'}} as unknown as Partial<JiraField>))).toBe(true);
+        expect(isWideField('customfield_1', textField('Notes', false, {schema: {type: 'string', custom: 'com.atlassian.jira.plugin.system.customfieldtypes:textarea'}} as unknown as Partial<JiraField>))).toBe(true);
+        expect(isWideField('priority', textField('Priority', false, {schema: {type: 'priority', system: 'priority'}} as unknown as Partial<JiraField>))).toBe(false);
+    });
+
+    test('order: summary, description, required, then by name', () => {
+        const fields = {
+            priority: textField('Priority'),
+            description: textField('description'),
+            components: textField('Component', true),
+            summary: textField('summary', true),
+            assignee: textField('Assignee'),
+            project: textField('project', true),
+        };
+        expect(sortPanelFields(fields)).toEqual(['summary', 'description', 'components', 'assignee', 'priority']);
     });
 });

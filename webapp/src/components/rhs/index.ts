@@ -21,8 +21,11 @@ import {
     getRHSActiveInstanceID,
     getRHSAttachPostId,
     getRHSError,
+    getRHSInstanceID,
     getRHSIssueKey,
+    getRHSQuery,
     getRHSSection,
+    getRHSTotal,
     getUserConnectedInstances,
     isJiraSystemAdmin,
     isRHSSettingsOpen,
@@ -47,6 +50,7 @@ const mapStateToProps = (state: GlobalState) => {
         isAdmin: isJiraSystemAdmin(state),
         channelId: getCurrentChannelId(state) || '',
         teamId: getCurrentTeamId(state) || '',
+        myIssuesCount: getRHSQuery(state).trim() || getRHSInstanceID(state) !== getRHSActiveInstanceID(state) ? null : getRHSTotal(state),
     };
 };
 

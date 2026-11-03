@@ -7,7 +7,6 @@ import {Theme} from 'mattermost-redux/selectors/entities/preferences';
 import {Post} from '@mattermost/types/posts';
 
 import {isFieldSupported} from 'components/jira_field';
-import JiraFields from 'components/jira_fields';
 import ReactSelectSetting from 'components/react_select_setting';
 import Validator from 'components/validator';
 import {
@@ -23,7 +22,10 @@ import {RHSCreatePrefill} from 'types/rhs_create';
 import {getFields, getIssueTypes} from 'utils/jira_issue_metadata';
 
 import {RHSLoadingState} from '../../rhs_states';
+
 import {RHS_STRINGS} from '../../rhs_strings';
+
+import PanelFields from './panel_fields';
 
 type Result<T> = Promise<{data?: T; error?: {message?: string} | Error}>;
 
@@ -42,6 +44,9 @@ export type Props = {
     clearRHSCreate: () => unknown;
     openCreateModal: (postId: string) => unknown;
     openCreateModalWithoutPost: (description: string, channelId: string) => unknown;
+
+    // Back to the tab the form was opened from.
+    onBack?: () => void;
 };
 
 // unsupportedRequiredFields lists required fields the panel cannot render;
@@ -278,37 +283,86 @@ export default function CreateSection(props: Props): JSX.Element {
         props.clearRHSCreate();
     };
 
+    const back = () => {
+        props.clearRHSCreate();
+        props.onBack?.();
+    };
+
+    const header = (
+        <div className='jira-rhs-form-header'>
+            {props.onBack && (
+                <button
+                    type='button'
+                    className='jira-rhs-icon-button'
+                    aria-label={RHS_STRINGS.createBack}
+                    title={RHS_STRINGS.createBack}
+                    data-testid='rhs-create-back'
+                    onClick={back}
+                >
+                    <i
+                        className='icon icon-arrow-left'
+                        aria-hidden={true}
+                    />
+                </button>
+            )}
+            <h4 className='jira-rhs-form-title'>{RHS_STRINGS.createHeader}</h4>
+            {!created && (
+                <button
+                    type='button'
+                    className='jira-rhs-icon-button'
+                    aria-label={RHS_STRINGS.createInModal}
+                    title={RHS_STRINGS.createInModalShort}
+                    data-testid='rhs-create-in-modal'
+                    onClick={openInModal}
+                >
+                    <i
+                        className='icon icon-arrow-expand'
+                        aria-hidden={true}
+                    />
+                </button>
+            )}
+        </div>
+    );
+
     if (created) {
         return (
-            <div
-                className='jira-rhs-placeholder'
-                data-testid='rhs-create-done'
-            >
-                <h4 className='jira-rhs-placeholder-title'>{RHS_STRINGS.createDone.replace('{key}', created.key)}</h4>
-                <div className='jira-rhs-form-buttons'>
-                    <button
-                        type='button'
-                        className='btn btn-primary'
-                        data-testid='rhs-create-open-card'
-                        onClick={() => props.openRHSIssue(created.key)}
-                    >
-                        {RHS_STRINGS.createOpenCard}
-                    </button>
-                    <button
-                        type='button'
-                        className='btn btn-tertiary'
-                        data-testid='rhs-create-another'
-                        onClick={reset}
-                    >
-                        {RHS_STRINGS.createAnother}
-                    </button>
+            <div className='jira-rhs-form'>
+                {header}
+                <div
+                    className='jira-rhs-placeholder'
+                    data-testid='rhs-create-done'
+                >
+                    <h4 className='jira-rhs-placeholder-title'>{RHS_STRINGS.createDone.replace('{key}', created.key)}</h4>
+                    <div className='jira-rhs-form-buttons'>
+                        <button
+                            type='button'
+                            className='btn btn-primary'
+                            data-testid='rhs-create-open-card'
+                            onClick={() => props.openRHSIssue(created.key)}
+                        >
+                            {RHS_STRINGS.createOpenCard}
+                        </button>
+                        <button
+                            type='button'
+                            className='btn btn-tertiary'
+                            data-testid='rhs-create-another'
+                            onClick={reset}
+                        >
+                            {RHS_STRINGS.createAnother}
+                        </button>
+                    </div>
                 </div>
             </div>
         );
     }
 
     if (projects === null) {
-        return <RHSLoadingState/>;
+        return (
+            <div className='jira-rhs-form'>
+                {header}
+                <RHSLoadingState/>
+            </div>
+        );
     }
 
     const projectOptions = projects;
@@ -317,33 +371,30 @@ export default function CreateSection(props: Props): JSX.Element {
 
     return (
         <form
-            className='jira-rhs-form'
+            className='jira-rhs-form jira-rhs-form--dense'
             data-testid='rhs-create-form'
+            style={{'--jira-rhs-required-text': JSON.stringify(RHS_STRINGS.createRequired)} as React.CSSProperties}
             onSubmit={onSubmit}
+            onKeyDown={(event) => {
+                // ⌘↵ / Ctrl+Enter creates the issue from any field.
+                if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+                    event.preventDefault();
+                    if (ready && !loadingMeta) {
+                        onSubmit();
+                    }
+                }
+            }}
         >
+            {header}
             <div className='jira-rhs-form-body'>
-                <div className='jira-rhs-form-top'>
-                    <button
-                        type='button'
-                        className='jira-rhs-link-button'
-                        data-testid='rhs-create-in-modal'
-                        onClick={openInModal}
-                    >
-                        <i
-                            className='icon icon-arrow-expand'
-                            aria-hidden={true}
-                        />
-                        {RHS_STRINGS.createInModal}
-                    </button>
-                </div>
                 {props.post && (
-                    <blockquote
-                        className='jira-rhs-quote'
+                    <div
+                        className='jira-rhs-srcq'
+                        title={props.post.message}
                         data-testid='rhs-create-quote'
                     >
-                        <b>{RHS_STRINGS.createFrom + (props.postAuthor ? ' ' + props.postAuthor : '')}</b>
-                        <span>{summaryLine(props.post.message)}</span>
-                    </blockquote>
+                        <span>{(props.postAuthor ? props.postAuthor + ' · ' : RHS_STRINGS.createFrom + ' · ') + summaryLine(props.post.message)}</span>
+                    </div>
                 )}
                 {error && (
                     <div
@@ -389,7 +440,7 @@ export default function CreateSection(props: Props): JSX.Element {
                 )}
                 {loadingMeta && <RHSLoadingState/>}
                 {ready && !loadingMeta && (
-                    <JiraFields
+                    <PanelFields
                         fields={fieldDefs}
                         instanceID={instanceID}
                         issueMetadata={metadata}
@@ -398,27 +449,29 @@ export default function CreateSection(props: Props): JSX.Element {
                         theme={props.theme}
                         addValidate={validator.current.addComponent}
                         removeValidate={validator.current.removeComponent}
-                        isFilter={false}
                     />
                 )}
+            </div>
+            <div className='jira-rhs-form-footer'>
                 {ready && (
-                    <label className='jira-rhs-checkbox'>
+                    <label
+                        className='jira-rhs-checkbox'
+                        title={props.post ? RHS_STRINGS.createReplyInThread : RHS_STRINGS.createPostToChannel}
+                    >
                         <input
                             type='checkbox'
                             data-testid='rhs-create-reply'
                             checked={replyInThread}
                             onChange={(event) => setReplyInThread(event.target.checked)}
                         />
-                        {props.post ? RHS_STRINGS.createReplyInThread : RHS_STRINGS.createPostToChannel}
+                        {props.post ? RHS_STRINGS.createReplyShort : RHS_STRINGS.createPostShort}
                     </label>
                 )}
-            </div>
-            <div className='jira-rhs-form-footer'>
                 <button
                     type='button'
                     className='btn btn-tertiary'
                     data-testid='rhs-create-cancel'
-                    onClick={reset}
+                    onClick={props.onBack ? back : reset}
                 >
                     {RHS_STRINGS.cancel}
                 </button>
@@ -426,6 +479,7 @@ export default function CreateSection(props: Props): JSX.Element {
                     type='submit'
                     className='btn btn-primary'
                     data-testid='rhs-create-submit'
+                    title={RHS_STRINGS.createShortcut}
                     disabled={!ready || submitting || loadingMeta}
                 >
                     {submitting ? RHS_STRINGS.createCreating : RHS_STRINGS.createSubmit}

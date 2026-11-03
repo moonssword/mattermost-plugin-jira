@@ -132,7 +132,7 @@ func normalizeRHSIssueCard(instance Instance, issue *jira.Issue, me *jira.User) 
 		card.Transitions = append(card.Transitions, RHSTransition{
 			ID:   t.ID,
 			Name: t.Name,
-			To:   RHSIssueStatus{Name: t.To.Name, CategoryKey: t.To.StatusCategory.Key},
+			To:   RHSIssueStatus{ID: t.To.ID, Name: t.To.Name, CategoryKey: t.To.StatusCategory.Key},
 		})
 	}
 

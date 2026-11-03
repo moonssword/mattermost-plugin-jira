@@ -160,6 +160,9 @@ type rhsIssueQuery struct {
 	query            string
 	sort             string
 	nextPageToken    string
+
+	// estimateField is the selected board's story points field, if any.
+	estimateField string
 }
 
 func isJiraBadRequest(err error) (RESTError, bool) {
@@ -206,9 +209,18 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 		return empty, nil
 	}
 
+	estimateField, err := parseRHSEstimateField(params.estimateField)
+	if err != nil {
+		return nil, err
+	}
+	fields := rhsSearchFields
+	if estimateField != "" {
+		fields = append(append([]string{}, rhsSearchFields...), estimateField)
+	}
+
 	search, err := client.SearchJQL(CloudSearchParams{
 		JQL:           jql,
-		Fields:        rhsSearchFields,
+		Fields:        fields,
 		MaxResults:    rhsIssuesPageSize,
 		NextPageToken: params.nextPageToken,
 	})
@@ -225,8 +237,10 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 		}
 	}
 
+	issues := normalizeRHSIssues(instance, search.Issues)
+	applyRHSEstimates(issues, search.Issues, estimateField)
 	return &rhsIssuesResult{
-		Issues:        normalizeRHSIssues(instance, search.Issues),
+		Issues:        issues,
 		Tabs:          []RHSTabEntry{},
 		NextPageToken: search.NextPageToken,
 		IsLast:        search.IsLast,

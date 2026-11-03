@@ -1,7 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 import {Instance} from 'types/model';
 import {RHSErrorCode, RHSViewState} from 'types/rhs';
@@ -13,9 +13,10 @@ import IssueCard from './issue_card';
 import {RHSConnectScreen, RHSNoInstanceScreen} from './rhs_connect_screen';
 import RHSPanelHeader from './rhs_panel_header';
 import RHSSectionTabs, {RHS_SECTION_PANEL_ID, rhsSectionDomId} from './rhs_section_tabs';
-import {RHS_SECTIONS, findRHSSection} from './rhs_sections';
+import {RHS_TAB_SECTIONS, findRHSSection} from './rhs_sections';
 import {RHSLoadingState} from './rhs_states';
 import {RHS_STRINGS} from './rhs_strings';
+import {RHS_SEARCH_EVENT} from './sections/my_issues/my_issues';
 import SettingsView from './settings_view';
 
 import './rhs.scss';
@@ -32,6 +33,9 @@ export type Props = {
     isAdmin: boolean;
     channelId: string;
     teamId: string;
+
+    // Counter of the "Мои" tab; null while searching or unknown.
+    myIssuesCount: number | null;
     getConnected: () => Promise<unknown>;
     restoreRHSViewState: () => {data: RHSViewState | null};
     setRHSSection: (section: RHSSectionID) => void;
@@ -72,6 +76,14 @@ function connectableInstances(installed: Instance[], connected: Instance[], issu
     return rest.length > 0 ? rest : installed;
 }
 
+function isTypingTarget(target: EventTarget | null): boolean {
+    const el = target as HTMLElement | null;
+    if (!el || !el.tagName) {
+        return false;
+    }
+    return ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName) || el.isContentEditable;
+}
+
 // Shell of the Jira RHS: loads the connection state, then shows either a
 // first-run screen or the panel header, section tabs and the active section.
 export default function Rhs(props: Props): JSX.Element {
@@ -86,6 +98,12 @@ export default function Rhs(props: Props): JSX.Element {
     } = props;
 
     const [booting, setBooting] = useState(true);
+
+    // The tab to return to from a full-panel section such as "Создать".
+    const lastTab = useRef<RHSSectionID>('my_issues');
+    if (findRHSSection(section).tab !== false) {
+        lastTab.current = section;
+    }
 
     // Live updates refresh the list only while the panel is on screen.
     useEffect(() => {
@@ -146,57 +164,84 @@ export default function Rhs(props: Props): JSX.Element {
     case 'main': {
         const active = findRHSSection(section);
         const Section = active.component;
+        const fullPanel = active.tab === false;
 
-        // The card covers the sections; they stay mounted to keep the list
-        // and its scroll position for "back".
         // Settings, attach and the card are views over the sections; at most
-        // one shows, settings first.
+        // one shows, settings first. The sections stay mounted to keep the
+        // list and its scroll position for "back".
         const settingsOpen = props.settingsOpen;
         const attachOpen = !settingsOpen && Boolean(props.attachPostId);
         const cardOpen = !settingsOpen && !attachOpen && Boolean(props.issueKey);
+        const overlay = cardOpen || attachOpen || settingsOpen;
         content = (
             <>
                 {settingsOpen && <SettingsView/>}
                 {attachOpen && <AttachView/>}
                 {cardOpen && <IssueCard/>}
-                <div
-                    className='jira-rhs-main'
-                    hidden={cardOpen || attachOpen || settingsOpen}
-                >
-                    <RHSPanelHeader
-                        instances={connectedInstances}
-                        activeInstanceID={activeInstanceID}
-                        onInstanceChange={props.selectRHSInstance}
-                        actions={(
-                            <button
-                                type='button'
-                                className='jira-rhs-icon-button'
-                                aria-label={RHS_STRINGS.settingsOpen}
-                                title={RHS_STRINGS.settingsOpen}
-                                data-testid='rhs-open-settings'
-                                onClick={props.openRHSSettings}
-                            >
-                                <i
-                                    className='icon icon-cog-outline'
-                                    aria-hidden={true}
-                                />
-                            </button>
-                        )}
-                    />
-                    <RHSSectionTabs
-                        sections={RHS_SECTIONS}
-                        selected={active.id}
-                        onSelect={props.setRHSSection}
-                    />
+                {fullPanel ? (
                     <div
-                        className='jira-rhs-section'
-                        role='tabpanel'
-                        id={RHS_SECTION_PANEL_ID}
-                        aria-labelledby={rhsSectionDomId(active.id)}
+                        className='jira-rhs-main'
+                        hidden={overlay}
                     >
-                        <Section instanceID={activeInstanceID}/>
+                        <Section
+                            instanceID={activeInstanceID}
+                            onBack={() => props.setRHSSection(lastTab.current)}
+                        />
                     </div>
-                </div>
+                ) : (
+                    <div
+                        className='jira-rhs-main'
+                        hidden={overlay}
+                    >
+                        <RHSPanelHeader
+                            instances={connectedInstances}
+                            activeInstanceID={activeInstanceID}
+                            onInstanceChange={props.selectRHSInstance}
+                            actions={(
+                                <button
+                                    type='button'
+                                    className='jira-rhs-icon-button'
+                                    aria-label={RHS_STRINGS.settingsOpen}
+                                    title={RHS_STRINGS.settingsOpen}
+                                    data-testid='rhs-open-settings'
+                                    onClick={props.openRHSSettings}
+                                >
+                                    <i
+                                        className='icon icon-cog-outline'
+                                        aria-hidden={true}
+                                    />
+                                </button>
+                            )}
+                        />
+                        <RHSSectionTabs
+                            sections={RHS_TAB_SECTIONS}
+                            selected={active.id}
+                            onSelect={props.setRHSSection}
+                            counts={{my_issues: props.myIssuesCount}}
+                        />
+                        <div
+                            className='jira-rhs-section'
+                            role='tabpanel'
+                            id={RHS_SECTION_PANEL_ID}
+                            aria-labelledby={rhsSectionDomId(active.id)}
+                        >
+                            <Section instanceID={activeInstanceID}/>
+                        </div>
+                        <button
+                            type='button'
+                            className='jira-rhs-qadd'
+                            data-testid='rhs-quick-create'
+                            onClick={() => props.setRHSSection('create')}
+                        >
+                            <i
+                                className='icon icon-plus'
+                                aria-hidden={true}
+                            />
+                            <span>{RHS_STRINGS.quickCreate}</span>
+                            <span className='jira-rhs-kbd'>{RHS_STRINGS.quickCreateKey}</span>
+                        </button>
+                    </div>
+                )}
             </>
         );
         break;
@@ -207,10 +252,33 @@ export default function Rhs(props: Props): JSX.Element {
     }
     }
 
+    // Shortcuts while focus is in the panel but not in a text field:
+    // C opens the create form, "/" the search.
+    const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (screen !== 'main' || props.settingsOpen || props.attachPostId || props.issueKey) {
+            return;
+        }
+        if (event.ctrlKey || event.metaKey || event.altKey || isTypingTarget(event.target)) {
+            return;
+        }
+        const key = event.key.toLowerCase();
+        if ((key === 'c' || key === 'с') && section !== 'create') {
+            event.preventDefault();
+            props.setRHSSection('create');
+        } else if (key === '/' && findRHSSection(section).tab !== false) {
+            event.preventDefault();
+            if (section !== 'my_issues') {
+                props.setRHSSection('my_issues');
+            }
+            setTimeout(() => window.dispatchEvent(new Event(RHS_SEARCH_EVENT)), 0);
+        }
+    };
+
     return (
         <div
             className='jira-rhs'
             data-testid='jira-rhs'
+            onKeyDown={onKeyDown}
         >
             {content}
         </div>

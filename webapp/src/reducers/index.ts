@@ -15,6 +15,7 @@ import {
     RHS_DEFAULT_SORT,
 } from 'types/rhs';
 
+import rhsBoard from './rhs_board';
 import rhsCard from './rhs_card';
 import rhsCreate from './rhs_create';
 import rhsNav from './rhs_nav';
@@ -427,4 +428,5 @@ export default combineReducers({
     rhsNav,
     rhsCard,
     rhsCreate,
+    rhsBoard,
 });

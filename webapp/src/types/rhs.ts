@@ -21,6 +21,9 @@ export type RHSTab =
     | {kind: 'status'; id: string; name: string};
 
 export type RHSIssueStatus = {
+
+    // Places the issue in a board column; missing in older payloads.
+    id?: string;
     name: string;
     categoryKey: string;
 };
@@ -38,6 +41,12 @@ export type RHSIssue = {
     dueDate?: string;
     priority?: string;
     priorityIconUrl?: string;
+
+    // Display name of the assignee; avatars need the user's Jira session.
+    assigneeName?: string;
+
+    // The selected board's estimation field (story points), when requested.
+    estimate?: number;
 };
 
 // Quick filters of the "Мои задачи" section; the server builds their JQL.
@@ -110,6 +119,9 @@ export type FetchRHSIssuesArgs = {
 
 export type GetRHSIssuesParams = FetchRHSIssuesArgs & {
     nextPageToken?: string;
+
+    // Story points field of the selected board; the server adds it to rows.
+    estimateField?: string;
 };
 
 export function rhsTabIdentity(tab: RHSTab): string {

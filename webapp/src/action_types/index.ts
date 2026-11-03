@@ -62,4 +62,8 @@ export default {
     CLOSE_RHS_SETTINGS: `${PluginId}_close_rhs_settings`,
     CLOSE_RHS_ATTACH: `${PluginId}_close_rhs_attach`,
     CLEAR_RHS_CREATE: `${PluginId}_clear_rhs_create`,
+    SET_RHS_BOARD_PREFS: `${PluginId}_set_rhs_board_prefs`,
+    RHS_BOARD_LOADING: `${PluginId}_rhs_board_loading`,
+    RECEIVED_RHS_BOARD: `${PluginId}_received_rhs_board`,
+    RHS_BOARD_ERROR: `${PluginId}_rhs_board_error`,
 };

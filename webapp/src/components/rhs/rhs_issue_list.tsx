@@ -27,35 +27,67 @@ export type Props = {
     onOpenIssue?: (key: string) => void;
 };
 
+// Finished work starts folded, like "Готово" in the design.
+const COLLAPSED_BY_DEFAULT: RHSGroupKey[] = ['done'];
+
 export default function RHSIssueList(props: Props): JSX.Element {
     const [nowMs] = useState(() => Date.now());
+    const [toggled, setToggled] = useState<Set<RHSGroupKey>>(() => new Set());
+
+    const isCollapsed = (key: RHSGroupKey) => COLLAPSED_BY_DEFAULT.includes(key) !== toggled.has(key);
+    const toggle = (key: RHSGroupKey) => {
+        setToggled((current) => {
+            const next = new Set(current);
+            if (next.has(key)) {
+                next.delete(key);
+            } else {
+                next.add(key);
+            }
+            return next;
+        });
+    };
 
     return (
         <div
             className='jira-rhs-list'
             data-testid='rhs-issue-list'
         >
-            {groupRHSIssues(props.issues).map((group) => (
-                <section
-                    key={group.key}
-                    className='jira-rhs-group'
-                    aria-label={groupTitles[group.key]}
-                    data-testid={'rhs-group-' + group.key}
-                >
-                    <h5 className='jira-rhs-group-header'>
-                        <span>{groupTitles[group.key]}</span>
-                        <span className='jira-rhs-group-count'>{group.issues.length}</span>
-                    </h5>
-                    {group.issues.map((issue) => (
-                        <RHSIssueRow
-                            key={issue.key}
-                            issue={issue}
-                            nowMs={nowMs}
-                            onOpen={props.onOpenIssue}
-                        />
-                    ))}
-                </section>
-            ))}
+            {groupRHSIssues(props.issues).map((group) => {
+                const collapsed = isCollapsed(group.key);
+                return (
+                    <section
+                        key={group.key}
+                        className='jira-rhs-group'
+                        aria-label={groupTitles[group.key]}
+                        data-testid={'rhs-group-' + group.key}
+                    >
+                        <h5 className='jira-rhs-group-header'>
+                            <button
+                                type='button'
+                                className='jira-rhs-group-toggle'
+                                aria-expanded={!collapsed}
+                                data-testid={'rhs-group-toggle-' + group.key}
+                                onClick={() => toggle(group.key)}
+                            >
+                                <i
+                                    className={collapsed ? 'icon icon-chevron-right' : 'icon icon-chevron-down'}
+                                    aria-hidden={true}
+                                />
+                                <span>{groupTitles[group.key]}</span>
+                                <span className='jira-rhs-group-count'>{group.issues.length}</span>
+                            </button>
+                        </h5>
+                        {!collapsed && group.issues.map((issue) => (
+                            <RHSIssueRow
+                                key={issue.key}
+                                issue={issue}
+                                nowMs={nowMs}
+                                onOpen={props.onOpenIssue}
+                            />
+                        ))}
+                    </section>
+                );
+            })}
             {props.loading && (
                 <div
                     className='jira-rhs-list-loading'

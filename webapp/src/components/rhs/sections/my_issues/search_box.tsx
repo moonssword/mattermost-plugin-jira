@@ -12,6 +12,12 @@ export type Props = {
     onSearch: (query: string) => void;
     onRefresh: () => void;
     refreshing: boolean;
+
+    // Changing the number moves focus into the box ("/" or the search icon).
+    focusSignal?: number;
+
+    // Escape in an empty box hides the search row.
+    onEscapeEmpty?: () => void;
 };
 
 // Search box with debounce: typing searches after a pause, Enter searches at
@@ -20,6 +26,13 @@ export default function SearchBox(props: Props): JSX.Element {
     const [text, setText] = useState(props.value);
     const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastSent = useRef(props.value);
+    const input = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (props.focusSignal) {
+            input.current?.focus();
+        }
+    }, [props.focusSignal]);
 
     // Follow outside changes, for example a chip click clearing the search.
     useEffect(() => {
@@ -66,6 +79,10 @@ export default function SearchBox(props: Props): JSX.Element {
             event.stopPropagation();
             setText('');
             send('');
+        } else if (event.key === 'Escape' && props.onEscapeEmpty) {
+            event.preventDefault();
+            event.stopPropagation();
+            props.onEscapeEmpty();
         }
     };
 
@@ -82,6 +99,7 @@ export default function SearchBox(props: Props): JSX.Element {
                     aria-hidden={true}
                 />
                 <input
+                    ref={input}
                     type='search'
                     className='jira-rhs-search-input'
                     placeholder={RHS_STRINGS.searchPlaceholder}

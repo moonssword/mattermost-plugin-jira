@@ -89,6 +89,9 @@ export function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
     if (params.nextPageToken) {
         query.next_page_token = params.nextPageToken;
     }
+    if (params.estimateField) {
+        query.estimate_field = params.estimateField;
+    }
 
     return query;
 }
