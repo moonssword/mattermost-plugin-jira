@@ -26,7 +26,7 @@ import {
     ASSIGNED_OPTION_VALUE,
     ASSIGNED_TAB,
     INSTANCE_LABEL,
-    NO_CLOUD_INSTANCE_MESSAGE,
+    NO_INSTANCE_MESSAGE,
     RHSStatusTabsValue,
     STATUS_TABS_HELP,
     STATUS_TABS_LABEL,
@@ -36,7 +36,7 @@ import {
     buildStatusOptionGroups,
     displayTabsForInstance,
     extrasFromOptionValues,
-    filterInstalledCloudInstances,
+    filterInstalledInstances,
     flattenOptionGroups,
     optionsFromTabs,
     persistedValuesEqual,
@@ -129,7 +129,7 @@ export default function RHSStatusSetting(props: Props): React.ReactElement {
     const [loadingStatuses, setLoadingStatuses] = useState(false);
     const latestGeneration = useRef(0);
 
-    const cloudInstances = filterInstalledCloudInstances(installedInstances);
+    const instances = filterInstalledInstances(installedInstances);
     const selectedTabs = instanceID ? displayTabsForInstance(value, instanceID) : [ASSIGNED_TAB];
     const selectedOptions = optionsFromTabs(selectedTabs);
     const flatOptions = flattenOptionGroups(optionGroups);
@@ -151,7 +151,7 @@ export default function RHSStatusSetting(props: Props): React.ReactElement {
             return;
         }
 
-        const first = filterInstalledCloudInstances(installedInstances)[0];
+        const first = filterInstalledInstances(installedInstances)[0];
         if (!first) {
             return;
         }
@@ -225,15 +225,15 @@ export default function RHSStatusSetting(props: Props): React.ReactElement {
         persistExtrasFromValues(next.map((option) => option.value));
     };
 
-    if (cloudInstances.length === 0) {
+    if (instances.length === 0) {
         return (
             <p>
-                {NO_CLOUD_INSTANCE_MESSAGE}
+                {NO_INSTANCE_MESSAGE}
             </p>
         );
     }
 
-    const instanceOptions: ReactSelectOption[] = cloudInstances.map((instance) => {
+    const instanceOptions: ReactSelectOption[] = instances.map((instance) => {
         return {
             label: instance.alias || instance.instance_id,
             value: instance.instance_id,

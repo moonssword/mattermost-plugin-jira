@@ -10,17 +10,17 @@ export function rhsTabsEqual(a: RHSTab, b: RHSTab): boolean {
 
 export function resolveRHSInstanceID(
     savedInstanceID: string,
-    connectedCloud: Instance[],
+    connectedInstances: Instance[],
     defaultUserInstanceID: string,
 ): string {
-    if (savedInstanceID && connectedCloud.some((instance) => instance.instance_id === savedInstanceID)) {
+    if (savedInstanceID && connectedInstances.some((instance) => instance.instance_id === savedInstanceID)) {
         return savedInstanceID;
     }
-    if (defaultUserInstanceID && connectedCloud.some((instance) => instance.instance_id === defaultUserInstanceID)) {
+    if (defaultUserInstanceID && connectedInstances.some((instance) => instance.instance_id === defaultUserInstanceID)) {
         return defaultUserInstanceID;
     }
-    if (connectedCloud.length >= 1) {
-        return connectedCloud[0].instance_id;
+    if (connectedInstances.length >= 1) {
+        return connectedInstances[0].instance_id;
     }
     return '';
 }

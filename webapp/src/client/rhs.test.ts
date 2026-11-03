@@ -3,11 +3,7 @@
 
 import {RHSIssuesResponse, RHSTab} from 'types/rhs';
 
-import {
-    RHSFetchError,
-    getRHSIssues,
-    getRHSStatuses,
-} from './rhs';
+import {RHSFetchError, getRHSIssues, getRHSStatuses} from './rhs';
 
 const fetchMock = global.fetch as jest.Mock;
 

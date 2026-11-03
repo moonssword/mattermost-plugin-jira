@@ -18,7 +18,7 @@ const (
 	rhsErrNotConnected   = "not_connected"
 	rhsErrRateLimited    = "rate_limited"
 	rhsErrNotAuthorized  = "not_authorized"
-	rhsErrNotCloud       = "not_cloud"
+	rhsErrUnsupported    = "unsupported_instance"
 	rhsErrInvalidRequest = "invalid_request"
 	rhsErrInternal       = "internal_error"
 
@@ -50,12 +50,13 @@ func respondRHSErr(w http.ResponseWriter, err error) (int, error) {
 		return respondJSONErr(w, http.StatusUnauthorized, rhsErrNotConnected, "Jira account is not connected")
 	case errors.Is(err, ErrRateLimited):
 		return respondJSONErr(w, http.StatusTooManyRequests, rhsErrRateLimited, "Jira is rate limiting requests, try again shortly")
-	case errors.Is(err, ErrRHSNotCloud):
-		return respondJSONErr(w, http.StatusBadRequest, rhsErrNotCloud, "Jira RHS is available for Jira Cloud only")
+	case errors.Is(err, ErrRHSUnsupportedInstance):
+		return respondJSONErr(w, http.StatusBadRequest, rhsErrUnsupported, "Jira RHS is not supported for this instance")
 	case errors.Is(err, ErrInvalidStatusCategory),
 		errors.Is(err, ErrInvalidRHSSort),
 		errors.Is(err, ErrUnknownRHSTabKind),
-		errors.Is(err, ErrInvalidRHSTab):
+		errors.Is(err, ErrInvalidRHSTab),
+		errors.Is(err, ErrInvalidRHSPageToken):
 		return respondJSONErr(w, http.StatusBadRequest, rhsErrInvalidRequest, err.Error())
 	default:
 		status, _ := respondJSONErr(w, http.StatusInternalServerError, rhsErrInternal, "internal error")

@@ -20,8 +20,9 @@ var rhsSearchFields = []string{
 	"summary", "status", "issuetype", "updated", "project",
 }
 
-// rhsCloudClient is the Cloud-only RHS API. Do not add these methods to Client.
-type rhsCloudClient interface {
+// rhsClient is the RHS API implemented by both the Cloud and the Server/DC
+// clients. Do not add these methods to Client.
+type rhsClient interface {
 	rhsStatusLister
 	SearchJQL(params CloudSearchParams) (*CloudSearchResult, error)
 }
@@ -40,7 +41,7 @@ func (p *Plugin) loadRHSInstance(instanceID types.ID) (Instance, error) {
 	return instance, nil
 }
 
-func (p *Plugin) resolveRHSUserClient(instanceID, mattermostUserID types.ID) (Instance, rhsCloudClient, error) {
+func (p *Plugin) resolveRHSUserClient(instanceID, mattermostUserID types.ID) (Instance, rhsClient, error) {
 	instance, err := p.loadRHSInstance(instanceID)
 	if err != nil {
 		return nil, nil, err
@@ -50,43 +51,41 @@ func (p *Plugin) resolveRHSUserClient(instanceID, mattermostUserID types.ID) (In
 	if err != nil {
 		return nil, nil, err
 	}
-	rhs, ok := client.(rhsCloudClient)
+	rhs, ok := client.(rhsClient)
 	if !ok {
-		return nil, nil, ErrRHSNotCloud
+		return nil, nil, ErrRHSUnsupportedInstance
 	}
 	return instance, rhs, nil
 }
 
-func (p *Plugin) resolveRHSAdminClient(instance Instance, adminUserID types.ID) (rhsCloudClient, error) {
+func (p *Plugin) resolveRHSAdminClient(instance Instance, adminUserID types.ID) (rhsClient, error) {
 	switch inst := instance.(type) {
 	case *cloudInstance:
 		raw, err := inst.getClientForBot()
 		if err != nil {
 			return nil, err
 		}
-		rhs, ok := newCloudClient(raw).(rhsCloudClient)
+		rhs, ok := newCloudClient(raw).(rhsClient)
 		if !ok {
-			return nil, ErrRHSNotCloud
-		}
-		return rhs, nil
-
-	case *cloudOAuthInstance:
-		connection, err := p.userStore.LoadConnection(inst.GetID(), adminUserID)
-		if err != nil {
-			return nil, err
-		}
-		client, err := inst.GetClient(connection)
-		if err != nil {
-			return nil, err
-		}
-		rhs, ok := client.(rhsCloudClient)
-		if !ok {
-			return nil, ErrRHSNotCloud
+			return nil, ErrRHSUnsupportedInstance
 		}
 		return rhs, nil
 
 	default:
-		return nil, ErrRHSNotCloud
+		// Cloud OAuth and Server/DC act on behalf of the admin's own connection.
+		connection, err := p.userStore.LoadConnection(instance.GetID(), adminUserID)
+		if err != nil {
+			return nil, err
+		}
+		client, err := instance.GetClient(connection)
+		if err != nil {
+			return nil, err
+		}
+		rhs, ok := client.(rhsClient)
+		if !ok {
+			return nil, ErrRHSUnsupportedInstance
+		}
+		return rhs, nil
 	}
 }
 

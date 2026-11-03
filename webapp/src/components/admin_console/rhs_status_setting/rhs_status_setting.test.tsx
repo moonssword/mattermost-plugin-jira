@@ -333,7 +333,7 @@ describe('components/RHSStatusSetting', () => {
         expect(props.getConnected).toHaveBeenCalled();
     });
 
-    test('only Cloud instances are offered', async () => {
+    test('all installed instances are offered, including Server/DC', async () => {
         await renderSettled();
 
         await waitFor(() => {
@@ -343,9 +343,7 @@ describe('components/RHSStatusSetting', () => {
         fireEvent.keyDown(screen.getByLabelText(INSTANCE_LABEL), {key: 'ArrowDown'});
 
         const optionLabels = (await screen.findAllByRole('option')).map((option) => option.textContent);
-        expect(optionLabels).toEqual([CLOUD_ID, OAUTH_ID]);
-        expect(screen.queryByText(SERVER_ID)).not.toBeInTheDocument();
-        expect(screen.queryByText('jira.example.com')).not.toBeInTheDocument();
+        expect(optionLabels).toEqual([CLOUD_ID, OAUTH_ID, SERVER_ID]);
     });
 
     test('status options show the Jira project under the status name', async () => {

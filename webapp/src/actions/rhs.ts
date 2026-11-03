@@ -5,7 +5,7 @@ import {Dispatch} from 'redux';
 
 import ActionTypes from '../action_types';
 import {RHSFetchError, getRHSIssues} from '../client/rhs';
-import {getConnectedCloudInstances, getDefaultUserInstanceID, getPluginServerRoute} from '../selectors';
+import {getDefaultUserInstanceID, getPluginServerRoute, getUserConnectedInstances} from '../selectors';
 import {resolveRHSInstanceID} from 'utils/rhs_resolve';
 import {loadRHSViewState, saveRHSViewState} from 'utils/rhs_view_state';
 
@@ -141,7 +141,7 @@ export const resolveAndFetchRHSIssues = (overrides: ResolveAndFetchArgs = {}) =>
         const rhs = state[pluginStateKey].rhs;
         const instanceID = overrides.instanceID || resolveRHSInstanceID(
             rhs.instanceID,
-            getConnectedCloudInstances(state),
+            getUserConnectedInstances(state),
             getDefaultUserInstanceID(state) || '',
         );
         if (!instanceID) {

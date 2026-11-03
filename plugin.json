@@ -35,7 +35,7 @@
                 "key": "EnableJiraRHS",
                 "display_name": "Show Jira tickets in the right-hand sidebar:",
                 "type": "bool",
-                "help_text": "When **false**, the Jira tickets right-hand sidebar is not registered. When **true**, users with a connected Jira Cloud account can open their assigned tickets from the App Bar. Jira Cloud only; Server/Data Center instances are never shown.",
+                "help_text": "When **false**, the Jira tickets right-hand sidebar is not registered. When **true**, users with a connected Jira account (Cloud or Server/Data Center) can open their assigned tickets from the App Bar.",
                 "placeholder": "",
                 "default": false
             },

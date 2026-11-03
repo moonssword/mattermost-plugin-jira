@@ -15,7 +15,6 @@ import {
     restoreRHSViewState,
 } from 'actions';
 import {
-    getConnectedCloudInstances,
     getRHSError,
     getRHSInstanceID,
     getRHSIsLast,
@@ -24,6 +23,7 @@ import {
     getRHSSort,
     getRHSTab,
     getRHSTabs,
+    getUserConnectedInstances,
 } from 'selectors';
 
 import {GlobalState} from 'types/store';
@@ -34,7 +34,7 @@ type RHSDispatchProps = Pick<Props, 'getConnected' | 'handleConnectFlow' | 'load
 
 const mapStateToProps = (state: GlobalState) => {
     return {
-        connectedCloud: getConnectedCloudInstances(state),
+        connectedInstances: getUserConnectedInstances(state),
         channelId: getCurrentChannelId(state) || '',
         instanceID: getRHSInstanceID(state),
         tab: getRHSTab(state),

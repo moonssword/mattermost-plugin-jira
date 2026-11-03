@@ -344,7 +344,7 @@ func TestRHSHTTPGetIssuesRateLimitedJSON(t *testing.T) {
 	assert.Contains(t, body.Message, "rate limit")
 }
 
-func TestRHSHTTPGetIssuesNotCloudJSON(t *testing.T) {
+func TestRHSHTTPGetIssuesUnsupportedInstanceJSON(t *testing.T) {
 	api := &plugintest.API{}
 	p := setupRHSHTTPPlugin(t, api)
 	p.userStore = mockUserStore{}
@@ -352,7 +352,7 @@ func TestRHSHTTPGetIssuesNotCloudJSON(t *testing.T) {
 	w := doRHSHTTPGet(t, p, makeAPIRoute(routeAPIRHSIssues)+"?instance_id="+mockInstance1URL, "connected_user")
 	require.Equal(t, http.StatusBadRequest, w.Result().StatusCode)
 	body := decodeRHSError(t, w)
-	assert.Equal(t, rhsErrNotCloud, body.Error)
+	assert.Equal(t, rhsErrUnsupported, body.Error)
 }
 
 func TestRHSHTTPGetIssuesUsesCachedCategoryKeys(t *testing.T) {
