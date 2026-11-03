@@ -45,6 +45,8 @@ export default {
     RECEIVED_RHS_ISSUES: `${PluginId}_received_rhs_issues`,
     RECEIVED_RHS_ISSUES_APPEND: `${PluginId}_received_rhs_issues_append`,
     RHS_ISSUES_ERROR: `${PluginId}_rhs_issues_error`,
+    RHS_ISSUES_STALE: `${PluginId}_rhs_issues_stale`,
+    RHS_ISSUES_REFRESH_FAILED: `${PluginId}_rhs_issues_refresh_failed`,
     SET_RHS_SECTION: `${PluginId}_set_rhs_section`,
     OPEN_RHS_ISSUE: `${PluginId}_open_rhs_issue`,
     CLOSE_RHS_ISSUE: `${PluginId}_close_rhs_issue`,

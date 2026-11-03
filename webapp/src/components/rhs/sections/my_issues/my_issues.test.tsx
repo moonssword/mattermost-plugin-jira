@@ -45,6 +45,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         error: null,
         errorMessage: '',
         loadedInstanceID: instanceID,
+        stale: false,
         resolveAndFetchRHSIssues: jest.fn(async () => ({})),
         loadMoreRHSIssues: jest.fn(async () => ({})),
         openRHSIssue: jest.fn(),
@@ -86,6 +87,11 @@ describe('components/rhs/sections/my_issues', () => {
     test('does not refetch on mount when this instance list is cached', () => {
         const {props} = renderMyIssues({issues: [issueOne]});
         expect(props.resolveAndFetchRHSIssues).not.toHaveBeenCalled();
+    });
+
+    test('refetches on mount when live updates marked the list stale', () => {
+        const {props} = renderMyIssues({issues: [issueOne], stale: true});
+        expect(props.resolveAndFetchRHSIssues).toHaveBeenCalledWith({instanceID});
     });
 
     test('refetches on mount when the cached list belongs to another instance', () => {

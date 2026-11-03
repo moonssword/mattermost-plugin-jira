@@ -43,6 +43,7 @@ export const defaultMockState = {
             error: null,
             errorMessage: '',
             requestId: 0,
+            stale: false,
         },
         rhsNav: {
             section: 'my_issues',

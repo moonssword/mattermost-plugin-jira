@@ -153,3 +153,5 @@ export const getRHSCreatePrefill = (state: GlobalState) => getPluginState(state)
 export const getRHSAttachPostId = (state: GlobalState): string => getPluginState(state).rhsNav?.attachPostId || '';
 
 export const isRHSSettingsOpen = (state: GlobalState): boolean => Boolean(getPluginState(state).rhsNav?.settingsOpen);
+
+export const isRHSListStale = (state: GlobalState): boolean => Boolean(getPluginState(state).rhs?.stale);

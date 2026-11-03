@@ -33,3 +33,14 @@ export function getRHSPluginActions(): RHSPluginActions | null {
 export function resetRHSPluginActions(): void {
     pluginActions = null;
 }
+
+// Whether the RHS component is on screen; the host unmounts it when closed.
+let mounted = false;
+
+export function setRHSMounted(value: boolean): void {
+    mounted = value;
+}
+
+export function isRHSMounted(): boolean {
+    return mounted;
+}

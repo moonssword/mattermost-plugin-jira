@@ -61,6 +61,7 @@ describe('rhs_register', () => {
             registerAppBarComponent: jest.fn(() => appBarResult),
             registerChannelHeaderButtonAction: jest.fn(),
             registerChannelHeaderMenuAction: jest.fn(),
+            registerWebSocketEventHandler: jest.fn(),
         };
     }
 
@@ -117,6 +118,12 @@ describe('rhs_register', () => {
 
         (registry.registerChannelHeaderMenuAction.mock.calls[0][1] as () => void)();
         expect(dispatched.some((a) => (a as {type: string}).type === ActionTypes.SET_RHS_SECTION)).toBe(false);
+    });
+
+    test('registers the live update handler for the plugin event', () => {
+        const registry = makeRegistry(hostResult);
+        registerJiraRHS(registry, makeStore().store);
+        expect(registry.registerWebSocketEventHandler).toHaveBeenCalledWith('custom_jira_rhs_issue_changed', expect.any(Function));
     });
 
     test('an older server that returns only an id still registers the App Bar icon', () => {

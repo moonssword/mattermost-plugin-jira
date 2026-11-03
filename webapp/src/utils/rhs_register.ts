@@ -7,7 +7,9 @@ import Rhs from 'components/rhs';
 import JiraIcon from 'components/icon';
 import {RHS_STRINGS} from 'components/rhs/rhs_strings';
 
+import {createRHSLiveHandler} from '../actions/rhs_live';
 import {openJiraRHS, toggleJiraRHS} from '../actions/rhs_nav';
+import manifest from '../manifest';
 import {getPluginServerRoute} from '../selectors';
 
 import {GlobalState} from 'types/store';
@@ -35,6 +37,7 @@ export type RHSRegistry = {
         text: string,
         action: (channelId: string) => void,
     ) => unknown;
+    registerWebSocketEventHandler?: (event: string, handler: (msg: any) => void) => unknown; // eslint-disable-line @typescript-eslint/no-explicit-any
 };
 
 // Matches the host store passed to initialize; thunks are dispatched as-is.
@@ -91,4 +94,12 @@ export function registerJiraRHS(registry: RHSRegistry, store: RHSStore): void {
         RHS_STRINGS.openPanel,
         () => store.dispatch(openJiraRHS()),
     );
+
+    // Live updates: the server sends this to users involved in a changed issue.
+    registry.registerWebSocketEventHandler?.(
+        JIRA_RHS_ISSUE_CHANGED_EVENT,
+        createRHSLiveHandler(store),
+    );
 }
+
+export const JIRA_RHS_ISSUE_CHANGED_EVENT = `custom_${manifest.id}_rhs_issue_changed`;

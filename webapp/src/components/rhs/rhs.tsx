@@ -6,6 +6,7 @@ import React, {useEffect, useState} from 'react';
 import {Instance} from 'types/model';
 import {RHSErrorCode, RHSViewState} from 'types/rhs';
 import {RHSSectionID} from 'types/rhs_nav';
+import {setRHSMounted} from 'utils/rhs_controller';
 
 import AttachView from './attach_view';
 import IssueCard from './issue_card';
@@ -85,6 +86,12 @@ export default function Rhs(props: Props): JSX.Element {
     } = props;
 
     const [booting, setBooting] = useState(true);
+
+    // Live updates refresh the list only while the panel is on screen.
+    useEffect(() => {
+        setRHSMounted(true);
+        return () => setRHSMounted(false);
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
