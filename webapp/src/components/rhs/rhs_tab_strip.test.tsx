@@ -7,6 +7,7 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import {RHSTab} from 'types/rhs';
 
 import RHSTabStrip from './rhs_tab_strip';
+import {RHS_STRINGS} from './rhs_strings';
 
 const assignedTab: RHSTab = {kind: 'assigned', name: 'Assigned to me'};
 const inProgressTab: RHSTab = {kind: 'category', name: 'In Progress', key: 'indeterminate'};
@@ -36,7 +37,7 @@ describe('components/rhs/rhs_tab_strip', () => {
             />,
         );
 
-        fireEvent.keyDown(screen.getByRole('tab', {name: assignedTab.name}), {key: 'ArrowRight'});
+        fireEvent.keyDown(screen.getByRole('tab', {name: RHS_STRINGS.assignedTab}), {key: 'ArrowRight'});
         expect(onSelect).toHaveBeenCalledWith(inProgressTab);
     });
 });

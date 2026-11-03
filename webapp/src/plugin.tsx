@@ -21,7 +21,7 @@ import AttachCommentToIssueModal from 'components/modals/attach_comment_modal';
 import SetupUI from 'components/setup_ui';
 import LinkTooltip from 'components/jira_ticket_tooltip';
 import {isCombinedUserActivityPost} from 'utils/posts';
-import {registerJiraAppBar, shouldRegisterJiraRHS} from 'utils/rhs_register';
+import {registerJiraRHS, shouldRegisterJiraRHS} from 'utils/rhs_register';
 import {GlobalState} from 'types/store';
 
 import manifest from './manifest';
@@ -114,8 +114,8 @@ export const setupUILater = (registry: any, store: Store<object, Action<object>>
             registry.registerLinkTooltipComponent(LinkTooltip);
         }
 
-        if (shouldRegisterJiraRHS(settings, store.getState() as GlobalState)) {
-            registerJiraAppBar(registry, store.getState() as GlobalState);
+        if (shouldRegisterJiraRHS(settings)) {
+            registerJiraRHS(registry, store);
         }
 
         registry.registerRootComponent(ChannelSubscriptionsModal);

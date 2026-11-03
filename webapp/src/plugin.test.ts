@@ -73,6 +73,8 @@ function makeRegistry() {
         registerSlashCommandWillBePostedHook: jest.fn(),
         registerWebSocketEventHandler: jest.fn(),
         registerAppBarComponent: jest.fn(),
+        registerChannelHeaderButtonAction: jest.fn(),
+        registerChannelHeaderMenuAction: jest.fn(),
     };
 }
 
@@ -180,7 +182,7 @@ describe('plugin setupUILater', () => {
         expectAdminSettingRegistered(registry);
     });
 
-    test('setupUILater does not call registerAppBarComponent when only Server/DC is installed', async () => {
+    test('setupUILater registers the RHS entry points when only Server/DC is installed', async () => {
         mockPluginFetches({
             settings: settingsRhsOn,
             userinfo: userinfoWithInstances([serverDc]),
@@ -190,8 +192,23 @@ describe('plugin setupUILater', () => {
 
         await runInitializeThenSetup(registry, store);
 
-        expect(registry.registerAppBarComponent).not.toHaveBeenCalled();
+        expect(registry.registerAppBarComponent).toHaveBeenCalledTimes(1);
+        expect(registry.registerChannelHeaderButtonAction).toHaveBeenCalledTimes(1);
+        expect(registry.registerChannelHeaderMenuAction).toHaveBeenCalledTimes(1);
         expectAdminSettingRegistered(registry);
+    });
+
+    test('setupUILater registers the RHS without installed instances so admins can run setup', async () => {
+        mockPluginFetches({
+            settings: settingsRhsOn,
+            userinfo: userinfoWithInstances([]),
+        });
+        const registry = makeRegistry();
+        const store = makeRHSStore();
+
+        await runInitializeThenSetup(registry, store);
+
+        expect(registry.registerAppBarComponent).toHaveBeenCalledTimes(1);
     });
 
     test('setupUILater calls registerAppBarComponent for a cloud-oauth-only installation when rhs_enabled is true', async () => {

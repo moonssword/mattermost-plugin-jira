@@ -5,57 +5,53 @@ import {connect} from 'react-redux';
 import {Dispatch, bindActionCreators} from 'redux';
 
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/common';
+import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     getConnected,
     handleConnectFlow,
-    loadMoreRHSIssues,
-    openCreateModalWithoutPost,
-    resolveAndFetchRHSIssues,
     restoreRHSViewState,
+    selectRHSInstance,
+    setRHSSection,
+    startJiraSetupWizard,
 } from 'actions';
 import {
+    getInstalledInstances,
+    getRHSActiveInstanceID,
     getRHSError,
-    getRHSInstanceID,
-    getRHSIsLast,
-    getRHSIssues,
-    getRHSLoading,
-    getRHSSort,
-    getRHSTab,
-    getRHSTabs,
+    getRHSSection,
     getUserConnectedInstances,
+    isJiraSystemAdmin,
 } from 'selectors';
 
 import {GlobalState} from 'types/store';
 
 import Rhs, {Props} from './rhs';
 
-type RHSDispatchProps = Pick<Props, 'getConnected' | 'handleConnectFlow' | 'loadMoreRHSIssues' | 'openCreateModalWithoutPost' | 'resolveAndFetchRHSIssues' | 'restoreRHSViewState'>;
+type DispatchProps = Pick<Props, 'getConnected' | 'handleConnectFlow' | 'restoreRHSViewState' | 'selectRHSInstance' | 'setRHSSection' | 'startJiraSetupWizard'>;
 
 const mapStateToProps = (state: GlobalState) => {
     return {
+        installedInstances: getInstalledInstances(state) || [],
         connectedInstances: getUserConnectedInstances(state),
+        activeInstanceID: getRHSActiveInstanceID(state),
+        section: getRHSSection(state),
+        issuesError: getRHSError(state),
+        isAdmin: isJiraSystemAdmin(state),
         channelId: getCurrentChannelId(state) || '',
-        instanceID: getRHSInstanceID(state),
-        tab: getRHSTab(state),
-        sort: getRHSSort(state),
-        issues: getRHSIssues(state),
-        tabs: getRHSTabs(state),
-        isLast: getRHSIsLast(state),
-        loading: getRHSLoading(state),
-        error: getRHSError(state),
+        teamId: getCurrentTeamId(state) || '',
     };
 };
 
 const rhsDispatch = {
     getConnected,
     handleConnectFlow,
-    loadMoreRHSIssues,
-    openCreateModalWithoutPost,
-    resolveAndFetchRHSIssues,
     restoreRHSViewState,
+    selectRHSInstance,
+    setRHSSection,
+    startJiraSetupWizard,
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => bindActionCreators<typeof rhsDispatch, RHSDispatchProps>(rhsDispatch, dispatch);
+const mapDispatchToProps = (dispatch: Dispatch) => bindActionCreators<typeof rhsDispatch, DispatchProps>(rhsDispatch, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(Rhs);

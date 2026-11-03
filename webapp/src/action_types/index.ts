@@ -45,4 +45,5 @@ export default {
     RECEIVED_RHS_ISSUES: `${PluginId}_received_rhs_issues`,
     RECEIVED_RHS_ISSUES_APPEND: `${PluginId}_received_rhs_issues_append`,
     RHS_ISSUES_ERROR: `${PluginId}_rhs_issues_error`,
+    SET_RHS_SECTION: `${PluginId}_set_rhs_section`,
 };
