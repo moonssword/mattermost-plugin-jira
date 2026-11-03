@@ -1,0 +1,35 @@
+{
+  "expand": "schema,names",
+  "startAt": 0,
+  "maxResults": 2,
+  "total": 3,
+  "issues": [
+    {
+      "id": "10040",
+      "key": "TES-41",
+      "fields": {
+        "summary": "First page issue",
+        "updated": "2025-01-02T10:00:00.000+0000",
+        "project": {"id": "10000", "key": "TES", "name": "Test"},
+        "issuetype": {"id": "10001", "name": "Task", "iconUrl": "https://jira.example.com/images/icons/issuetypes/task.svg"},
+        "status": {
+          "id": "3",
+          "name": "In Progress",
+          "statusCategory": {"id": 4, "key": "indeterminate", "colorName": "yellow", "name": "In Progress"}
+        }
+      }
+    },
+    {
+      "id": "10041",
+      "key": "TES-42",
+      "fields": {
+        "summary": "Second issue on first page",
+        "status": {
+          "id": "1",
+          "name": "Open",
+          "statusCategory": {"id": 2, "key": "new", "colorName": "blue-gray", "name": "To Do"}
+        }
+      }
+    }
+  ]
+}

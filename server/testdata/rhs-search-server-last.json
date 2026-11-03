@@ -1,0 +1,20 @@
+{
+  "expand": "schema,names",
+  "startAt": 2,
+  "maxResults": 2,
+  "total": 3,
+  "issues": [
+    {
+      "id": "10042",
+      "key": "TES-43",
+      "fields": {
+        "summary": "Last page issue",
+        "status": {
+          "id": "6",
+          "name": "Closed",
+          "statusCategory": {"id": 3, "key": "done", "colorName": "green", "name": "Done"}
+        }
+      }
+    }
+  ]
+}

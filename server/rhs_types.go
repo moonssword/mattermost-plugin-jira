@@ -178,6 +178,7 @@ type CloudSearchParams struct {
 }
 
 // CloudSearchResult is GET /rest/api/3/search/jql. Cloud returns no total.
+// The Server/DC client maps its offset pagination onto the same shape.
 type CloudSearchResult struct {
 	Issues        []jira.Issue `json:"issues"`
 	NextPageToken string       `json:"nextPageToken"`
@@ -196,7 +197,13 @@ var ErrUnknownRHSTabKind = errors.New("unknown rhs tab kind")
 
 var ErrInvalidRHSTab = errors.New("invalid rhs tab")
 
-var ErrRHSNotCloud = errors.New("jira rhs is available for jira cloud only")
+// ErrRHSUnsupportedInstance is returned when an instance's client does not
+// implement rhsClient (neither Cloud nor Server/DC).
+var ErrRHSUnsupportedInstance = errors.New("jira rhs is not supported for this instance")
+
+// ErrInvalidRHSPageToken is returned when a Server/DC page token is not a
+// non-negative offset.
+var ErrInvalidRHSPageToken = errors.New("invalid rhs page token")
 
 type RHSIssueStatus struct {
 	Name        string `json:"name"`

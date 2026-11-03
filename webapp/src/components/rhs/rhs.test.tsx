@@ -33,7 +33,7 @@ const issueOne: RHSIssue = {
 
 function makeProps(overrides: Partial<Props> = {}): Props {
     return {
-        connectedCloud: [cloudOne],
+        connectedInstances: [cloudOne],
         channelId: 'channel-1',
         instanceID: cloudOne.instance_id,
         tab: assignedTab,
@@ -85,7 +85,7 @@ describe('components/rhs', () => {
             loading: true,
             issues: [],
             error: null,
-            connectedCloud: [cloudOne],
+            connectedInstances: [cloudOne],
         });
 
         expect(screen.getByTestId('rhs-state-loading')).toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('components/rhs', () => {
             loading: false,
             issues: [],
             error: null,
-            connectedCloud: [cloudOne],
+            connectedInstances: [cloudOne],
         });
 
         expect(screen.getByTestId('rhs-state-empty')).toBeInTheDocument();
@@ -139,7 +139,7 @@ describe('components/rhs', () => {
 
     test('zero connected Cloud instances renders not-connected without fetching', async () => {
         await renderSettled({
-            connectedCloud: [],
+            connectedInstances: [],
             loading: false,
             error: null,
             issues: [],
@@ -162,7 +162,7 @@ describe('components/rhs', () => {
 
     test('instance picker is absent with one connected Cloud instance', async () => {
         await renderSettled({
-            connectedCloud: [cloudOne],
+            connectedInstances: [cloudOne],
         });
 
         expect(screen.queryByTestId('rhs-instance-picker')).toBeNull();
@@ -170,7 +170,7 @@ describe('components/rhs', () => {
 
     test('instance picker is present with two connected Cloud instances', async () => {
         await renderSettled({
-            connectedCloud: [cloudOne, cloudTwo],
+            connectedInstances: [cloudOne, cloudTwo],
         });
 
         expect(screen.getByTestId('rhs-instance-picker')).toBeInTheDocument();
@@ -278,7 +278,7 @@ describe('components/rhs', () => {
             loading: false,
             issues: [],
             error: null,
-            connectedCloud: [cloudOne],
+            connectedInstances: [cloudOne],
         });
 
         expect(screen.getByTestId('rhs-state-loading')).toBeInTheDocument();

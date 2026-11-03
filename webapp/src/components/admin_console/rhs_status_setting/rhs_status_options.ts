@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {RHS_STRINGS} from 'components/rhs/rhs_strings';
-import {Instance, isCloudInstance} from 'types/model';
+import {Instance} from 'types/model';
 import {
     RHSErrorCode,
     RHSStatus,
@@ -43,14 +43,14 @@ export const NOT_CONNECTED_MESSAGE = 'Connect Jira to change status tabs.';
 export const STATUS_TABS_HELP = 'Choosing a category name (To Do, In Progress, Done) matches statusCategory and is broader than a single status.';
 export const INSTANCE_LABEL = 'Instance';
 export const STATUS_TABS_LABEL = 'Status tabs';
-export const NO_CLOUD_INSTANCE_MESSAGE = 'Install a Jira Cloud instance to configure RHS status tabs.';
+export const NO_INSTANCE_MESSAGE = 'Install a Jira instance to configure RHS status tabs.';
 export const UNABLE_TO_LOAD_STATUSES_MESSAGE = 'Unable to load statuses.';
 
-export function filterInstalledCloudInstances(instances: Instance[] | null): Instance[] {
+export function filterInstalledInstances(instances: Instance[] | null): Instance[] {
     if (!instances) {
         return [];
     }
-    return instances.filter(isCloudInstance);
+    return instances;
 }
 
 export function isTabsValueUnset(value: RHSStatusTabsValue | null, instanceID: string): boolean {
@@ -230,8 +230,8 @@ export function statusFetchMessage(code: RHSErrorCode): string {
         return RHS_STRINGS.rateLimited;
     case 'not_authorized':
         return 'not authorized';
-    case 'not_cloud':
-        return 'Jira RHS is available for Jira Cloud only';
+    case 'unsupported_instance':
+        return 'Jira RHS is not supported for this instance.';
     case 'invalid_request':
     case 'internal_error':
         return UNABLE_TO_LOAD_STATUSES_MESSAGE;

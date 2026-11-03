@@ -31,7 +31,7 @@ import RHSTabStrip, {RHS_TAB_PANEL_ID, rhsTabDomId} from './rhs_tab_strip';
 import './rhs.scss';
 
 export type Props = {
-    connectedCloud: Instance[];
+    connectedInstances: Instance[];
     channelId: string;
     instanceID: string;
     tab: RHSTab;
@@ -56,12 +56,12 @@ function rhsPanelKind(args: {
     loading: boolean;
     issuesLength: number;
     error: RHSErrorCode | null;
-    connectedCloudLength: number;
+    connectedInstancesLength: number;
 }): RHSPanelKind {
     if (args.booting || (args.loading && args.issuesLength === 0 && args.error === null)) {
         return 'loading';
     }
-    if (args.connectedCloudLength === 0 || args.error === 'not_connected') {
+    if (args.connectedInstancesLength === 0 || args.error === 'not_connected') {
         return 'not_connected';
     }
     if (args.error === 'rate_limited' && args.issuesLength === 0) {
@@ -78,7 +78,7 @@ function rhsPanelKind(args: {
 
 export default function Rhs(props: Props): JSX.Element {
     const {
-        connectedCloud,
+        connectedInstances,
         channelId,
         instanceID,
         tab,
@@ -171,7 +171,7 @@ export default function Rhs(props: Props): JSX.Element {
         loading,
         issuesLength: issues.length,
         error,
-        connectedCloudLength: connectedCloud.length,
+        connectedInstancesLength: connectedInstances.length,
     });
 
     let body: JSX.Element;
@@ -224,7 +224,7 @@ export default function Rhs(props: Props): JSX.Element {
 
     const instancePicker = (
         <RHSInstancePicker
-            instances={connectedCloud}
+            instances={connectedInstances}
             selectedInstanceID={instanceID}
             onChange={onInstanceChange}
         />

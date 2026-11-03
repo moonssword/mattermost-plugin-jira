@@ -5,7 +5,7 @@ export type RHSErrorCode =
     'not_connected' |
     'rate_limited' |
     'not_authorized' |
-    'not_cloud' |
+    'unsupported_instance' |
     'invalid_request' |
     'internal_error';
 

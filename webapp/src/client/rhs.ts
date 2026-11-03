@@ -32,7 +32,7 @@ export function coerceRHSErrorCode(value: string): RHSErrorCode {
     case 'not_connected':
     case 'rate_limited':
     case 'not_authorized':
-    case 'not_cloud':
+    case 'unsupported_instance':
     case 'invalid_request':
     case 'internal_error':
         return value;

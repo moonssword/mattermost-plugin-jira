@@ -11,7 +11,7 @@ import {
     buildPersistedValue,
     buildStatusOptionGroups,
     displayTabsForInstance,
-    filterInstalledCloudInstances,
+    filterInstalledInstances,
     flattenOptionGroups,
     isTabsValueUnset,
     statusFetchMessage,
@@ -156,14 +156,15 @@ describe('rhs_status_options', () => {
         expect(statusTabOptionMatches(option, 'Design')).toBe(false);
     });
 
-    test('filterInstalledCloudInstances drops SERVER and keeps cloud and cloud-oauth', () => {
-        const filtered = filterInstalledCloudInstances([
+    test('filterInstalledInstances keeps cloud, cloud-oauth and SERVER', () => {
+        const filtered = filterInstalledInstances([
             {instance_id: CLOUD_ID, type: InstanceType.CLOUD},
             {instance_id: OAUTH_ID, type: InstanceType.CLOUD_OAUTH},
             {instance_id: SERVER_ID, type: InstanceType.SERVER},
         ]);
 
-        expect(filtered.map((instance) => instance.instance_id)).toEqual([CLOUD_ID, OAUTH_ID]);
+        expect(filtered.map((instance) => instance.instance_id)).toEqual([CLOUD_ID, OAUTH_ID, SERVER_ID]);
+        expect(filterInstalledInstances(null)).toEqual([]);
     });
 
     test('statusFetchMessage returns the connect copy for not_connected', () => {
