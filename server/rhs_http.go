@@ -6,6 +6,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/pkg/errors"
@@ -20,6 +21,7 @@ const (
 	rhsErrNotAuthorized  = "not_authorized"
 	rhsErrUnsupported    = "unsupported_instance"
 	rhsErrInvalidRequest = "invalid_request"
+	rhsErrInvalidQuery   = "invalid_query"
 	rhsErrInternal       = "internal_error"
 
 	queryRHSTab           = "tab"
@@ -52,7 +54,10 @@ func respondRHSErr(w http.ResponseWriter, err error) (int, error) {
 		return respondJSONErr(w, http.StatusTooManyRequests, rhsErrRateLimited, "Jira is rate limiting requests, try again shortly")
 	case errors.Is(err, ErrRHSUnsupportedInstance):
 		return respondJSONErr(w, http.StatusBadRequest, rhsErrUnsupported, "Jira RHS is not supported for this instance")
+	case errors.Is(err, ErrInvalidRHSQuery):
+		return respondJSONErr(w, http.StatusBadRequest, rhsErrInvalidQuery, strings.TrimSpace(strings.TrimPrefix(err.Error(), ErrInvalidRHSQuery.Error()+":")))
 	case errors.Is(err, ErrInvalidStatusCategory),
+		errors.Is(err, ErrInvalidRHSFilter),
 		errors.Is(err, ErrInvalidRHSSort),
 		errors.Is(err, ErrUnknownRHSTabKind),
 		errors.Is(err, ErrInvalidRHSTab),
@@ -67,6 +72,23 @@ func respondRHSErr(w http.ResponseWriter, err error) (int, error) {
 func (p *Plugin) httpRHSGetIssues(w http.ResponseWriter, r *http.Request) (int, error) {
 	userID := r.Header.Get(HeaderMattermostUserID)
 	instanceID := types.ID(r.FormValue(ParamInstanceID))
+
+	// Quick filters and search; the tab mode below stays for older webapps.
+	if r.FormValue(queryRHSFilter) != "" || r.FormValue(queryRHSQuery) != "" {
+		result, err := p.getRHSFilteredIssues(rhsIssueQuery{
+			instanceID:       instanceID,
+			mattermostUserID: types.ID(userID),
+			filter:           r.FormValue(queryRHSFilter),
+			query:            r.FormValue(queryRHSQuery),
+			sort:             r.FormValue(queryRHSSort),
+			nextPageToken:    r.FormValue(queryRHSNextPageToken),
+		})
+		if err != nil {
+			return respondRHSErr(w, err)
+		}
+		return respondJSON(w, result)
+	}
+
 	result, err := p.getRHSIssues(
 		instanceID,
 		types.ID(userID),

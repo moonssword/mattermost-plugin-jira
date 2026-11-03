@@ -66,3 +66,54 @@ describe('components/rhs/rhs_issue_row', () => {
         expect(screen.getByText('Done')).toHaveClass('jira-rhs-status--done');
     });
 });
+
+describe('components/rhs/rhs_issue_row meta', () => {
+    const now = new Date(2026, 10, 3, 12, 0, 0).getTime();
+    const base: RHSIssue = {
+        key: 'TES-2',
+        summary: 'Two',
+        browseUrl: 'http://jira.example.com/browse/TES-2',
+        status: {name: 'Open', categoryKey: 'new'},
+        issueType: 'Task',
+        project: 'TES',
+        updated: new Date(now - (2 * 60 * 60 * 1000)).toISOString(),
+    };
+
+    test('shows when the issue was updated without a due date', () => {
+        render(
+            <RHSIssueRow
+                issue={base}
+                nowMs={now}
+            />,
+        );
+        expect(screen.getByText('Обновлено 2 ч назад')).toBeInTheDocument();
+    });
+
+    test('shows the due date and marks an overdue one', () => {
+        const {rerender} = render(
+            <RHSIssueRow
+                issue={{...base, dueDate: '2026-11-07'}}
+                nowMs={now}
+            />,
+        );
+        expect(screen.getByText('Срок: 7 ноя')).not.toHaveClass('jira-rhs-issue-time--overdue');
+
+        rerender(
+            <RHSIssueRow
+                issue={{...base, dueDate: '2026-11-01'}}
+                nowMs={now}
+            />,
+        );
+        expect(screen.getByText('Срок: 1 ноя, просрочено')).toHaveClass('jira-rhs-issue-time--overdue');
+    });
+
+    test('shows the priority icon with its name', () => {
+        render(
+            <RHSIssueRow
+                issue={{...base, priority: 'High', priorityIconUrl: 'http://jira.example.com/high.svg'}}
+                nowMs={now}
+            />,
+        );
+        expect(screen.getByAltText('High')).toBeInTheDocument();
+    });
+});

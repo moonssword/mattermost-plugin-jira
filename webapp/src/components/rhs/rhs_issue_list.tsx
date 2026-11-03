@@ -5,8 +5,17 @@ import React, {useState} from 'react';
 
 import {RHSErrorCode, RHSIssue} from 'types/rhs';
 
+import {RHSGroupKey, groupRHSIssues} from 'utils/rhs_group';
+
 import RHSIssueRow from './rhs_issue_row';
 import {RHS_STRINGS} from './rhs_strings';
+
+const groupTitles: Record<RHSGroupKey, string> = {
+    indeterminate: RHS_STRINGS.groupInProgress,
+    new: RHS_STRINGS.groupToDo,
+    done: RHS_STRINGS.groupDone,
+    other: RHS_STRINGS.groupOther,
+};
 
 export type Props = {
     issues: RHSIssue[];
@@ -25,12 +34,25 @@ export default function RHSIssueList(props: Props): JSX.Element {
             className='jira-rhs-list'
             data-testid='rhs-issue-list'
         >
-            {props.issues.map((issue) => (
-                <RHSIssueRow
-                    key={issue.key}
-                    issue={issue}
-                    nowMs={nowMs}
-                />
+            {groupRHSIssues(props.issues).map((group) => (
+                <section
+                    key={group.key}
+                    className='jira-rhs-group'
+                    aria-label={groupTitles[group.key]}
+                    data-testid={'rhs-group-' + group.key}
+                >
+                    <h5 className='jira-rhs-group-header'>
+                        <span>{groupTitles[group.key]}</span>
+                        <span className='jira-rhs-group-count'>{group.issues.length}</span>
+                    </h5>
+                    {group.issues.map((issue) => (
+                        <RHSIssueRow
+                            key={issue.key}
+                            issue={issue}
+                            nowMs={nowMs}
+                        />
+                    ))}
+                </section>
             ))}
             {props.loading && (
                 <div

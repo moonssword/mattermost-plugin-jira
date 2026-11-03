@@ -11,11 +11,11 @@ import manifest from '../manifest';
 import {Instance, PluginSettings, isCloudInstance} from 'types/model';
 import {
     RHSErrorCode,
+    RHSFilter,
     RHSIssue,
     RHSSort,
-    RHSTab,
+    RHS_DEFAULT_FILTER,
     RHS_DEFAULT_SORT,
-    RHS_DEFAULT_TAB,
 } from 'types/rhs';
 import {RHSSectionID, RHS_DEFAULT_SECTION} from 'types/rhs_nav';
 import {resolveRHSInstanceID} from 'utils/rhs_resolve';
@@ -110,13 +110,20 @@ export const getPluginSettings = (state: GlobalState): PluginSettings | null => 
 
 export const getRHSInstanceID = (state: GlobalState): string => getPluginState(state).rhs?.instanceID || '';
 
-export const getRHSTab = (state: GlobalState): RHSTab => getPluginState(state).rhs?.tab || RHS_DEFAULT_TAB;
+export const getRHSFilter = (state: GlobalState): RHSFilter => getPluginState(state).rhs?.filter || RHS_DEFAULT_FILTER;
+
+export const getRHSQuery = (state: GlobalState): string => getPluginState(state).rhs?.query || '';
+
+export const getRHSTotal = (state: GlobalState): number | null => {
+    const total = getPluginState(state).rhs?.total;
+    return typeof total === 'number' ? total : null;
+};
+
+export const getRHSErrorMessage = (state: GlobalState): string => getPluginState(state).rhs?.errorMessage || '';
 
 export const getRHSSort = (state: GlobalState): RHSSort => getPluginState(state).rhs?.sort || RHS_DEFAULT_SORT;
 
 export const getRHSIssues = (state: GlobalState): RHSIssue[] => getPluginState(state).rhs?.issues || [];
-
-export const getRHSTabs = (state: GlobalState): RHSTab[] => getPluginState(state).rhs?.tabs || [];
 
 export const getRHSIsLast = (state: GlobalState): boolean => Boolean(getPluginState(state).rhs?.isLast);
 

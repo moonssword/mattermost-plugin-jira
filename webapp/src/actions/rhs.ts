@@ -9,14 +9,15 @@ import {getDefaultUserInstanceID, getPluginServerRoute, getUserConnectedInstance
 import {resolveRHSInstanceID} from 'utils/rhs_resolve';
 import {loadRHSViewState, saveRHSViewState} from 'utils/rhs_view_state';
 
-import {FetchRHSIssuesArgs, RHSSort, RHSTab} from 'types/rhs';
+import {FetchRHSIssuesArgs, RHSFilter, RHSSort} from 'types/rhs';
 import {GlobalState, pluginStateKey} from 'types/store';
 
+// The search text is not persisted: reopening the panel starts from a filter.
 export function persistCurrentRHSView(state: GlobalState): void {
     const rhs = state[pluginStateKey].rhs;
     saveRHSViewState(state.entities.users.currentUserId, {
         instance: rhs.instanceID,
-        tab: rhs.tab,
+        filter: rhs.filter,
         sort: rhs.sort,
     });
 }
@@ -28,6 +29,7 @@ function dispatchRHSFetchError(dispatch: Dispatch, error: unknown, requestId: nu
     dispatch({
         type: ActionTypes.RHS_ISSUES_ERROR,
         data: rhsError.errorCode,
+        message: rhsError.message,
         requestId,
     });
     return {error: rhsError};
@@ -43,7 +45,8 @@ export const restoreRHSViewState = () => {
             type: ActionTypes.SET_RHS_VIEW,
             data: {
                 instanceID: saved.instance,
-                tab: saved.tab,
+                filter: saved.filter,
+                query: '',
                 sort: saved.sort,
             },
         });
@@ -57,7 +60,8 @@ export const fetchRHSIssues = (args: FetchRHSIssuesArgs) => {
             type: ActionTypes.SET_RHS_VIEW,
             data: {
                 instanceID: args.instanceID,
-                tab: args.tab,
+                filter: args.filter,
+                query: args.query,
                 sort: args.sort,
             },
         });
@@ -69,11 +73,7 @@ export const fetchRHSIssues = (args: FetchRHSIssuesArgs) => {
         const requestId = getState()[pluginStateKey].rhs.requestId;
 
         try {
-            const data = await getRHSIssues(getPluginServerRoute(getState()), {
-                instanceID: args.instanceID,
-                tab: args.tab,
-                sort: args.sort,
-            });
+            const data = await getRHSIssues(getPluginServerRoute(getState()), args);
             dispatch({
                 type: ActionTypes.RECEIVED_RHS_ISSUES,
                 data,
@@ -102,7 +102,8 @@ export const loadMoreRHSIssues = () => {
         try {
             const data = await getRHSIssues(getPluginServerRoute(getState()), {
                 instanceID: rhs.instanceID,
-                tab: rhs.tab,
+                filter: rhs.filter,
+                query: rhs.query,
                 sort: rhs.sort,
                 nextPageToken: rhs.nextPageToken,
             });
@@ -123,7 +124,8 @@ export const refreshRHSIssues = () => {
         const rhs = getState()[pluginStateKey].rhs;
         return fetchRHSIssues({
             instanceID: rhs.instanceID,
-            tab: rhs.tab,
+            filter: rhs.filter,
+            query: rhs.query,
             sort: rhs.sort,
         })(dispatch, getState);
     };
@@ -131,7 +133,10 @@ export const refreshRHSIssues = () => {
 
 export type ResolveAndFetchArgs = {
     instanceID?: string;
-    tab?: RHSTab;
+    filter?: RHSFilter;
+
+    // An empty string clears the search; undefined keeps the current one.
+    query?: string;
     sort?: RHSSort;
 };
 
@@ -148,9 +153,11 @@ export const resolveAndFetchRHSIssues = (overrides: ResolveAndFetchArgs = {}) =>
             return Promise.resolve({data: null});
         }
 
-        const tab = overrides.tab || rhs.tab;
-        const sort = overrides.sort || rhs.sort;
-
-        return fetchRHSIssues({instanceID, tab, sort})(dispatch, getState);
+        return fetchRHSIssues({
+            instanceID,
+            filter: overrides.filter || rhs.filter,
+            query: typeof overrides.query === 'string' ? overrides.query : rhs.query,
+            sort: overrides.sort || rhs.sort,
+        })(dispatch, getState);
     };
 };

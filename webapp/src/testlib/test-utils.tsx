@@ -32,15 +32,20 @@ export const defaultMockState = {
         channelSubscriptions: {},
         rhs: {
             instanceID: '',
-            tab: {kind: 'assigned', name: 'Assigned to me'},
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
             issues: [],
-            tabs: [],
             nextPageToken: '',
             isLast: true,
+            total: null,
             loading: false,
             error: null,
+            errorMessage: '',
             requestId: 0,
+        },
+        rhsNav: {
+            section: 'my_issues',
         },
     },
     entities: {

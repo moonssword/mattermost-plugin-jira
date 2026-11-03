@@ -7,6 +7,7 @@ export type RHSErrorCode =
     'not_authorized' |
     'unsupported_instance' |
     'invalid_request' |
+    'invalid_query' |
     'internal_error';
 
 export type RHSSort = 'updated' | 'created';
@@ -30,13 +31,30 @@ export type RHSIssue = {
     issueTypeIconUrl?: string;
     project: string;
     updated: string;
+    created?: string;
+    dueDate?: string;
+    priority?: string;
+    priorityIconUrl?: string;
 };
+
+// Quick filters of the "Мои задачи" section; the server builds their JQL.
+export type RHSFilter = 'assigned' | 'reported' | 'watching' | 'sprint';
+
+export const RHS_FILTERS: RHSFilter[] = ['assigned', 'reported', 'watching', 'sprint'];
+
+export const RHS_DEFAULT_FILTER: RHSFilter = 'assigned';
+
+export function isRHSFilter(value: unknown): value is RHSFilter {
+    return typeof value === 'string' && (RHS_FILTERS as string[]).includes(value);
+}
 
 export type RHSIssuesResponse = {
     issues: RHSIssue[];
-    tabs: RHSTab[];
     nextPageToken: string;
     isLast: boolean;
+
+    // Number of matching issues; only Jira Server/DC reports it.
+    total?: number | null;
 };
 
 export type RHSStatusCategory = {
@@ -65,7 +83,7 @@ export type RHSStatusesResponse = {
 
 export type RHSViewState = {
     instance: string;
-    tab: RHSTab;
+    filter: RHSFilter;
     sort: RHSSort;
 };
 
@@ -80,7 +98,10 @@ export const RHS_DEFAULT_TAB: RHSTab = {
 
 export type FetchRHSIssuesArgs = {
     instanceID: string;
-    tab: RHSTab;
+    filter: RHSFilter;
+
+    // Search box text: an issue key, plain text or JQL. Overrides the filter.
+    query: string;
     sort: RHSSort;
 };
 

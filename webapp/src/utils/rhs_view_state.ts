@@ -1,7 +1,12 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RHSSort, RHSViewState, rhsTabFromAPI} from 'types/rhs';
+import {
+    RHSSort,
+    RHSViewState,
+    RHS_DEFAULT_FILTER,
+    isRHSFilter,
+} from 'types/rhs';
 
 const storagePrefix = 'jira:rhs-view:';
 
@@ -13,30 +18,24 @@ function isRHSSort(value: unknown): value is RHSSort {
     return value === 'updated' || value === 'created';
 }
 
+// Older versions stored a status tab instead of a filter; such entries keep
+// their instance and sort and fall back to the default filter.
 export function validateRHSViewState(raw: unknown): RHSViewState | null {
     if (!raw || typeof raw !== 'object') {
         return null;
     }
 
-    const candidate = raw as {instance?: unknown; tab?: unknown; sort?: unknown};
+    const candidate = raw as {instance?: unknown; filter?: unknown; sort?: unknown};
     if (typeof candidate.instance !== 'string' || !candidate.instance) {
         return null;
     }
     if (!isRHSSort(candidate.sort)) {
         return null;
     }
-    if (!candidate.tab || typeof candidate.tab !== 'object') {
-        return null;
-    }
-
-    const tab = rhsTabFromAPI(candidate.tab as {kind?: unknown; name?: unknown; key?: unknown; id?: unknown});
-    if (!tab) {
-        return null;
-    }
 
     return {
         instance: candidate.instance,
-        tab,
+        filter: isRHSFilter(candidate.filter) ? candidate.filter : RHS_DEFAULT_FILTER,
         sort: candidate.sort,
     };
 }

@@ -5,42 +5,46 @@ import React, {useEffect, useRef} from 'react';
 
 import type {ResolveAndFetchArgs} from 'actions';
 
-import {
-    RHSErrorCode,
-    RHSIssue,
-    RHSSort,
-    RHSTab,
-} from 'types/rhs';
-import {rhsTabsEqual} from 'utils/rhs_resolve';
+import {RHSErrorCode, RHSFilter, RHSIssue} from 'types/rhs';
 
-import RHSHeader from '../../rhs_header';
 import RHSIssueList from '../../rhs_issue_list';
 import {
     RHSEmptyState,
     RHSErrorState,
     RHSLoadingState,
+    RHSQueryErrorState,
     RHSRateLimitedState,
 } from '../../rhs_states';
-import RHSTabStrip, {RHS_TAB_PANEL_ID, rhsTabDomId} from '../../rhs_tab_strip';
+import {RHS_STRINGS} from '../../rhs_strings';
+
+import FilterChips from './filter_chips';
+import SearchBox from './search_box';
 
 export type Props = {
     instanceID: string;
-    tab: RHSTab;
-    sort: RHSSort;
+    filter: RHSFilter;
+    query: string;
     issues: RHSIssue[];
-    tabs: RHSTab[];
     isLast: boolean;
+    total: number | null;
     loading: boolean;
     error: RHSErrorCode | null;
+    errorMessage: string;
+
+    // Instance whose issues are in the store; differs right after a switch.
+    loadedInstanceID: string;
     resolveAndFetchRHSIssues: (overrides?: ResolveAndFetchArgs) => Promise<unknown>;
     loadMoreRHSIssues: () => Promise<unknown>;
 };
 
-type BodyKind = 'loading' | 'rate_limited' | 'error' | 'empty' | 'list';
+type BodyKind = 'loading' | 'rate_limited' | 'invalid_query' | 'error' | 'empty' | 'list';
 
 export function myIssuesBodyKind(args: {loading: boolean; issuesLength: number; error: RHSErrorCode | null}): BodyKind {
     if (args.loading && args.issuesLength === 0 && args.error === null) {
         return 'loading';
+    }
+    if (args.error === 'invalid_query') {
+        return 'invalid_query';
     }
     if (args.error === 'rate_limited' && args.issuesLength === 0) {
         return 'rate_limited';
@@ -54,22 +58,33 @@ export function myIssuesBodyKind(args: {loading: boolean; issuesLength: number; 
     return 'list';
 }
 
+// foundLabel renders "Найдено 3", or "Найдено 20+" when Jira gives no total
+// and more pages exist.
+export function foundLabel(total: number | null, loaded: number, isLast: boolean): string {
+    if (total !== null) {
+        return RHS_STRINGS.found + ' ' + total;
+    }
+    return RHS_STRINGS.found + ' ' + loaded + (isLast ? '' : '+');
+}
+
 export default function MyIssues(props: Props): JSX.Element {
     const {
         instanceID,
-        tab,
-        sort,
+        filter,
+        query,
         issues,
-        tabs,
         isLast,
+        total,
         loading,
         error,
+        errorMessage,
+        loadedInstanceID,
         resolveAndFetchRHSIssues,
         loadMoreRHSIssues,
     } = props;
 
-    // Fetch on first mount unless a list is already cached, and again whenever
-    // the active instance changes.
+    // Fetch on first mount unless this instance's list is already in the
+    // store, and again whenever the active instance changes.
     const seenInstance = useRef<string | null>(null);
     useEffect(() => {
         if (!instanceID) {
@@ -77,7 +92,8 @@ export default function MyIssues(props: Props): JSX.Element {
         }
         const firstRun = seenInstance.current === null;
         seenInstance.current = instanceID;
-        if (firstRun && tabs.length > 0 && error === null) {
+        const cached = loadedInstanceID === instanceID && issues.length > 0 && error === null;
+        if (firstRun && cached) {
             return;
         }
         resolveAndFetchRHSIssues({instanceID});
@@ -86,24 +102,21 @@ export default function MyIssues(props: Props): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instanceID]);
 
-    const onSelectTab = (next: RHSTab) => {
-        if (!rhsTabsEqual(next, tab)) {
-            resolveAndFetchRHSIssues({instanceID, tab: next});
+    const searching = query.trim() !== '';
+
+    const onSelectFilter = (next: RHSFilter) => {
+        if (next === filter && !searching) {
+            return;
         }
+        resolveAndFetchRHSIssues({instanceID, filter: next, query: ''});
     };
 
-    const onSortChange = (next: RHSSort) => {
-        resolveAndFetchRHSIssues({instanceID, sort: next});
+    const onSearch = (next: string) => {
+        resolveAndFetchRHSIssues({instanceID, query: next});
     };
 
     const onRetry = () => {
         resolveAndFetchRHSIssues({instanceID});
-    };
-
-    const onRefresh = () => {
-        if (!loading) {
-            resolveAndFetchRHSIssues({instanceID});
-        }
     };
 
     const onLoadMore = () => {
@@ -119,6 +132,9 @@ export default function MyIssues(props: Props): JSX.Element {
     case 'loading':
         body = <RHSLoadingState/>;
         break;
+    case 'invalid_query':
+        body = <RHSQueryErrorState message={errorMessage}/>;
+        break;
     case 'rate_limited':
         body = <RHSRateLimitedState onRetry={onRetry}/>;
         break;
@@ -126,7 +142,7 @@ export default function MyIssues(props: Props): JSX.Element {
         body = <RHSErrorState onRetry={onRetry}/>;
         break;
     case 'empty':
-        body = <RHSEmptyState/>;
+        body = <RHSEmptyState message={searching ? RHS_STRINGS.emptySearch : RHS_STRINGS.emptyFilter}/>;
         break;
     case 'list':
         body = (
@@ -146,34 +162,33 @@ export default function MyIssues(props: Props): JSX.Element {
     }
     }
 
-    const showTabs = tabs.length > 0;
-
     return (
         <div
             className='jira-rhs-my-issues'
             data-testid='rhs-my-issues'
         >
-            <RHSHeader
-                sort={sort}
-                loading={loading}
-                onSortChange={onSortChange}
-                onRefresh={onRefresh}
-            />
-            {showTabs && (
-                <RHSTabStrip
-                    tabs={tabs}
-                    selectedTab={tab}
-                    onSelect={onSelectTab}
+            <div className='jira-rhs-toolbar'>
+                <SearchBox
+                    value={query}
+                    onSearch={onSearch}
+                    onRefresh={onRetry}
+                    refreshing={loading}
                 />
-            )}
-            <div
-                className='jira-rhs-body'
-                {...(showTabs ? {
-                    role: 'tabpanel',
-                    id: RHS_TAB_PANEL_ID,
-                    'aria-labelledby': rhsTabDomId(tab),
-                } : {})}
-            >
+                <FilterChips
+                    active={searching ? null : filter}
+                    total={searching ? null : total}
+                    onSelect={onSelectFilter}
+                />
+                {searching && kind === 'list' && (
+                    <div
+                        className='jira-rhs-found'
+                        data-testid='rhs-found'
+                    >
+                        {foundLabel(total, issues.length, isLast)}
+                    </div>
+                )}
+            </div>
+            <div className='jira-rhs-body'>
                 {body}
             </div>
         </div>

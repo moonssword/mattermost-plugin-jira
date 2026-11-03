@@ -1,19 +1,17 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RHSIssuesResponse, RHSTab} from 'types/rhs';
+import {RHSIssuesResponse} from 'types/rhs';
 
 import {RHSFetchError, getRHSIssues, getRHSStatuses} from './rhs';
 
 const fetchMock = global.fetch as jest.Mock;
 
-const assignedTab: RHSTab = {kind: 'assigned', name: 'Assigned to me'};
-
 const emptyIssues: RHSIssuesResponse = {
     issues: [],
-    tabs: [assignedTab],
     nextPageToken: '',
     isLast: true,
+    total: 0,
 };
 
 describe('client/rhs', () => {
@@ -33,7 +31,8 @@ describe('client/rhs', () => {
 
         const result = await getRHSIssues('/plugins/jira', {
             instanceID: 'https://x.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned' as const,
+            query: '',
             sort: 'updated',
         });
         expect(result).toEqual(emptyIssues);
@@ -51,7 +50,8 @@ describe('client/rhs', () => {
 
         const params = {
             instanceID: 'https://x.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned' as const,
+            query: '',
             sort: 'updated' as const,
         };
         await expect(getRHSIssues('/plugins/jira', params)).rejects.toMatchObject({
@@ -73,7 +73,8 @@ describe('client/rhs', () => {
         try {
             await getRHSIssues('/plugins/jira', {
                 instanceID: 'https://x.atlassian.net',
-                tab: assignedTab,
+                filter: 'assigned' as const,
+                query: '',
                 sort: 'updated',
             });
             throw new Error('expected getRHSIssues to reject');
@@ -95,7 +96,8 @@ describe('client/rhs', () => {
         try {
             await getRHSIssues('/plugins/jira', {
                 instanceID: 'https://x.atlassian.net',
-                tab: assignedTab,
+                filter: 'assigned' as const,
+                query: '',
                 sort: 'updated',
             });
             throw new Error('expected getRHSIssues to reject');
@@ -106,7 +108,7 @@ describe('client/rhs', () => {
         }
     });
 
-    test('getRHSIssues calls /plugins path with a single tab identity query param', async () => {
+    test('getRHSIssues sends the filter and no search for an empty query', async () => {
         fetchMock.mockImplementation(() => Promise.resolve({
             ok: true,
             json: () => Promise.resolve(emptyIssues),
@@ -114,24 +116,23 @@ describe('client/rhs', () => {
 
         await getRHSIssues('/plugins/jira', {
             instanceID: 'https://x.atlassian.net',
-            tab: {kind: 'category', name: 'In Progress', key: 'indeterminate'},
+            filter: 'watching',
+            query: '   ',
             sort: 'created',
         });
 
-        expect(fetchMock).toHaveBeenCalledWith(expect.any(String), expect.anything());
         const url = fetchMock.mock.calls[0][0] as string;
         expect(url).toContain('/plugins/jira/api/v2/rhs/issues');
         expect(url).toContain('instance_id=');
-        expect(url).toContain('tab=' + encodeURIComponent('category:indeterminate'));
+        expect(url).toContain('filter=watching');
         expect(url).toContain('sort=created');
-        expect(url).not.toContain('tab_kind=');
-        expect(url).not.toContain('tab_key=');
-        expect(url).not.toContain('tab_id=');
+        expect(url).not.toContain('q=');
+        expect(url).not.toContain('tab=');
         expect(url).not.toContain('next_page_token');
         expect(url).not.toContain('/api/v2/api/v2');
     });
 
-    test('getRHSIssues sends tab=assigned without tab_key or tab_id', async () => {
+    test('getRHSIssues sends a trimmed search and the page token', async () => {
         fetchMock.mockImplementation(() => Promise.resolve({
             ok: true,
             json: () => Promise.resolve(emptyIssues),
@@ -139,15 +140,42 @@ describe('client/rhs', () => {
 
         await getRHSIssues('/plugins/jira', {
             instanceID: 'https://x.atlassian.net',
-            tab: {kind: 'assigned', name: 'Assigned to me'},
+            filter: 'assigned',
+            query: ' project = BACK ',
             sort: 'updated',
+            nextPageToken: '20',
         });
 
         const url = fetchMock.mock.calls[0][0] as string;
-        expect(url).toContain('tab=assigned');
-        expect(url).not.toContain('tab_kind=');
-        expect(url).not.toContain('tab_key=');
-        expect(url).not.toContain('tab_id=');
+        expect(url).toContain('q=' + encodeURIComponent('project = BACK'));
+        expect(url).toContain('next_page_token=20');
+    });
+
+    test('getRHSIssues maps a missing total to null and keeps a number', async () => {
+        fetchMock.mockImplementationOnce(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({issues: [], nextPageToken: '', isLast: true}),
+        }));
+        const params = {instanceID: 'x', filter: 'assigned' as const, query: '', sort: 'updated' as const};
+        expect((await getRHSIssues('/plugins/jira', params)).total).toBeNull();
+
+        fetchMock.mockImplementationOnce(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({issues: [], nextPageToken: '', isLast: true, total: 12}),
+        }));
+        expect((await getRHSIssues('/plugins/jira', params)).total).toBe(12);
+    });
+
+    test('getRHSIssues keeps the invalid_query code and Jira message', async () => {
+        fetchMock.mockImplementation(() => Promise.resolve({
+            ok: false,
+            status: 400,
+            text: () => Promise.resolve(JSON.stringify({error: 'invalid_query', message: 'Unable to parse JQL'})),
+        }));
+        await expect(getRHSIssues('/plugins/jira', {instanceID: 'x', filter: 'assigned', query: 'a = ', sort: 'updated'})).rejects.toMatchObject({
+            errorCode: 'invalid_query',
+            message: 'Unable to parse JQL',
+        });
     });
 
     test('getRHSStatuses calls /api/v2/rhs/statuses', async () => {

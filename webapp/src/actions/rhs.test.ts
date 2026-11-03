@@ -5,7 +5,7 @@ import {applyMiddleware, createStore} from 'redux';
 import thunk from 'redux-thunk';
 
 import {Instance, InstanceType} from 'types/model';
-import {RHSIssuesResponse, RHSTab} from 'types/rhs';
+import {RHSIssuesResponse} from 'types/rhs';
 import {pluginStateKey} from 'types/store';
 import {saveRHSViewState} from 'utils/rhs_view_state';
 
@@ -21,8 +21,6 @@ import {
     restoreRHSViewState,
 } from './rhs';
 
-const assignedTab: RHSTab = {kind: 'assigned', name: 'Assigned to me'};
-const inProgressTab: RHSTab = {kind: 'category', name: 'In Progress', key: 'indeterminate'};
 const cloudOAuth = {instance_id: 'https://oauth.example.atlassian.net', type: InstanceType.CLOUD_OAUTH};
 
 const page1: RHSIssuesResponse = {
@@ -35,7 +33,6 @@ const page1: RHSIssuesResponse = {
         project: 'TES',
         updated: '2026-01-02T00:00:00Z',
     }],
-    tabs: [assignedTab],
     nextPageToken: 'tok-page-2',
     isLast: false,
 };
@@ -98,12 +95,14 @@ describe('rhs actions', () => {
         const store = makeRHSStore();
         const assignedPending = store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
         const inProgressPending = store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: inProgressTab,
+            filter: 'reported',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -117,7 +116,6 @@ describe('rhs actions', () => {
                     key: 'TES-IP',
                     browseUrl: 'https://example.atlassian.net/browse/TES-IP',
                 }],
-                tabs: [assignedTab, inProgressTab],
                 nextPageToken: '',
                 isLast: true,
             }),
@@ -132,7 +130,6 @@ describe('rhs actions', () => {
                     key: 'TES-ASG',
                     browseUrl: 'https://example.atlassian.net/browse/TES-ASG',
                 }],
-                tabs: [assignedTab],
                 nextPageToken: '',
                 isLast: true,
             }),
@@ -140,10 +137,7 @@ describe('rhs actions', () => {
         await assignedPending;
 
         const rhs = rhsFrom(store);
-        expect(rhs.tab.kind).toBe('category');
-        if (rhs.tab.kind === 'category') {
-            expect(rhs.tab.key).toBe('indeterminate');
-        }
+        expect(rhs.filter).toBe('reported');
         expect(rhs.issues.map((issue: {key: string}) => issue.key)).toEqual(['TES-IP']);
     });
 
@@ -153,7 +147,8 @@ describe('rhs actions', () => {
 
         await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -171,7 +166,6 @@ describe('rhs actions', () => {
                     key: 'TES-9',
                     browseUrl: 'https://example.atlassian.net/browse/TES-9',
                 }],
-                tabs: [assignedTab],
                 nextPageToken: '',
                 isLast: true,
             }),
@@ -179,7 +173,8 @@ describe('rhs actions', () => {
 
         await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'created',
         }) as any);
 
@@ -195,7 +190,8 @@ describe('rhs actions', () => {
 
         await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -207,7 +203,6 @@ describe('rhs actions', () => {
                     key: 'TES-2',
                     browseUrl: 'https://example.atlassian.net/browse/TES-2',
                 }],
-                tabs: [assignedTab],
                 nextPageToken: '',
                 isLast: true,
             }),
@@ -224,7 +219,6 @@ describe('rhs actions', () => {
     test('loadMoreRHSIssues does not fetch when isLast', async () => {
         const fetchMock = mockFetchOk({
             issues: page1.issues,
-            tabs: [assignedTab],
             nextPageToken: '',
             isLast: true,
         });
@@ -232,7 +226,8 @@ describe('rhs actions', () => {
 
         await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -246,7 +241,8 @@ describe('rhs actions', () => {
 
         await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -258,7 +254,8 @@ describe('rhs actions', () => {
         const loadMorePending = store.dispatch(loadMoreRHSIssues() as any);
         const inProgressPending = store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: inProgressTab,
+            filter: 'reported',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -272,7 +269,6 @@ describe('rhs actions', () => {
                     key: 'TES-IP',
                     browseUrl: 'https://example.atlassian.net/browse/TES-IP',
                 }],
-                tabs: [assignedTab, inProgressTab],
                 nextPageToken: '',
                 isLast: true,
             }),
@@ -287,7 +283,6 @@ describe('rhs actions', () => {
                     key: 'TES-2',
                     browseUrl: 'https://example.atlassian.net/browse/TES-2',
                 }],
-                tabs: [assignedTab],
                 nextPageToken: '',
                 isLast: true,
             }),
@@ -295,11 +290,7 @@ describe('rhs actions', () => {
         await loadMorePending;
 
         const rhs = rhsFrom(store);
-        if (rhs.tab.kind === 'category') {
-            expect(rhs.tab.key).toBe('indeterminate');
-        } else {
-            throw new Error('expected category tab');
-        }
+        expect(rhs.filter).toBe('reported');
         expect(rhs.issues.map((issue: {key: string}) => issue.key)).toEqual(['TES-IP']);
     });
 
@@ -309,7 +300,8 @@ describe('rhs actions', () => {
 
         await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -333,7 +325,6 @@ describe('rhs actions', () => {
                     key: 'TES-9',
                     browseUrl: 'https://example.atlassian.net/browse/TES-9',
                 }],
-                tabs: [assignedTab],
                 nextPageToken: 'tok-refresh',
                 isLast: false,
             }),
@@ -348,7 +339,6 @@ describe('rhs actions', () => {
                     key: 'TES-2',
                     browseUrl: 'https://example.atlassian.net/browse/TES-2',
                 }],
-                tabs: [assignedTab],
                 nextPageToken: '',
                 isLast: true,
             }),
@@ -372,7 +362,8 @@ describe('rhs actions', () => {
         const store = makeRHSStore();
         const pending = store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -385,12 +376,40 @@ describe('rhs actions', () => {
             ok: true,
             json: () => Promise.resolve({
                 issues: [],
-                tabs: [assignedTab],
                 nextPageToken: '',
                 isLast: true,
             }),
         });
         await pending;
+    });
+
+    test('a search override keeps the filter and an empty query clears the search', async () => {
+        const fetchMock = mockFetchOk(page1);
+        const store = makeRHSStore();
+        seedConnectedCloud(store);
+
+        await store.dispatch(resolveAndFetchRHSIssues({filter: 'watching'}) as any);
+        await store.dispatch(resolveAndFetchRHSIssues({query: 'TES-1'}) as any);
+        expect(rhsFrom(store).filter).toBe('watching');
+        expect(rhsFrom(store).query).toBe('TES-1');
+        expect(String(fetchMock.mock.calls[1][0])).toContain('q=TES-1');
+
+        await store.dispatch(resolveAndFetchRHSIssues({filter: 'sprint', query: ''}) as any);
+        expect(rhsFrom(store).query).toBe('');
+        expect(String(fetchMock.mock.calls[2][0])).not.toContain('q=');
+        expect(String(fetchMock.mock.calls[2][0])).toContain('filter=sprint');
+    });
+
+    test('total from the server is stored and reset on a new fetch', async () => {
+        mockFetchOk({...page1, total: 7});
+        const store = makeRHSStore();
+        seedConnectedCloud(store);
+        await store.dispatch(resolveAndFetchRHSIssues() as any);
+        expect(rhsFrom(store).total).toBe(7);
+
+        mockFetchOk({...page1, total: null});
+        await store.dispatch(resolveAndFetchRHSIssues() as any);
+        expect(rhsFrom(store).total).toBeNull();
     });
 
     test('a JSON not_connected error stores the typed code', async () => {
@@ -407,7 +426,8 @@ describe('rhs actions', () => {
         const store = makeRHSStore();
         const result = await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'updated',
         }) as any);
 
@@ -421,27 +441,28 @@ describe('rhs actions', () => {
     test('fetchRHSIssues persists view state keyed by user id', async () => {
         mockFetchOk({
             issues: [],
-            tabs: [assignedTab],
             nextPageToken: '',
             isLast: true,
         });
         const store = makeRHSStore();
         await store.dispatch(fetchRHSIssues({
             instanceID: 'https://example.atlassian.net',
-            tab: assignedTab,
+            filter: 'assigned',
+            query: '',
             sort: 'created',
         }) as any);
 
         const stored = JSON.parse(localStorage.getItem('jira:rhs-view:user-1') as string);
         expect(stored.sort).toBe('created');
         expect(stored.instance).toBe('https://example.atlassian.net');
-        expect(stored.tab.kind).toBe('assigned');
+        expect(stored.filter).toBe('assigned');
+        expect(stored.query).toBeUndefined();
     });
 
-    test('restoreRHSViewState hydrates instance tab and sort without fetching', () => {
+    test('restoreRHSViewState hydrates instance filter and sort without fetching', () => {
         saveRHSViewState('user-1', {
             instance: 'https://oauth.example.atlassian.net',
-            tab: inProgressTab,
+            filter: 'reported',
             sort: 'created',
         });
 
@@ -451,7 +472,8 @@ describe('rhs actions', () => {
         const rhs = rhsFrom(store);
         expect(rhs.instanceID).toBe('https://oauth.example.atlassian.net');
         expect(rhs.sort).toBe('created');
-        expect(rhs.tab).toEqual(inProgressTab);
+        expect(rhs.filter).toBe('reported');
+        expect(rhs.query).toBe('');
         expect(rhs.issues).toEqual([]);
         expect(global.fetch as jest.Mock).not.toHaveBeenCalled();
     });
@@ -465,31 +487,32 @@ describe('rhs actions', () => {
         expect(fetchMock).toHaveBeenCalledTimes(0);
     });
 
-    test('resolveAndFetchRHSIssues does not retry Assigned after invalid_request', async () => {
-        const vanishedTab: RHSTab = {kind: 'category', name: 'In Progress', key: 'indeterminate'};
+    test('an invalid_query error keeps Jira\'s message for the panel', async () => {
         const fetchMock = global.fetch as jest.Mock;
         fetchMock.mockImplementation(() => Promise.resolve({
             ok: false,
             status: 400,
             text: () => Promise.resolve(JSON.stringify({
-                error: 'invalid_request',
-                message: 'unknown tab',
+                error: 'invalid_query',
+                message: "Field 'bogus' does not exist",
             })),
         }));
 
         const store = makeRHSStore();
         seedConnectedCloud(store);
 
-        await store.dispatch(resolveAndFetchRHSIssues({tab: vanishedTab}) as any);
+        await store.dispatch(resolveAndFetchRHSIssues({query: 'bogus = 1'}) as any);
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(rhsFrom(store).error).toBe('invalid_request');
+        expect(rhsFrom(store).error).toBe('invalid_query');
+        expect(rhsFrom(store).errorMessage).toBe("Field 'bogus' does not exist");
+        expect(rhsFrom(store).query).toBe('bogus = 1');
     });
 
-    test('hydrated view state triggers a fresh issues fetch with the tab identity', async () => {
+    test('hydrated view state triggers a fresh issues fetch with the saved filter', async () => {
         const saved = {
             instance: 'https://oauth.example.atlassian.net',
-            tab: inProgressTab,
+            filter: 'reported' as const,
             sort: 'created' as const,
         };
         saveRHSViewState('user-1', saved);
@@ -519,8 +542,9 @@ describe('rhs actions', () => {
         const url = String(fetchMock.mock.calls[0][0]);
         expect(url).toContain('/api/v2/rhs/issues');
         expect(url).toContain('sort=created');
-        expect(url).toContain('tab=' + encodeURIComponent('category:indeterminate'));
-        expect(url).not.toContain('tab_kind=');
+        expect(url).toContain('filter=reported');
+        expect(url).not.toContain('tab=');
+        expect(url).not.toContain('q=');
         expect(rhsFrom(store).issues.length).toBeGreaterThan(0);
     });
 });

@@ -8,7 +8,6 @@ import {doFetch} from '../client';
 
 import {getRHSPluginActions} from 'utils/rhs_controller';
 import {RHSSectionID} from 'types/rhs_nav';
-import {RHS_DEFAULT_TAB} from 'types/rhs';
 import {GlobalState, pluginStateKey} from 'types/store';
 
 import {persistCurrentRHSView} from './rhs';
@@ -43,8 +42,8 @@ export const toggleJiraRHS = () => {
     };
 };
 
-// Switches the RHS to another connected Jira instance. The issue list resets to
-// the default tab because status tabs differ between instances.
+// Switches the RHS to another connected Jira instance. The quick filter stays,
+// the search text is cleared because keys and JQL are instance specific.
 export const selectRHSInstance = (instanceID: string) => {
     return (dispatch: Dispatch, getState: () => GlobalState) => {
         const rhs = getState()[pluginStateKey].rhs;
@@ -55,7 +54,8 @@ export const selectRHSInstance = (instanceID: string) => {
             type: ActionTypes.SET_RHS_VIEW,
             data: {
                 instanceID,
-                tab: RHS_DEFAULT_TAB,
+                filter: rhs.filter,
+                query: '',
                 sort: rhs.sort,
             },
         });

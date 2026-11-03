@@ -8,9 +8,6 @@ import {
     RHSErrorCode,
     RHSIssuesResponse,
     RHSStatusesResponse,
-    RHSTab,
-    rhsTabFromAPI,
-    rhsTabIdentity,
 } from 'types/rhs';
 
 import {buildQueryString} from './index';
@@ -34,6 +31,7 @@ export function coerceRHSErrorCode(value: string): RHSErrorCode {
     case 'not_authorized':
     case 'unsupported_instance':
     case 'invalid_request':
+    case 'invalid_query':
     case 'internal_error':
         return value;
     default:
@@ -71,12 +69,16 @@ const doFetchJSON = async <T>(url: string): Promise<T> => {
     throw parseRHSErrorBody(text, response.status);
 };
 
-function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
+export function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
     const query: {[key: string]: string} = {
         instance_id: params.instanceID,
         sort: params.sort,
-        tab: rhsTabIdentity(params.tab),
+        filter: params.filter,
     };
+    const q = params.query.trim();
+    if (q) {
+        query.q = q;
+    }
     if (params.nextPageToken) {
         query.next_page_token = params.nextPageToken;
     }
@@ -84,31 +86,12 @@ function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
     return query;
 }
 
-function parseRHSTabs(raw: unknown): RHSTab[] {
-    if (!Array.isArray(raw)) {
-        return [];
-    }
-
-    const tabs: RHSTab[] = [];
-    for (let i = 0; i < raw.length; i++) {
-        const item = raw[i];
-        if (!item || typeof item !== 'object') {
-            continue;
-        }
-        const tab = rhsTabFromAPI(item);
-        if (tab) {
-            tabs.push(tab);
-        }
-    }
-    return tabs;
-}
-
 function parseRHSIssuesResponse(raw: RHSIssuesResponse): RHSIssuesResponse {
     return {
         issues: raw.issues || [],
-        tabs: parseRHSTabs(raw.tabs),
         nextPageToken: raw.nextPageToken || '',
         isLast: Boolean(raw.isLast),
+        total: typeof raw.total === 'number' ? raw.total : null,
     };
 }
 
