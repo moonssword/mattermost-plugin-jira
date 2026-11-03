@@ -74,6 +74,16 @@ type SelectSettingProps = {
 };
 const SelectSetting = ReactSelectSetting as unknown as React.ComponentType<SelectSettingProps>;
 
+// Fields every create form fills or Jira fills itself.
+const BASIC_FIELDS = new Set(['summary', 'description', 'project', 'issuetype', 'reporter']);
+
+// defaultIssueType picks the first type that needs nothing beyond the basic
+// fields (so not an Epic with its required "Epic Name"), else the first one.
+export function defaultIssueType<T extends {fields: {[key: string]: JiraField}}>(types: T[]): T | undefined {
+    const simple = types.find((t) => Object.keys(t.fields || {}).every((key) => BASIC_FIELDS.has(key) || !t.fields[key].required));
+    return simple || types[0];
+}
+
 // panelFieldDefs relaxes the reporter: Jira's REST API fills it with the
 // connected user when it is left empty, so the panel does not force a choice.
 export function panelFieldDefs(fields: {[key: string]: JiraField}): {[key: string]: JiraField} {
@@ -138,7 +148,7 @@ export default function CreateSection(props: Props): JSX.Element {
         }
         setMetadata(data);
         const types = getIssueTypes(data, key, {includeSubtasks: false});
-        const type = types.find((t) => t.id === preferredType) || types[0];
+        const type = types.find((t) => t.id === preferredType) || defaultIssueType(types);
         setIssueTypeID(type ? type.id : '');
         setFields((current) => ({...current, project: {key}, issuetype: {id: type ? type.id : ''}} as CreateIssueFields));
     };
