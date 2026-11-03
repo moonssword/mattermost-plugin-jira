@@ -10,278 +10,185 @@ import {
 } from '@testing-library/react';
 
 import {Instance, InstanceType} from 'types/model';
-import {RHSIssue, RHSTab} from 'types/rhs';
 
-import Rhs, {Props} from './rhs';
+import Rhs, {Props, rhsScreen} from './rhs';
 import {RHS_STRINGS} from './rhs_strings';
 
-const assignedTab: RHSTab = {kind: 'assigned', name: 'Assigned to me'};
-const inProgressTab: RHSTab = {kind: 'category', name: 'In Progress', key: 'indeterminate'};
+jest.mock('./rhs_sections', () => {
+    const section = (id: string) => (props: {instanceID: string}) => (
+        <div data-testid={'stub-' + id}>{props.instanceID}</div>
+    );
+    const sections = [
+        {id: 'my_issues', title: 'Мои задачи', component: section('my_issues')},
+        {id: 'channel', title: 'Канал', component: section('channel')},
+        {id: 'create', title: 'Создать', component: section('create')},
+    ];
+    return {
+        RHS_SECTIONS: sections,
+        findRHSSection: (id: string) => sections.find((s) => s.id === id) || sections[0],
+    };
+});
 
 const cloudOne: Instance = {instance_id: 'https://one.atlassian.net', type: InstanceType.CLOUD};
-const cloudTwo: Instance = {instance_id: 'https://two.atlassian.net', type: InstanceType.CLOUD_OAUTH};
-
-const issueOne: RHSIssue = {
-    key: 'TES-1',
-    summary: 'One',
-    browseUrl: 'https://example.atlassian.net/browse/TES-1',
-    status: {name: 'In Progress', categoryKey: 'indeterminate'},
-    issueType: 'Task',
-    project: 'TES',
-    updated: '2026-01-02T00:00:00Z',
-};
+const serverOne: Instance = {instance_id: 'http://jira.example.com', type: InstanceType.SERVER};
 
 function makeProps(overrides: Partial<Props> = {}): Props {
     return {
-        connectedInstances: [cloudOne],
+        installedInstances: [serverOne],
+        connectedInstances: [serverOne],
+        activeInstanceID: serverOne.instance_id,
+        section: 'my_issues',
+        issuesError: null,
+        isAdmin: false,
         channelId: 'channel-1',
-        instanceID: cloudOne.instance_id,
-        tab: assignedTab,
-        sort: 'updated',
-        issues: [],
-        tabs: [],
-        isLast: true,
-        loading: false,
-        error: null,
-        getConnected: jest.fn(async () => {
-            return {};
-        }),
-        restoreRHSViewState: jest.fn(() => {
-            return {data: null};
-        }),
-        resolveAndFetchRHSIssues: jest.fn(async () => {
-            return {};
-        }),
-        loadMoreRHSIssues: jest.fn(async () => {
-            return {};
-        }),
-        openCreateModalWithoutPost: jest.fn(),
+        teamId: 'team-1',
+        getConnected: jest.fn(async () => ({})),
+        restoreRHSViewState: jest.fn(() => ({data: null})),
+        setRHSSection: jest.fn(),
+        selectRHSInstance: jest.fn(),
         handleConnectFlow: jest.fn(),
+        startJiraSetupWizard: jest.fn(async () => ({data: {}})),
         ...overrides,
     };
 }
 
-function renderRHS(overrides: Partial<Props> = {}) {
+async function renderSettled(overrides: Partial<Props> = {}) {
     const props = makeProps(overrides);
-    const view = render(
-        <Rhs
-            {...props}
-        />,
-    );
+    const view = render(<Rhs {...props}/>);
+    await waitFor(() => {
+        expect(screen.queryByTestId('rhs-state-loading')).toBeNull();
+    });
     return {props, ...view};
 }
 
-async function renderSettled(overrides: Partial<Props> = {}) {
-    const result = renderRHS(overrides);
-    await waitFor(() => {
-        expect(result.props.resolveAndFetchRHSIssues).toHaveBeenCalled();
-    });
-    return result;
-}
-
 describe('components/rhs', () => {
-    test('loading state is not the empty state', async () => {
-        await renderSettled({
-            loading: true,
-            issues: [],
-            error: null,
-            connectedInstances: [cloudOne],
-        });
+    test('rhsScreen picks the first-run screens before the main panel', () => {
+        const base = {booting: false, installedCount: 1, connectedCount: 1, issuesError: null};
+        expect(rhsScreen({...base, booting: true})).toBe('loading');
+        expect(rhsScreen({...base, installedCount: 0, connectedCount: 0})).toBe('no_instance');
+        expect(rhsScreen({...base, connectedCount: 0})).toBe('connect');
+        expect(rhsScreen({...base, issuesError: 'not_connected'})).toBe('connect');
+        expect(rhsScreen(base)).toBe('main');
+    });
 
+    test('booting shows loading until getConnected resolves', () => {
+        render(
+            <Rhs
+                {...makeProps({
+                    getConnected: jest.fn(() => new Promise(() => {
+                        // never resolves
+                    })),
+                })}
+            />,
+        );
         expect(screen.getByTestId('rhs-state-loading')).toBeInTheDocument();
-        expect(screen.queryByTestId('rhs-state-empty')).toBeNull();
-        expect(screen.queryByText(RHS_STRINGS.empty)).toBeNull();
-        expect(screen.getByText('Loading')).toBeInTheDocument();
     });
 
-    test('empty state renders after a successful zero-row fetch', async () => {
-        await renderSettled({
-            loading: false,
-            issues: [],
-            error: null,
-            connectedInstances: [cloudOne],
-        });
-
-        expect(screen.getByTestId('rhs-state-empty')).toBeInTheDocument();
-        expect(screen.queryByTestId('rhs-state-loading')).toBeNull();
-        expect(screen.getByText(RHS_STRINGS.empty)).toBeInTheDocument();
-    });
-
-    test('error state renders for internal_error', async () => {
-        const {props} = await renderSettled({
-            error: 'internal_error',
-            issues: [],
-            loading: false,
-        });
-
-        expect(screen.getByTestId('rhs-state-error')).toBeInTheDocument();
-        const retry = screen.getByText(RHS_STRINGS.retry);
-        expect(retry).toHaveClass('btn', 'btn-secondary', 'btn-sm');
-        (props.resolveAndFetchRHSIssues as jest.Mock).mockClear();
-        fireEvent.click(retry);
-        expect(props.resolveAndFetchRHSIssues).toHaveBeenCalled();
-    });
-
-    test('not_connected error renders the connect state', async () => {
-        const {props} = await renderSettled({
-            error: 'not_connected',
-        });
-
-        expect(screen.getByTestId('rhs-state-not-connected')).toBeInTheDocument();
-        expect(screen.queryByTestId('rhs-sort')).toBeNull();
-        expect(screen.queryByTestId('rhs-refresh')).toBeNull();
-        expect(screen.queryByTestId('rhs-new-ticket')).toBeNull();
-        expect(screen.queryByTestId('rhs-tab-strip')).toBeNull();
-        fireEvent.click(screen.getByTestId('rhs-connect'));
-        expect(props.handleConnectFlow).toHaveBeenCalled();
-        expect(props.handleConnectFlow).toHaveBeenCalledTimes(1);
-    });
-
-    test('zero connected Cloud instances renders not-connected without fetching', async () => {
-        await renderSettled({
-            connectedInstances: [],
-            loading: false,
-            error: null,
-            issues: [],
-        });
-
-        expect(screen.getByTestId('rhs-state-not-connected')).toBeInTheDocument();
-    });
-
-    test('rate_limited renders the distinct rate-limit state', async () => {
-        await renderSettled({
-            error: 'rate_limited',
-            issues: [],
-            loading: false,
-        });
-
-        expect(screen.getByTestId('rhs-state-rate-limited')).toBeInTheDocument();
-        expect(screen.getByText(RHS_STRINGS.rateLimited)).toBeInTheDocument();
-        expect(screen.queryByTestId('rhs-state-error')).toBeNull();
-    });
-
-    test('instance picker is absent with one connected Cloud instance', async () => {
-        await renderSettled({
-            connectedInstances: [cloudOne],
-        });
-
-        expect(screen.queryByTestId('rhs-instance-picker')).toBeNull();
-    });
-
-    test('instance picker is present with two connected Cloud instances', async () => {
-        await renderSettled({
-            connectedInstances: [cloudOne, cloudTwo],
-        });
-
-        expect(screen.getByTestId('rhs-instance-picker')).toBeInTheDocument();
-    });
-
-    test('changing sort dispatches resolveAndFetchRHSIssues with created', async () => {
-        const {props} = await renderSettled();
-        (props.resolveAndFetchRHSIssues as jest.Mock).mockClear();
-
-        fireEvent.change(screen.getByTestId('rhs-sort'), {target: {value: 'created'}});
-
-        expect(props.resolveAndFetchRHSIssues).toHaveBeenCalledWith({sort: 'created'});
-    });
-
-    test('selecting a tab dispatches resolveAndFetchRHSIssues with that tab', async () => {
-        const {props} = await renderSettled({
-            tabs: [assignedTab, inProgressTab],
-            tab: assignedTab,
-        });
-        (props.resolveAndFetchRHSIssues as jest.Mock).mockClear();
-
-        fireEvent.click(screen.getByText(inProgressTab.name));
-
-        expect(props.resolveAndFetchRHSIssues).toHaveBeenCalledWith({tab: inProgressTab});
-    });
-
-    test('arrow keys move between tabs', async () => {
-        const {props} = await renderSettled({
-            tabs: [assignedTab, inProgressTab],
-            tab: assignedTab,
-        });
-        (props.resolveAndFetchRHSIssues as jest.Mock).mockClear();
-
-        const assigned = screen.getByRole('tab', {name: assignedTab.name});
-        assigned.focus();
-        fireEvent.keyDown(assigned, {key: 'ArrowRight'});
-
-        expect(props.resolveAndFetchRHSIssues).toHaveBeenCalledWith({tab: inProgressTab});
-    });
-
-    test('load more is shown when not last and click calls loadMoreRHSIssues', async () => {
-        const {props} = await renderSettled({
-            issues: [issueOne],
-            isLast: false,
-            loading: false,
-        });
-
-        fireEvent.click(screen.getByTestId('rhs-load-more'));
-        expect(props.loadMoreRHSIssues).toHaveBeenCalled();
-    });
-
-    test('refresh is disabled while loading so a click is not treated as a page-1 replace', async () => {
-        await renderSettled({
-            issues: [issueOne],
-            loading: true,
-        });
-
-        expect(screen.getByTestId('rhs-refresh')).toBeDisabled();
-        expect(screen.queryByTestId('rhs-state-loading')).toBeNull();
-        expect(screen.getByTestId('rhs-issue-list')).toBeInTheDocument();
-        expect(screen.getByTestId('rhs-list-loading')).toBeInTheDocument();
-        expect(screen.queryByTestId('rhs-load-more')).toBeNull();
-    });
-
-    test('new ticket dispatches openCreateModalWithoutPost with empty description and the channel id', async () => {
-        const {props} = await renderSettled({
-            channelId: 'channel-1',
-        });
-
-        fireEvent.click(screen.getByTestId('rhs-new-ticket'));
-        expect(props.openCreateModalWithoutPost).toHaveBeenCalledWith('', 'channel-1');
-    });
-
-    test('on mount getConnected runs before restoreRHSViewState before resolveAndFetchRHSIssues', async () => {
+    test('boot runs getConnected before restoreRHSViewState', async () => {
         const order: string[] = [];
-        const getConnected = jest.fn(async () => {
-            order.push('connected');
-            return {};
+        await renderSettled({
+            getConnected: jest.fn(async () => {
+                order.push('connected');
+                return {};
+            }),
+            restoreRHSViewState: jest.fn(() => {
+                order.push('restore');
+                return {data: null};
+            }),
         });
-        const restoreRHSViewState = jest.fn(() => {
-            order.push('restore');
-            return {data: null};
-        });
-        const resolveAndFetchRHSIssues = jest.fn(async () => {
-            order.push('fetch');
-            return {};
-        });
-
-        renderRHS({
-            getConnected,
-            restoreRHSViewState,
-            resolveAndFetchRHSIssues,
-        });
-
-        await waitFor(() => {
-            expect(order).toEqual(['connected', 'restore', 'fetch']);
-        });
+        expect(order).toEqual(['connected', 'restore']);
     });
 
-    test('booting shows loading not empty', () => {
-        renderRHS({
-            getConnected: jest.fn(() => new Promise(() => {
-                // never resolves; first paint must not be empty
-            })),
-            loading: false,
-            issues: [],
-            error: null,
-            connectedInstances: [cloudOne],
-        });
+    test('main panel shows the instance, section tabs and the active section', async () => {
+        await renderSettled();
+        expect(screen.getByTestId('rhs-instance-name')).toHaveTextContent('jira.example.com');
+        expect(screen.getByTestId('rhs-instance-name')).toHaveTextContent(RHS_STRINGS.instanceServer);
+        expect(screen.getByRole('tab', {name: 'Мои задачи'})).toHaveAttribute('aria-selected', 'true');
+        expect(screen.getByTestId('stub-my_issues')).toHaveTextContent(serverOne.instance_id);
+    });
 
-        expect(screen.getByTestId('rhs-state-loading')).toBeInTheDocument();
-        expect(screen.queryByTestId('rhs-state-empty')).toBeNull();
+    test('clicking a section tab selects it', async () => {
+        const {props} = await renderSettled();
+        fireEvent.click(screen.getByRole('tab', {name: 'Канал'}));
+        expect(props.setRHSSection).toHaveBeenCalledWith('channel');
+    });
+
+    test('the selected section from the store is rendered', async () => {
+        await renderSettled({section: 'create'});
+        expect(screen.getByTestId('stub-create')).toBeInTheDocument();
+        expect(screen.getByRole('tab', {name: 'Создать'})).toHaveAttribute('aria-selected', 'true');
+    });
+
+    test('arrow keys move between section tabs', async () => {
+        const {props} = await renderSettled();
+        fireEvent.keyDown(screen.getByRole('tab', {name: 'Мои задачи'}), {key: 'ArrowLeft'});
+        expect(props.setRHSSection).toHaveBeenCalledWith('create');
+    });
+
+    test('instance picker appears with two connected instances', async () => {
+        const {props} = await renderSettled({
+            installedInstances: [cloudOne, serverOne],
+            connectedInstances: [cloudOne, serverOne],
+            activeInstanceID: cloudOne.instance_id,
+        });
+        const picker = screen.getByTestId('rhs-instance-picker');
+        expect(picker).toHaveTextContent('one.atlassian.net (Cloud)');
+        fireEvent.change(picker, {target: {value: serverOne.instance_id}});
+        expect(props.selectRHSInstance).toHaveBeenCalledWith(serverOne.instance_id);
+    });
+
+    test('not connected users see the connect screen without an instance list', async () => {
+        const {props} = await renderSettled({connectedInstances: []});
+        expect(screen.getByTestId('rhs-state-not-connected')).toBeInTheDocument();
+        expect(screen.getByText(RHS_STRINGS.connectTitle)).toBeInTheDocument();
+        expect(screen.queryByTestId('rhs-connect-instance')).toBeNull();
+        expect(screen.queryByTestId('rhs-section-tabs')).toBeNull();
+        fireEvent.click(screen.getByTestId('rhs-connect'));
+        expect(props.handleConnectFlow).toHaveBeenCalledWith(serverOne.instance_id);
+        expect(screen.getByText(RHS_STRINGS.connectWaiting)).toBeInTheDocument();
+    });
+
+    test('connect screen lets the user pick among several instances', async () => {
+        const {props} = await renderSettled({
+            installedInstances: [cloudOne, serverOne],
+            connectedInstances: [],
+        });
+        fireEvent.change(screen.getByTestId('rhs-connect-instance'), {target: {value: serverOne.instance_id}});
+        fireEvent.click(screen.getByTestId('rhs-connect'));
+        expect(props.handleConnectFlow).toHaveBeenCalledWith(serverOne.instance_id);
+    });
+
+    test('a rejected connection shows the connect screen', async () => {
+        await renderSettled({issuesError: 'not_connected'});
+        expect(screen.getByTestId('rhs-state-not-connected')).toBeInTheDocument();
+    });
+
+    test('without instances a regular user is told to ask an admin', async () => {
+        await renderSettled({installedInstances: [], connectedInstances: []});
+        expect(screen.getByTestId('rhs-state-no-instance')).toBeInTheDocument();
+        expect(screen.getByText(RHS_STRINGS.noInstanceUser)).toBeInTheDocument();
+        expect(screen.queryByTestId('rhs-run-setup')).toBeNull();
+    });
+
+    test('without instances an admin can start the setup wizard', async () => {
+        const {props} = await renderSettled({installedInstances: [], connectedInstances: [], isAdmin: true});
+        fireEvent.click(screen.getByTestId('rhs-run-setup'));
+        await waitFor(() => {
+            expect(screen.getByText(RHS_STRINGS.setupStarted)).toBeInTheDocument();
+        });
+        expect(props.startJiraSetupWizard).toHaveBeenCalledWith('channel-1', 'team-1');
+    });
+
+    test('a failed setup start tells the admin to run the command', async () => {
+        await renderSettled({
+            installedInstances: [],
+            connectedInstances: [],
+            isAdmin: true,
+            startJiraSetupWizard: jest.fn(async () => ({error: new Error('boom')})),
+        });
+        fireEvent.click(screen.getByTestId('rhs-run-setup'));
+        await waitFor(() => {
+            expect(screen.getByText(RHS_STRINGS.setupFailed)).toBeInTheDocument();
+        });
     });
 });

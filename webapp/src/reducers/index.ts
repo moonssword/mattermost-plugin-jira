@@ -4,6 +4,7 @@
 import {combineReducers} from 'redux';
 
 import ActionTypes from '../action_types';
+
 import {ChannelSubscription, PluginSettings} from 'types/model';
 import {
     RHSErrorCode,
@@ -13,6 +14,8 @@ import {
     RHS_DEFAULT_SORT,
     RHS_DEFAULT_TAB,
 } from 'types/rhs';
+
+import rhsNav from './rhs_nav';
 
 export type Action<T extends string = string> = {
     type: T
@@ -381,4 +384,5 @@ export default combineReducers({
     subscriptionTemplatesForProjectKey,
     channelSubscriptions,
     rhs,
+    rhsNav,
 });

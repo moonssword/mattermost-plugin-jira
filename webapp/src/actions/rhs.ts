@@ -12,7 +12,7 @@ import {loadRHSViewState, saveRHSViewState} from 'utils/rhs_view_state';
 import {FetchRHSIssuesArgs, RHSSort, RHSTab} from 'types/rhs';
 import {GlobalState, pluginStateKey} from 'types/store';
 
-function persistCurrentRHSView(state: GlobalState): void {
+export function persistCurrentRHSView(state: GlobalState): void {
     const rhs = state[pluginStateKey].rhs;
     saveRHSViewState(state.entities.users.currentUserId, {
         instance: rhs.instanceID,

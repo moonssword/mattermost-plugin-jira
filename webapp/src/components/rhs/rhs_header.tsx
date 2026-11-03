@@ -12,7 +12,7 @@ export type Props = {
     loading: boolean;
     onSortChange: (sort: RHSSort) => void;
     onRefresh: () => void;
-    onNewTicket: () => void;
+    onNewTicket?: () => void;
     instancePicker?: React.ReactNode;
 };
 
@@ -65,18 +65,20 @@ export default function RHSHeader(props: Props): JSX.Element {
                         aria-hidden={true}
                     />
                 </button>
-                <button
-                    type='button'
-                    className='btn btn-primary btn-sm jira-rhs-new-ticket'
-                    data-testid='rhs-new-ticket'
-                    onClick={props.onNewTicket}
-                >
-                    <i
-                        className='icon icon-plus'
-                        aria-hidden={true}
-                    />
-                    <span>{RHS_STRINGS.newTicket}</span>
-                </button>
+                {props.onNewTicket && (
+                    <button
+                        type='button'
+                        className='btn btn-primary btn-sm jira-rhs-new-ticket'
+                        data-testid='rhs-new-ticket'
+                        onClick={props.onNewTicket}
+                    >
+                        <i
+                            className='icon icon-plus'
+                            aria-hidden={true}
+                        />
+                        <span>{RHS_STRINGS.newTicket}</span>
+                    </button>
+                )}
             </div>
         </div>
     );

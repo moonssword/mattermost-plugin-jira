@@ -699,3 +699,11 @@ export {
     restoreRHSViewState,
     type ResolveAndFetchArgs,
 } from './rhs';
+
+export {
+    openJiraRHS,
+    selectRHSInstance,
+    setRHSSection,
+    startJiraSetupWizard,
+    toggleJiraRHS,
+} from './rhs_nav';

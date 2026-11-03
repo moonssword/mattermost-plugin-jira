@@ -11,6 +11,13 @@ import React, {
 import {RHSTab, rhsTabIdentity} from 'types/rhs';
 import {rhsTabsEqual} from 'utils/rhs_resolve';
 
+import {RHS_STRINGS} from './rhs_strings';
+
+// The server names the assigned tab in English; show the localized label.
+export function rhsTabLabel(tab: RHSTab): string {
+    return tab.kind === 'assigned' ? RHS_STRINGS.assignedTab : tab.name;
+}
+
 export const RHS_TAB_PANEL_ID = 'jira-rhs-panel';
 
 export function rhsTabDomId(tab: RHSTab): string {
@@ -134,7 +141,7 @@ export default function RHSTabStrip(props: Props): JSX.Element {
                             onClick={() => props.onSelect(item)}
                             onKeyDown={(event) => onTabKeyDown(event, index)}
                         >
-                            {item.name}
+                            {rhsTabLabel(item)}
                         </button>
                     );
                 })}

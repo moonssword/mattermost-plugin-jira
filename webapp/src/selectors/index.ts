@@ -4,7 +4,7 @@
 import {createSelector} from 'reselect';
 
 import {getConfig} from 'mattermost-redux/selectors/entities/general';
-import {getCurrentUser} from 'mattermost-redux/selectors/entities/users';
+import {getCurrentUser, isCurrentUserSystemAdmin} from 'mattermost-redux/selectors/entities/users';
 
 import manifest from '../manifest';
 
@@ -17,6 +17,8 @@ import {
     RHS_DEFAULT_SORT,
     RHS_DEFAULT_TAB,
 } from 'types/rhs';
+import {RHSSectionID, RHS_DEFAULT_SECTION} from 'types/rhs_nav';
+import {resolveRHSInstanceID} from 'utils/rhs_resolve';
 import {GlobalState, pluginStateKey} from 'types/store';
 
 const getPluginState = (state: GlobalState) => state[pluginStateKey] || {};
@@ -121,3 +123,16 @@ export const getRHSIsLast = (state: GlobalState): boolean => Boolean(getPluginSt
 export const getRHSLoading = (state: GlobalState): boolean => Boolean(getPluginState(state).rhs?.loading);
 
 export const getRHSError = (state: GlobalState): RHSErrorCode | null => getPluginState(state).rhs?.error || null;
+
+export const getRHSSection = (state: GlobalState): RHSSectionID => getPluginState(state).rhsNav?.section || RHS_DEFAULT_SECTION;
+
+// The instance the RHS works with: the saved choice if still connected, else
+// the user's default, else the first connected instance.
+export const getRHSActiveInstanceID = createSelector(
+    getRHSInstanceID,
+    getUserConnectedInstances,
+    getDefaultUserInstanceID,
+    (saved, connected, defaultID): string => resolveRHSInstanceID(saved, connected, defaultID || ''),
+);
+
+export const isJiraSystemAdmin = (state: GlobalState): boolean => isCurrentUserSystemAdmin(state);

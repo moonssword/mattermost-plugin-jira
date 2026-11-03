@@ -5,6 +5,7 @@ import React from 'react';
 
 import {Instance} from 'types/model';
 
+import {rhsInstanceOptionLabel} from './rhs_instance_label';
 import {RHS_STRINGS} from './rhs_strings';
 
 export type Props = {
@@ -31,7 +32,7 @@ export default function RHSInstancePicker(props: Props): JSX.Element | null {
                     key={instance.instance_id}
                     value={instance.instance_id}
                 >
-                    {instance.alias || instance.instance_id}
+                    {rhsInstanceOptionLabel(instance)}
                 </option>
             ))}
         </select>

@@ -3,19 +3,18 @@
 
 import Rhs from 'components/rhs';
 
-import {Instance, InstanceType} from 'types/model';
+import {Instance} from 'types/model';
 import {GlobalState, pluginStateKey} from 'types/store';
 
+import ActionTypes from '../action_types';
+
+import {getRHSPluginActions, resetRHSPluginActions} from './rhs_controller';
 import {
     JIRA_RHS_TITLE,
     getJiraAppBarIconUrl,
-    registerJiraAppBar,
+    registerJiraRHS,
     shouldRegisterJiraRHS,
 } from './rhs_register';
-
-const cloudOAuth = {instance_id: 'https://oauth.example.atlassian.net', type: InstanceType.CLOUD_OAUTH};
-const cloudJwt = {instance_id: 'https://cloud.example.atlassian.net', type: InstanceType.CLOUD};
-const serverDc = {instance_id: 'http://jira.example.com', type: InstanceType.SERVER};
 
 const settingsRhsOff = {
     ui_enabled: false,
@@ -37,28 +36,18 @@ function makeState(plugin: {installedInstances?: Instance[]}): GlobalState {
 }
 
 describe('rhs_register', () => {
-    test('shouldRegisterJiraRHS is false when rhs_enabled is false even with a Cloud instance', () => {
-        expect(shouldRegisterJiraRHS(settingsRhsOff, makeState({installedInstances: [cloudOAuth]}))).toBe(false);
+    afterEach(() => {
+        resetRHSPluginActions();
     });
 
-    test('shouldRegisterJiraRHS is true when rhs_enabled is true and only Server/DC is installed', () => {
-        expect(shouldRegisterJiraRHS(settingsRhsOn, makeState({installedInstances: [serverDc]}))).toBe(true);
+    test('shouldRegisterJiraRHS follows the rhs_enabled setting only', () => {
+        expect(shouldRegisterJiraRHS(settingsRhsOn)).toBe(true);
+        expect(shouldRegisterJiraRHS(settingsRhsOff)).toBe(false);
     });
 
-    test('shouldRegisterJiraRHS is false when nothing is installed', () => {
-        expect(shouldRegisterJiraRHS(settingsRhsOn, makeState({installedInstances: []}))).toBe(false);
-    });
-
-    test('shouldRegisterJiraRHS is true for a cloud-oauth-only installation when rhs_enabled is true', () => {
-        expect(shouldRegisterJiraRHS(settingsRhsOn, makeState({installedInstances: [cloudOAuth]}))).toBe(true);
-    });
-
-    test('shouldRegisterJiraRHS is true for a cloud-JWT-only installation when rhs_enabled is true', () => {
-        expect(shouldRegisterJiraRHS(settingsRhsOn, makeState({installedInstances: [cloudJwt]}))).toBe(true);
-    });
-
-    test('shouldRegisterJiraRHS is false when settings is an error object', () => {
-        expect(shouldRegisterJiraRHS({error: true}, makeState({installedInstances: [cloudOAuth]}))).toBe(false);
+    test('shouldRegisterJiraRHS is false for missing or error settings', () => {
+        expect(shouldRegisterJiraRHS(null)).toBe(false);
+        expect(shouldRegisterJiraRHS({error: true})).toBe(false);
     });
 
     test('getJiraAppBarIconUrl uses the plugin public path', () => {
@@ -67,14 +56,76 @@ describe('rhs_register', () => {
         expect(url).not.toContain('/api/v2');
     });
 
-    test('registerJiraAppBar calls registerAppBarComponent once with omitted action and Rhs', () => {
-        const registry = {registerAppBarComponent: jest.fn()};
-        registerJiraAppBar(registry, makeState({installedInstances: [cloudOAuth]}));
+    function makeRegistry(appBarResult: unknown) {
+        return {
+            registerAppBarComponent: jest.fn(() => appBarResult),
+            registerChannelHeaderButtonAction: jest.fn(),
+            registerChannelHeaderMenuAction: jest.fn(),
+        };
+    }
+
+    function makeStore() {
+        const dispatched: unknown[] = [];
+        const store = {
+            getState: () => makeState({}),
+            dispatch: jest.fn((action: unknown): unknown => {
+                if (typeof action === 'function') {
+                    return action(store.dispatch, store.getState);
+                }
+                dispatched.push(action);
+                return action;
+            }),
+        };
+        return {store, dispatched};
+    }
+
+    const showAction = {type: 'SHOW_RHS_PLUGIN'};
+    const toggleAction = {type: 'TOGGLE_RHS_PLUGIN'};
+    const hostResult = {id: 'app-bar', rhsComponent: {id: 'rhs', showRHSPlugin: showAction, hideRHSPlugin: {}, toggleRHSPlugin: toggleAction}};
+
+    test('registerJiraRHS registers the App Bar icon with the Rhs component', () => {
+        const registry = makeRegistry(hostResult);
+        registerJiraRHS(registry, makeStore().store);
 
         expect(registry.registerAppBarComponent).toHaveBeenCalledTimes(1);
-        expect(registry.registerAppBarComponent.mock.calls[0][1]).toBeUndefined();
-        expect(registry.registerAppBarComponent.mock.calls[0][2]).toBe(JIRA_RHS_TITLE);
-        expect(registry.registerAppBarComponent.mock.calls[0][5]).toBe(JIRA_RHS_TITLE);
-        expect(registry.registerAppBarComponent.mock.calls[0][4]).toBe(Rhs);
+        const args = registry.registerAppBarComponent.mock.calls[0] as unknown[];
+        expect(args[1]).toBeUndefined();
+        expect(args[2]).toBe(JIRA_RHS_TITLE);
+        expect(args[4]).toBe(Rhs);
+        expect(args[5]).toBe(JIRA_RHS_TITLE);
+        expect(getRHSPluginActions()).toBe(hostResult.rhsComponent);
+    });
+
+    test('channel header button toggles and channel menu item opens the panel', () => {
+        const registry = makeRegistry(hostResult);
+        const {store, dispatched} = makeStore();
+        registerJiraRHS(registry, store);
+
+        const buttonAction = registry.registerChannelHeaderButtonAction.mock.calls[0][1] as () => void;
+        buttonAction();
+        expect(dispatched).toContainEqual(toggleAction);
+
+        const menuAction = registry.registerChannelHeaderMenuAction.mock.calls[0][1] as () => void;
+        menuAction();
+        expect(dispatched).toContainEqual(showAction);
+    });
+
+    test('opening from the channel menu keeps the current section', () => {
+        const registry = makeRegistry(hostResult);
+        const {store, dispatched} = makeStore();
+        registerJiraRHS(registry, store);
+
+        (registry.registerChannelHeaderMenuAction.mock.calls[0][1] as () => void)();
+        expect(dispatched.some((a) => (a as {type: string}).type === ActionTypes.SET_RHS_SECTION)).toBe(false);
+    });
+
+    test('an older server that returns only an id still registers the App Bar icon', () => {
+        const registry = makeRegistry('app-bar-id');
+        const {store, dispatched} = makeStore();
+        registerJiraRHS(registry, store);
+
+        expect(getRHSPluginActions()).toBeNull();
+        (registry.registerChannelHeaderMenuAction.mock.calls[0][1] as () => void)();
+        expect(dispatched).toEqual([]);
     });
 });

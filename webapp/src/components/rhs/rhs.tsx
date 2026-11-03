@@ -3,268 +3,170 @@
 
 import React, {useEffect, useState} from 'react';
 
-import type {ResolveAndFetchArgs} from 'actions';
-
 import {Instance} from 'types/model';
-import {
-    RHSErrorCode,
-    RHSIssue,
-    RHSSort,
-    RHSTab,
-    RHSViewState,
-    RHS_DEFAULT_TAB,
-} from 'types/rhs';
-import {rhsTabsEqual} from 'utils/rhs_resolve';
+import {RHSErrorCode, RHSViewState} from 'types/rhs';
+import {RHSSectionID} from 'types/rhs_nav';
 
-import RHSHeader from './rhs_header';
-import RHSInstancePicker from './rhs_instance_picker';
-import RHSIssueList from './rhs_issue_list';
-import {
-    RHSEmptyState,
-    RHSErrorState,
-    RHSLoadingState,
-    RHSNotConnectedState,
-    RHSRateLimitedState,
-} from './rhs_states';
-import RHSTabStrip, {RHS_TAB_PANEL_ID, rhsTabDomId} from './rhs_tab_strip';
+import {RHSConnectScreen, RHSNoInstanceScreen} from './rhs_connect_screen';
+import RHSPanelHeader from './rhs_panel_header';
+import RHSSectionTabs, {RHS_SECTION_PANEL_ID, rhsSectionDomId} from './rhs_section_tabs';
+import {RHS_SECTIONS, findRHSSection} from './rhs_sections';
+import {RHSLoadingState} from './rhs_states';
 
 import './rhs.scss';
 
 export type Props = {
+    installedInstances: Instance[];
     connectedInstances: Instance[];
+    activeInstanceID: string;
+    section: RHSSectionID;
+    issuesError: RHSErrorCode | null;
+    isAdmin: boolean;
     channelId: string;
-    instanceID: string;
-    tab: RHSTab;
-    sort: RHSSort;
-    issues: RHSIssue[];
-    tabs: RHSTab[];
-    isLast: boolean;
-    loading: boolean;
-    error: RHSErrorCode | null;
-    getConnected: () => Promise<{data?: unknown; error?: unknown}>;
+    teamId: string;
+    getConnected: () => Promise<unknown>;
     restoreRHSViewState: () => {data: RHSViewState | null};
-    resolveAndFetchRHSIssues: (overrides?: ResolveAndFetchArgs) => Promise<{data?: unknown; error?: unknown}>;
-    loadMoreRHSIssues: () => Promise<unknown>;
-    openCreateModalWithoutPost: (description: string, channelId: string) => void;
-    handleConnectFlow: () => void;
+    setRHSSection: (section: RHSSectionID) => void;
+    selectRHSInstance: (instanceID: string) => void;
+    handleConnectFlow: (instanceID?: string) => void;
+    startJiraSetupWizard: (channelId: string, teamId: string) => Promise<{data?: unknown; error?: unknown}>;
 };
 
-type RHSPanelKind = 'loading' | 'not_connected' | 'rate_limited' | 'error' | 'empty' | 'list';
+export type RHSScreen = 'loading' | 'no_instance' | 'connect' | 'main';
 
-function rhsPanelKind(args: {
+export function rhsScreen(args: {
     booting: boolean;
-    loading: boolean;
-    issuesLength: number;
-    error: RHSErrorCode | null;
-    connectedInstancesLength: number;
-}): RHSPanelKind {
-    if (args.booting || (args.loading && args.issuesLength === 0 && args.error === null)) {
+    installedCount: number;
+    connectedCount: number;
+    issuesError: RHSErrorCode | null;
+}): RHSScreen {
+    if (args.booting) {
         return 'loading';
     }
-    if (args.connectedInstancesLength === 0 || args.error === 'not_connected') {
-        return 'not_connected';
+    if (args.installedCount === 0) {
+        return 'no_instance';
     }
-    if (args.error === 'rate_limited' && args.issuesLength === 0) {
-        return 'rate_limited';
+    if (args.connectedCount === 0 || args.issuesError === 'not_connected') {
+        return 'connect';
     }
-    if (args.error !== null && args.issuesLength === 0) {
-        return 'error';
-    }
-    if (args.issuesLength === 0) {
-        return 'empty';
-    }
-    return 'list';
+    return 'main';
 }
 
+// Instances the user can still connect; all installed ones when the stored
+// connection was rejected by Jira.
+function connectableInstances(installed: Instance[], connected: Instance[], issuesError: RHSErrorCode | null): Instance[] {
+    if (issuesError === 'not_connected') {
+        return installed;
+    }
+    const connectedIDs = new Set(connected.map((instance) => instance.instance_id));
+    const rest = installed.filter((instance) => !connectedIDs.has(instance.instance_id));
+    return rest.length > 0 ? rest : installed;
+}
+
+// Shell of the Jira RHS: loads the connection state, then shows either a
+// first-run screen or the panel header, section tabs and the active section.
 export default function Rhs(props: Props): JSX.Element {
     const {
+        installedInstances,
         connectedInstances,
-        channelId,
-        instanceID,
-        tab,
-        sort,
-        issues,
-        tabs,
-        isLast,
-        loading,
-        error,
+        activeInstanceID,
+        section,
+        issuesError,
         getConnected,
         restoreRHSViewState,
-        resolveAndFetchRHSIssues,
-        loadMoreRHSIssues,
-        openCreateModalWithoutPost,
-        handleConnectFlow,
     } = props;
 
     const [booting, setBooting] = useState(true);
 
     useEffect(() => {
         let cancelled = false;
-
         const boot = async () => {
             await getConnected();
             if (cancelled) {
                 return;
             }
             restoreRHSViewState();
-            if (cancelled) {
-                return;
-            }
-            await resolveAndFetchRHSIssues();
-            if (!cancelled) {
-                setBooting(false);
-            }
+            setBooting(false);
         };
-
         boot();
-
         return () => {
             cancelled = true;
         };
 
-    // Boot once on mount. Empty deps are intentional: connect + hydrate + first fetch
-    // must not re-run when callback prop identities change.
+    // Boot once on mount: callback identities must not re-run the connect check.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const onSelectTab = (next: RHSTab) => {
-        if (rhsTabsEqual(next, tab)) {
-            return;
-        }
-        resolveAndFetchRHSIssues({tab: next});
-    };
-
-    const onSortChange = (next: RHSSort) => {
-        resolveAndFetchRHSIssues({sort: next});
-    };
-
-    const onInstanceChange = (next: string) => {
-        resolveAndFetchRHSIssues({instanceID: next, tab: RHS_DEFAULT_TAB});
-    };
-
-    const onRetry = () => {
-        resolveAndFetchRHSIssues();
-    };
-
-    const onLoadMore = () => {
-        if (!loading && !isLast) {
-            loadMoreRHSIssues();
-        }
-    };
-
-    const onRefresh = () => {
-        if (!loading) {
-            resolveAndFetchRHSIssues();
-        }
-    };
-
-    const onNewTicket = () => {
-        openCreateModalWithoutPost('', channelId);
-    };
-
-    const onConnect = () => {
-        handleConnectFlow();
-    };
-
-    const panel = rhsPanelKind({
+    const screen = rhsScreen({
         booting,
-        loading,
-        issuesLength: issues.length,
-        error,
-        connectedInstancesLength: connectedInstances.length,
+        installedCount: installedInstances.length,
+        connectedCount: connectedInstances.length,
+        issuesError,
     });
 
-    let body: JSX.Element;
-    switch (panel) {
+    let content: React.ReactNode;
+    switch (screen) {
     case 'loading':
-        body = <RHSLoadingState/>;
+        content = <RHSLoadingState/>;
         break;
-    case 'not_connected':
-        body = (
-            <RHSNotConnectedState
-                onConnect={onConnect}
+    case 'no_instance':
+        content = (
+            <RHSNoInstanceScreen
+                isAdmin={props.isAdmin}
+                onRunSetup={async () => {
+                    const result = await props.startJiraSetupWizard(props.channelId, props.teamId);
+                    return !result.error;
+                }}
             />
         );
         break;
-    case 'rate_limited':
-        body = (
-            <RHSRateLimitedState
-                onRetry={onRetry}
+    case 'connect':
+        content = (
+            <RHSConnectScreen
+                instances={connectableInstances(installedInstances, connectedInstances, issuesError)}
+                onConnect={(instanceID) => props.handleConnectFlow(instanceID)}
             />
         );
         break;
-    case 'error':
-        body = (
-            <RHSErrorState
-                onRetry={onRetry}
-            />
+    case 'main': {
+        const active = findRHSSection(section);
+        const Section = active.component;
+        content = (
+            <>
+                <RHSPanelHeader
+                    instances={connectedInstances}
+                    activeInstanceID={activeInstanceID}
+                    onInstanceChange={props.selectRHSInstance}
+                />
+                <RHSSectionTabs
+                    sections={RHS_SECTIONS}
+                    selected={active.id}
+                    onSelect={props.setRHSSection}
+                />
+                <div
+                    className='jira-rhs-section'
+                    role='tabpanel'
+                    id={RHS_SECTION_PANEL_ID}
+                    aria-labelledby={rhsSectionDomId(active.id)}
+                >
+                    <Section instanceID={activeInstanceID}/>
+                </div>
+            </>
         );
         break;
-    case 'empty':
-        body = <RHSEmptyState/>;
-        break;
-    case 'list':
-        body = (
-            <RHSIssueList
-                issues={issues}
-                loading={loading}
-                isLast={isLast}
-                error={error}
-                onLoadMore={onLoadMore}
-                onRetry={onRetry}
-            />
-        );
-        break;
+    }
     default: {
-        const exhaustive: never = panel;
-        body = exhaustive;
-        break;
+        const exhaustive: never = screen;
+        content = exhaustive;
     }
     }
-
-    const instancePicker = (
-        <RHSInstancePicker
-            instances={connectedInstances}
-            selectedInstanceID={instanceID}
-            onChange={onInstanceChange}
-        />
-    );
-
-    const showChrome = panel !== 'not_connected';
-    const showTabs = showChrome && tabs.length > 0;
 
     return (
         <div
             className='jira-rhs'
             data-testid='jira-rhs'
         >
-            {showChrome && (
-                <RHSHeader
-                    sort={sort}
-                    loading={booting || loading}
-                    onSortChange={onSortChange}
-                    onRefresh={onRefresh}
-                    onNewTicket={onNewTicket}
-                    instancePicker={instancePicker}
-                />
-            )}
-            {showTabs && (
-                <RHSTabStrip
-                    tabs={tabs}
-                    selectedTab={tab}
-                    onSelect={onSelectTab}
-                />
-            )}
-            <div
-                className='jira-rhs-body'
-                {...(showTabs ? {
-                    role: 'tabpanel',
-                    id: RHS_TAB_PANEL_ID,
-                    'aria-labelledby': rhsTabDomId(tab),
-                } : {})}
-            >
-                {body}
-            </div>
+            {content}
         </div>
     );
 }
