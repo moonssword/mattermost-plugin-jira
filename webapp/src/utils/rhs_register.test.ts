@@ -41,8 +41,12 @@ describe('rhs_register', () => {
         expect(shouldRegisterJiraRHS(settingsRhsOff, makeState({installedInstances: [cloudOAuth]}))).toBe(false);
     });
 
-    test('shouldRegisterJiraRHS is false when rhs_enabled is true but only Server/DC is installed', () => {
-        expect(shouldRegisterJiraRHS(settingsRhsOn, makeState({installedInstances: [serverDc]}))).toBe(false);
+    test('shouldRegisterJiraRHS is true when rhs_enabled is true and only Server/DC is installed', () => {
+        expect(shouldRegisterJiraRHS(settingsRhsOn, makeState({installedInstances: [serverDc]}))).toBe(true);
+    });
+
+    test('shouldRegisterJiraRHS is false when nothing is installed', () => {
+        expect(shouldRegisterJiraRHS(settingsRhsOn, makeState({installedInstances: []}))).toBe(false);
     });
 
     test('shouldRegisterJiraRHS is true for a cloud-oauth-only installation when rhs_enabled is true', () => {

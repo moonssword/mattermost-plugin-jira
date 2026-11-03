@@ -5,7 +5,7 @@ import {ComponentType} from 'react';
 
 import Rhs from 'components/rhs';
 
-import {getPluginServerRoute, hasCloudInstance} from '../selectors';
+import {getPluginServerRoute, instanceIsInstalled} from '../selectors';
 
 import {GlobalState} from 'types/store';
 
@@ -32,7 +32,7 @@ export function shouldRegisterJiraRHS(
     if (!('rhs_enabled' in settings) || settings.rhs_enabled !== true) {
         return false;
     }
-    return hasCloudInstance(state);
+    return instanceIsInstalled(state);
 }
 
 export function getJiraAppBarIconUrl(state: GlobalState): string {

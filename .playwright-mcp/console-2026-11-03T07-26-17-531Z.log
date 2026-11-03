@@ -1,0 +1,80 @@
+[  100496ms] [LOG] Loading plugin com.example.quakejs, version 1.1.0 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  100496ms] [LOG] Loading plugin mattermost-ai, version 2.5.1 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  100496ms] [LOG] Loading plugin jira, version 4.6.0+bf6677f @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  100496ms] [LOG] Loading plugin com.mattermost.calls, version 1.12.2 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  100502ms] [LOG] Loaded plugin com.example.quakejs, version 1.1.0 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  100540ms] [LOG] Loaded plugin jira, version 4.6.0+bf6677f @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  100576ms] [LOG] Loaded plugin mattermost-ai, version 2.5.1 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  100680ms] [LOG] Loaded plugin com.mattermost.calls, version 1.12.2 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139198ms] [LOG] Loading plugin com.example.quakejs, version 1.1.0 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139198ms] [LOG] Loading plugin mattermost-ai, version 2.5.1 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139199ms] [LOG] Loading plugin jira, version 4.6.0+bf6677f @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139199ms] [LOG] Loading plugin com.mattermost.calls, version 1.12.2 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139199ms] [LOG] Loaded plugin com.example.quakejs, version 1.1.0 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139205ms] [LOG] Loaded plugin mattermost-ai, version 2.5.1 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139212ms] [LOG] Loaded plugin jira, version 4.6.0+bf6677f @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139235ms] [LOG] Loaded plugin com.mattermost.calls, version 1.12.2 @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  139391ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:8065/login:0
+[  148724ms] [ERROR] Access to fetch at 'http://192.168.0.16:8065/api/v4/users/username/ai' from origin 'http://localhost:8065' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:8065/login:0
+[  148725ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://192.168.0.16:8065/api/v4/users/username/ai:0
+[  148729ms] TypeError: Failed to fetch
+    at t.default.doFetchWithResponse (http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:145471)
+    at t.default.doFetch (http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:145389)
+    at t.default.getUserByUsername (http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:90912)
+    at vn (http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:824742)
+    at http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:1376699
+    at http://localhost:8065/static/4502.3c302dbad47a832b842e.js:2:344113
+    at Map.forEach (<anonymous>)
+    at s (http://localhost:8065/static/4502.3c302dbad47a832b842e.js:2:344101)
+    at http://localhost:8065/static/4502.3c302dbad47a832b842e.js:2:342474
+    at Object.incrementAnnouncementBarCount (http://localhost:8065/static/4502.3c302dbad47a832b842e.js:2:345153)
+[  148770ms] [LOG] Initializing or re-initializing WebSocket @ http://localhost:8065/static/1870.eaf577f3889300422b4e.js:0
+[  148771ms] [LOG] websocket connecting to ws://localhost:8065/api/v4/websocket @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  148870ms] [ERROR] WebSocket connection to 'ws://localhost:8065/api/v4/websocket?connection_id=&sequence_number=0&posted_ack=true' failed: Error during WebSocket handshake: Unexpected response code: 403 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  148873ms] [ERROR] Failed to load resource: the server responded with a status of 403 (Forbidden) @ http://localhost:8065/api/v4/trial-license/prev:0
+[  148874ms] [ERROR] Access to fetch at 'http://192.168.0.16:8065/plugins/mattermost-ai/ai_bots' from origin 'http://localhost:8065' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:8065/organization/channels/town-square:0
+[  148874ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://192.168.0.16:8065/plugins/mattermost-ai/ai_bots:0
+[  148874ms] [ERROR] Access to fetch at 'http://192.168.0.16:8065/plugins/mattermost-ai/ai_bots' from origin 'http://localhost:8065' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:8065/organization/channels/town-square:0
+[  148874ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://192.168.0.16:8065/plugins/mattermost-ai/ai_bots:0
+[  148874ms] [LOG] websocket error @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  148874ms] [LOG] Event @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  148874ms] [LOG] websocket closed: 1006 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  148879ms] TypeError: Failed to fetch
+    at bn (http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:824870)
+    at http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:1015802
+    at http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:1015979
+    at ri (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:93068)
+    at Ss (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:113022)
+    at is (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:105417)
+    at Hl (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:46674)
+    at http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:103100
+[  148879ms] TypeError: Failed to fetch
+    at bn (http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:824870)
+    at http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:1015802
+    at http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:1015979
+    at ri (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:93068)
+    at Ss (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:113022)
+    at is (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:105417)
+    at Hl (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:46674)
+    at http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:103100
+[  148935ms] [ERROR] Access to fetch at 'http://192.168.0.16:8065/plugins/mattermost-ai/ai_bots' from origin 'http://localhost:8065' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:8065/organization/channels/town-square:0
+[  148935ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://192.168.0.16:8065/plugins/mattermost-ai/ai_bots:0
+[  148939ms] TypeError: Failed to fetch
+    at bn (http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:824870)
+    at http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:1015802
+    at http://localhost:8065/static/plugins/mattermost-ai/mattermost-ai_fbf9d59e2751c590_bundle.js:2:1015979
+    at ri (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:93068)
+    at Ss (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:113022)
+    at is (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:105417)
+    at Hl (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:46674)
+    at ts (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:102594)
+    at no (http://localhost:8065/static/8325.0da3b1f37d9b7327e0be.js:2:68110)
+    at http://localhost:8065/static/4989.27120bff7655225632af.js:1:121981
+[  152079ms] [ERROR] WebSocket connection to 'ws://localhost:8065/api/v4/websocket?connection_id=&sequence_number=0&posted_ack=true&disconnect_err_code=1006' failed: Error during WebSocket handshake: Unexpected response code: 403 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  152079ms] [LOG] websocket error @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  152080ms] [LOG] Event @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  155728ms] [ERROR] WebSocket connection to 'ws://localhost:8065/api/v4/websocket?connection_id=&sequence_number=0&posted_ack=true&disconnect_err_code=1006' failed: Error during WebSocket handshake: Unexpected response code: 403 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  159854ms] [ERROR] WebSocket connection to 'ws://localhost:8065/api/v4/websocket?connection_id=&sequence_number=0&posted_ack=true&disconnect_err_code=1006' failed: Error during WebSocket handshake: Unexpected response code: 403 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  164169ms] [ERROR] WebSocket connection to 'ws://localhost:8065/api/v4/websocket?connection_id=&sequence_number=0&posted_ack=true&disconnect_err_code=1006' failed: Error during WebSocket handshake: Unexpected response code: 403 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  168762ms] [ERROR] WebSocket connection to 'ws://localhost:8065/api/v4/websocket?connection_id=&sequence_number=0&posted_ack=true&disconnect_err_code=1006' failed: Error during WebSocket handshake: Unexpected response code: 403 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
+[  172106ms] [ERROR] WebSocket connection to 'ws://localhost:8065/api/v4/websocket?connection_id=&sequence_number=0&posted_ack=true&disconnect_err_code=1006' failed: Error during WebSocket handshake: Unexpected response code: 403 @ http://localhost:8065/static/6612.ec23901cb22025308bea.js:0
