@@ -20,11 +20,14 @@ function mapStateToProps(state: GlobalState): {actionText: string} {
         case 'es':
             actionText = 'Crear incidencia en Jira';
             break;
+        case 'ru':
+            actionText = 'Создать задачу Jira';
+            break;
         default:
             actionText = 'Create Jira Issue';
         }
     } else if (userCanConnect) {
-        actionText = 'Connect to Jira';
+        actionText = locale === 'ru' ? 'Подключить Jira' : 'Connect to Jira';
     } else {
         actionText = '';
     }

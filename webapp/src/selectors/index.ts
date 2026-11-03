@@ -147,3 +147,5 @@ export const isJiraSystemAdmin = (state: GlobalState): boolean => isCurrentUserS
 export const getRHSIssueKey = (state: GlobalState): string => getPluginState(state).rhsNav?.issueKey || '';
 
 export const getRHSCard = (state: GlobalState) => getPluginState(state).rhsCard;
+
+export const getRHSCreatePrefill = (state: GlobalState) => getPluginState(state).rhsCreate;
