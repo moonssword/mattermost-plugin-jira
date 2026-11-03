@@ -1,7 +1,12 @@
+/* The host body also holds the RHS header, so take the remaining space
+   instead of 100% height; otherwise the bottom of the panel (form buttons,
+   "load more") ends below the window. */
 .jira-rhs {
     display: flex;
+    overflow: hidden;
+    flex: 1 1 0;
     flex-direction: column;
-    height: 100%;
+    min-height: 0;
     color: var(--center-channel-color);
     background: var(--center-channel-bg);
 }
@@ -1071,4 +1076,27 @@
 
 .jira-rhs-attach-item .jira-rhs-type-icon {
     margin-top: 2px;
+}
+
+.jira-rhs-form-top {
+    display: flex;
+    justify-content: flex-end;
+    margin: -6px 0 6px;
+}
+
+.jira-rhs-link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    border: 0;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--button-bg);
+    background: transparent;
+    cursor: pointer;
+}
+
+.jira-rhs-link-button:hover {
+    background: rgba(var(--button-bg-rgb), 0.08);
 }

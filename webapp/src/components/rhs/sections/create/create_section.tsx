@@ -40,6 +40,8 @@ export type Props = {
     createIssue: (issue: CreateIssueRequest) => Result<{key?: string}>;
     openRHSIssue: (key: string) => unknown;
     clearRHSCreate: () => unknown;
+    openCreateModal: (postId: string) => unknown;
+    openCreateModalWithoutPost: (description: string, channelId: string) => unknown;
 };
 
 // unsupportedRequiredFields lists required fields the panel cannot render;
@@ -222,6 +224,16 @@ export default function CreateSection(props: Props): JSX.Element {
         props.clearRHSCreate();
     };
 
+    // The full-size modal stays available, with the same message or text.
+    const openInModal = () => {
+        if (props.post) {
+            props.openCreateModal(props.post.id);
+        } else {
+            props.openCreateModalWithoutPost(String(fields.description || ''), props.channelId);
+        }
+        props.clearRHSCreate();
+    };
+
     const fieldDefs = panelFieldDefs(getFields(metadata, projectKey, issueTypeID));
     const unsupported = unsupportedRequiredFields(fieldDefs);
 
@@ -300,6 +312,20 @@ export default function CreateSection(props: Props): JSX.Element {
             onSubmit={onSubmit}
         >
             <div className='jira-rhs-form-body'>
+                <div className='jira-rhs-form-top'>
+                    <button
+                        type='button'
+                        className='jira-rhs-link-button'
+                        data-testid='rhs-create-in-modal'
+                        onClick={openInModal}
+                    >
+                        <i
+                            className='icon icon-arrow-expand'
+                            aria-hidden={true}
+                        />
+                        {RHS_STRINGS.createInModal}
+                    </button>
+                </div>
                 {props.post && (
                     <blockquote
                         className='jira-rhs-quote'

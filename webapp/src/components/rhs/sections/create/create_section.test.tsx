@@ -80,6 +80,8 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         createIssue: jest.fn(async () => ({data: {key: 'BACK-500'}})),
         openRHSIssue: jest.fn(),
         clearRHSCreate: jest.fn(),
+        openCreateModal: jest.fn(),
+        openCreateModalWithoutPost: jest.fn(),
         ...overrides,
     };
 }
@@ -181,6 +183,26 @@ describe('components/rhs/sections/create', () => {
             />,
         );
         await waitFor(() => expect(screen.getByTestId('field-summary')).toHaveValue('B'));
+    });
+
+    test('the form can move to the modal with the same message', async () => {
+        const props = makeProps({
+            prefill: {postId: 'p1', summary: 'S', description: 'D', nonce: 1},
+            post: {id: 'p1', channel_id: 'dm', message: 'S'} as Props['post'],
+        });
+        render(<CreateSection {...props}/>);
+        await screen.findByTestId('jira-fields');
+        fireEvent.click(screen.getByTestId('rhs-create-in-modal'));
+        expect(props.openCreateModal).toHaveBeenCalledWith('p1');
+        expect(props.clearRHSCreate).toHaveBeenCalled();
+    });
+
+    test('without a message the modal gets the typed description', async () => {
+        const props = makeProps({prefill: {postId: '', summary: '', description: 'Текст', nonce: 1}});
+        render(<CreateSection {...props}/>);
+        await screen.findByTestId('jira-fields');
+        fireEvent.click(screen.getByTestId('rhs-create-in-modal'));
+        expect(props.openCreateModalWithoutPost).toHaveBeenCalledWith('Текст', 'channel-1');
     });
 
     test('no projects shows a hint', async () => {
