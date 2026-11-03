@@ -54,4 +54,6 @@ export default {
     RHS_CARD_ACTION_STARTED: `${PluginId}_rhs_card_action_started`,
     RHS_CARD_ACTION_FAILED: `${PluginId}_rhs_card_action_failed`,
     RHS_CARD_ACTION_DONE: `${PluginId}_rhs_card_action_done`,
+    SET_RHS_CREATE: `${PluginId}_set_rhs_create`,
+    CLEAR_RHS_CREATE: `${PluginId}_clear_rhs_create`,
 };

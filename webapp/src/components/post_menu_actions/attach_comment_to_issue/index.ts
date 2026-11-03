@@ -21,6 +21,9 @@ function mapStateToProps(state: GlobalState): {actionText: string} {
     case 'es':
         actionText = 'Adjuntar a incidencia de Jira';
         break;
+    case 'ru':
+        actionText = 'Приложить к задаче Jira';
+        break;
     default:
         actionText = 'Attach to Jira Issue';
     }

@@ -21,6 +21,7 @@ import AttachCommentToIssueModal from 'components/modals/attach_comment_modal';
 import SetupUI from 'components/setup_ui';
 import LinkTooltip from 'components/jira_ticket_tooltip';
 import {isCombinedUserActivityPost} from 'utils/posts';
+import {getRHSPluginActions} from 'utils/rhs_controller';
 import {registerJiraRHS, shouldRegisterJiraRHS} from 'utils/rhs_register';
 import {GlobalState} from 'types/store';
 
@@ -35,6 +36,7 @@ import {
     handleInstanceStatusChange,
     openAttachCommentToIssueModal,
     openCreateModal,
+    openRHSCreate,
 } from './actions';
 
 import Hooks from './hooks/hooks';
@@ -65,7 +67,9 @@ export const setupUILater = (registry: any, store: Store<object, Action<object>>
                         return;
                     }
 
-                    if (userConnected) {
+                    if (userConnected && getRHSPluginActions()) {
+                        store.dispatch<any>(openRHSCreate({postId}));
+                    } else if (userConnected) {
                         store.dispatch<any>(openCreateModal(postId));
                     } else if (userCanConnect) {
                         store.dispatch<any>(handleConnectFlow());

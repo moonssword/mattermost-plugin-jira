@@ -938,3 +938,86 @@
 .jira-rhs-card-actions .btn {
     margin: 0;
 }
+
+/* Create form. */
+.jira-rhs-form {
+    display: flex;
+    overflow: hidden;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.jira-rhs-form-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 14px 16px;
+}
+
+.jira-rhs-form-body .form-group {
+    margin-bottom: 12px;
+}
+
+.jira-rhs-form-body .control-label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.jira-rhs-form-body textarea {
+    min-height: 120px;
+}
+
+.jira-rhs-form-two {
+    display: grid;
+    gap: 0 10px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.jira-rhs-form-two > * {
+    min-width: 0;
+}
+
+.jira-rhs-quote {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0 0 12px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--button-bg);
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: rgba(var(--center-channel-color-rgb), 0.72);
+    background: rgba(var(--center-channel-color-rgb), 0.04);
+}
+
+.jira-rhs-quote b {
+    color: var(--center-channel-color);
+}
+
+.jira-rhs-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.jira-rhs-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 16px 12px;
+    border-top: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
+}
+
+.jira-rhs-form-footer .btn,
+.jira-rhs-form-buttons .btn {
+    margin: 0;
+}
+
+.jira-rhs-form-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}

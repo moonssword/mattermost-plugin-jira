@@ -297,6 +297,10 @@ type InCreateIssue struct {
 	CurrentTeam              string           `json:"current_team"`
 	ChannelID                string           `json:"channel_id"`
 	Fields                   jira.IssueFields `json:"fields"`
+
+	// SkipPublicReply leaves out the visible "Created a Jira issue" post;
+	// the RHS create form lets the user turn it off.
+	SkipPublicReply bool `json:"skip_public_reply,omitempty"`
 }
 
 func (p *Plugin) httpCreateIssue(w http.ResponseWriter, r *http.Request) (int, error) {
@@ -486,6 +490,10 @@ func (p *Plugin) notifyCreatedIssue(instance Instance, connection *Connection, c
 	publicMsg := fmt.Sprintf("Created a Jira issue: [%s](%s/browse/%s)", ref, instance.GetJiraBaseURL(), ref)
 	if createdIssue.Fields != nil && createdIssue.Fields.Status != nil {
 		publicMsg = fmt.Sprintf("Created a Jira issue: %s", mdKeySummaryLink(createdIssue, instance))
+	}
+
+	if in.SkipPublicReply {
+		return createdIssue, nil
 	}
 
 	publicReply := &model.Post{

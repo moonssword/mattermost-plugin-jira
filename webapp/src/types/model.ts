@@ -237,6 +237,7 @@ export type CreateIssueRequest = {
     current_team: string;
     channel_id: string;
     fields: {};
+    skip_public_reply?: boolean;
 };
 
 export type SearchIssueParams = {

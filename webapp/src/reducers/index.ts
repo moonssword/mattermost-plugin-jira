@@ -16,6 +16,7 @@ import {
 } from 'types/rhs';
 
 import rhsCard from './rhs_card';
+import rhsCreate from './rhs_create';
 import rhsNav from './rhs_nav';
 
 export type Action<T extends string = string> = {
@@ -413,4 +414,5 @@ export default combineReducers({
     rhs,
     rhsNav,
     rhsCard,
+    rhsCreate,
 });

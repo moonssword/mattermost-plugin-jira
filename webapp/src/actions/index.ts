@@ -718,3 +718,8 @@ export {
     shareRHSCard,
     transitionRHSCard,
 } from './rhs_card';
+
+export {
+    clearRHSCreate,
+    openRHSCreate,
+} from './rhs_create';
