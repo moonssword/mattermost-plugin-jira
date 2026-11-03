@@ -15,6 +15,7 @@ import {
     RHS_DEFAULT_SORT,
 } from 'types/rhs';
 
+import rhsCard from './rhs_card';
 import rhsNav from './rhs_nav';
 
 export type Action<T extends string = string> = {
@@ -359,6 +360,24 @@ function rhs(state: RHSState = defaultRHSState, action = {} as AnyAction): RHSSt
             loading: false,
             error: null,
         };
+    case ActionTypes.RECEIVED_RHS_CARD: {
+        const card = action.data as RHSIssue | undefined;
+        if (!card || !state.issues.some((issue) => issue.key === card.key)) {
+            return state;
+        }
+        return {
+            ...state,
+            issues: state.issues.map((issue) => (issue.key === card.key ? {
+                ...issue,
+                summary: card.summary,
+                status: card.status,
+                priority: card.priority,
+                priorityIconUrl: card.priorityIconUrl,
+                dueDate: card.dueDate,
+                updated: card.updated,
+            } : issue)),
+        };
+    }
     case ActionTypes.RHS_ISSUES_ERROR:
         if (action.requestId !== state.requestId) {
             return state;
@@ -393,4 +412,5 @@ export default combineReducers({
     channelSubscriptions,
     rhs,
     rhsNav,
+    rhsCard,
 });

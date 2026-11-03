@@ -46,4 +46,12 @@ export default {
     RECEIVED_RHS_ISSUES_APPEND: `${PluginId}_received_rhs_issues_append`,
     RHS_ISSUES_ERROR: `${PluginId}_rhs_issues_error`,
     SET_RHS_SECTION: `${PluginId}_set_rhs_section`,
+    OPEN_RHS_ISSUE: `${PluginId}_open_rhs_issue`,
+    CLOSE_RHS_ISSUE: `${PluginId}_close_rhs_issue`,
+    RHS_CARD_LOADING: `${PluginId}_rhs_card_loading`,
+    RECEIVED_RHS_CARD: `${PluginId}_received_rhs_card`,
+    RHS_CARD_ERROR: `${PluginId}_rhs_card_error`,
+    RHS_CARD_ACTION_STARTED: `${PluginId}_rhs_card_action_started`,
+    RHS_CARD_ACTION_FAILED: `${PluginId}_rhs_card_action_failed`,
+    RHS_CARD_ACTION_DONE: `${PluginId}_rhs_card_action_done`,
 };

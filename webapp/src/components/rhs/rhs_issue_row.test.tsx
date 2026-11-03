@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 
 import {RHSIssue} from 'types/rhs';
 
@@ -115,5 +115,34 @@ describe('components/rhs/rhs_issue_row meta', () => {
             />,
         );
         expect(screen.getByAltText('High')).toBeInTheDocument();
+    });
+});
+
+describe('components/rhs/rhs_issue_row open', () => {
+    const issue: RHSIssue = {
+        key: 'TES-3',
+        summary: 'Three',
+        browseUrl: 'http://jira.example.com/browse/TES-3',
+        status: {name: 'Open', categoryKey: 'new'},
+        issueType: 'Task',
+        project: 'TES',
+        updated: '',
+    };
+
+    test('a plain click opens the card, a modified click follows the link', () => {
+        const onOpen = jest.fn();
+        render(
+            <RHSIssueRow
+                issue={issue}
+                nowMs={0}
+                onOpen={onOpen}
+            />,
+        );
+        const link = screen.getByRole('link');
+        fireEvent.click(link);
+        expect(onOpen).toHaveBeenCalledWith('TES-3');
+
+        fireEvent.click(link, {ctrlKey: true});
+        expect(onOpen).toHaveBeenCalledTimes(1);
     });
 });

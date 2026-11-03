@@ -35,6 +35,7 @@ export type Props = {
     loadedInstanceID: string;
     resolveAndFetchRHSIssues: (overrides?: ResolveAndFetchArgs) => Promise<unknown>;
     loadMoreRHSIssues: () => Promise<unknown>;
+    openRHSIssue: (key: string) => unknown;
 };
 
 type BodyKind = 'loading' | 'rate_limited' | 'invalid_query' | 'error' | 'empty' | 'list';
@@ -153,6 +154,7 @@ export default function MyIssues(props: Props): JSX.Element {
                 error={error}
                 onLoadMore={onLoadMore}
                 onRetry={onRetry}
+                onOpenIssue={props.openRHSIssue}
             />
         );
         break;

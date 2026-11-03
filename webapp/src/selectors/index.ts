@@ -143,3 +143,7 @@ export const getRHSActiveInstanceID = createSelector(
 );
 
 export const isJiraSystemAdmin = (state: GlobalState): boolean => isCurrentUserSystemAdmin(state);
+
+export const getRHSIssueKey = (state: GlobalState): string => getPluginState(state).rhsNav?.issueKey || '';
+
+export const getRHSCard = (state: GlobalState) => getPluginState(state).rhsCard;

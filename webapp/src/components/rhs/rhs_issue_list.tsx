@@ -24,6 +24,7 @@ export type Props = {
     error: RHSErrorCode | null;
     onLoadMore: () => void;
     onRetry: () => void;
+    onOpenIssue?: (key: string) => void;
 };
 
 export default function RHSIssueList(props: Props): JSX.Element {
@@ -50,6 +51,7 @@ export default function RHSIssueList(props: Props): JSX.Element {
                             key={issue.key}
                             issue={issue}
                             nowMs={nowMs}
+                            onOpen={props.onOpenIssue}
                         />
                     ))}
                 </section>

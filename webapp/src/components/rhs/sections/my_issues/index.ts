@@ -4,7 +4,7 @@
 import {connect} from 'react-redux';
 import {Dispatch, bindActionCreators} from 'redux';
 
-import {loadMoreRHSIssues, resolveAndFetchRHSIssues} from 'actions';
+import {loadMoreRHSIssues, openRHSIssue, resolveAndFetchRHSIssues} from 'actions';
 import {
     getRHSError,
     getRHSErrorMessage,
@@ -22,7 +22,7 @@ import {GlobalState} from 'types/store';
 import MyIssues, {Props} from './my_issues';
 
 type OwnProps = Pick<Props, 'instanceID'>;
-type DispatchProps = Pick<Props, 'loadMoreRHSIssues' | 'resolveAndFetchRHSIssues'>;
+type DispatchProps = Pick<Props, 'loadMoreRHSIssues' | 'openRHSIssue' | 'resolveAndFetchRHSIssues'>;
 
 const mapStateToProps = (state: GlobalState) => ({
     filter: getRHSFilter(state),
@@ -38,6 +38,7 @@ const mapStateToProps = (state: GlobalState) => ({
 
 const actionCreators = {
     loadMoreRHSIssues,
+    openRHSIssue,
     resolveAndFetchRHSIssues,
 };
 

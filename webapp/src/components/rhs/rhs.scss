@@ -589,3 +589,352 @@
         animation: none !important;
     }
 }
+
+/* Issue card. */
+.jira-rhs-main {
+    display: flex;
+    overflow: hidden;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.jira-rhs-main[hidden] {
+    display: none;
+}
+
+.jira-rhs-card {
+    display: flex;
+    overflow: hidden;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.jira-rhs-card-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 12px;
+    border-bottom: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
+}
+
+.jira-rhs-card-key {
+    font-family: Menlo, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.jira-rhs-card-open {
+    margin-left: auto;
+    text-decoration: none;
+}
+
+.jira-rhs-card-open:hover,
+.jira-rhs-card-open:focus {
+    text-decoration: none;
+}
+
+.jira-rhs-card-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 14px 16px 16px;
+}
+
+.jira-rhs-card-kind {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+}
+
+.jira-rhs-card-summary {
+    margin: 6px 0 12px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+    word-break: break-word;
+}
+
+.jira-rhs-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.jira-rhs-card-note,
+.jira-rhs-card-alert {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.jira-rhs-card-note {
+    color: var(--center-channel-color);
+    background: rgba(var(--online-indicator-rgb), 0.16);
+}
+
+.jira-rhs-card-alert {
+    color: var(--error-text);
+    background: rgba(var(--dnd-indicator-rgb), 0.1);
+    word-break: break-word;
+}
+
+.jira-rhs-card-fields {
+    display: grid;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 16px 0 0;
+    grid-template-columns: 96px 1fr;
+}
+
+.jira-rhs-card-fields dt {
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+}
+
+.jira-rhs-card-fields dd {
+    min-width: 0;
+    margin: 0;
+}
+
+.jira-rhs-card-section {
+    margin-top: 18px;
+}
+
+.jira-rhs-card-section h4 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+}
+
+.jira-rhs-markdown {
+    overflow-wrap: anywhere;
+}
+
+.jira-rhs-markdown--plain {
+    white-space: pre-wrap;
+}
+
+.jira-rhs-markdown p:last-child {
+    margin-bottom: 0;
+}
+
+.jira-rhs-muted {
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+}
+
+.jira-rhs-small {
+    font-size: 12px;
+}
+
+.jira-rhs-avatar {
+    display: inline-grid;
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--button-bg);
+    background: rgba(var(--button-bg-rgb), 0.16);
+}
+
+.jira-rhs-user {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.jira-rhs-assignee {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.jira-rhs-assignee-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.jira-rhs-search-input--plain {
+    padding: 0 8px;
+}
+
+.jira-rhs-picker-list {
+    overflow-y: auto;
+    width: 100%;
+    max-height: 220px;
+    border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
+    border-radius: 4px;
+}
+
+.jira-rhs-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.jira-rhs-label {
+    padding: 0 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    background: rgba(var(--center-channel-color-rgb), 0.08);
+}
+
+/* Status dropdown. */
+.jira-rhs-status-menu {
+    position: relative;
+}
+
+.jira-rhs-status-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 4px;
+    border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
+    border-radius: 4px;
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+    background: transparent;
+    cursor: pointer;
+}
+
+.jira-rhs-status-button:hover {
+    background: rgba(var(--center-channel-color-rgb), 0.08);
+}
+
+.jira-rhs-status-button:focus {
+    box-shadow: none;
+}
+
+.jira-rhs-status-button:focus-visible {
+    box-shadow: 0 0 0 2px var(--sidebar-text-active-border);
+}
+
+.jira-rhs-popover {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 220px;
+    padding: 4px 0;
+    border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
+    border-radius: 4px;
+    background: var(--center-channel-bg);
+    box-shadow: 0 8px 24px rgba(var(--center-channel-color-rgb), 0.16);
+}
+
+.jira-rhs-popover-title {
+    padding: 6px 12px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(var(--center-channel-color-rgb), 0.56);
+}
+
+.jira-rhs-popover-empty {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: rgba(var(--center-channel-color-rgb), 0.64);
+}
+
+.jira-rhs-popover-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    padding: 6px 12px;
+    border: 0;
+    text-align: left;
+    color: var(--center-channel-color);
+    background: transparent;
+    cursor: pointer;
+}
+
+.jira-rhs-popover-item:hover,
+.jira-rhs-popover-item:focus-visible {
+    background: rgba(var(--button-bg-rgb), 0.08);
+    outline: none;
+}
+
+.jira-rhs-popover-hint {
+    font-size: 11px;
+    color: rgba(var(--center-channel-color-rgb), 0.56);
+}
+
+/* Comments. */
+.jira-rhs-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.jira-rhs-comment {
+    display: flex;
+    gap: 8px;
+}
+
+.jira-rhs-comment-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.jira-rhs-comment-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.jira-rhs-composer {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 16px 12px;
+    border-top: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
+}
+
+.jira-rhs-composer-input {
+    width: 100%;
+    min-height: 44px;
+    max-height: 160px;
+    padding: 6px 8px;
+    resize: vertical;
+    font-size: 13px;
+    color: var(--center-channel-color);
+    background: var(--center-channel-bg);
+    border: 1px solid rgba(var(--center-channel-color-rgb), 0.16);
+    border-radius: 4px;
+}
+
+.jira-rhs-composer-input:focus {
+    border-color: var(--button-bg);
+    outline: none;
+}
+
+.jira-rhs-composer-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.jira-rhs-card-actions .btn {
+    margin: 0;
+}

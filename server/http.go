@@ -172,6 +172,7 @@ func (p *Plugin) initializeRouter() {
 	// Cloud-only personal tickets RHS
 	apiRouter.HandleFunc(routeAPIRHSIssues, p.checkAuth(p.handleResponse(p.httpRHSGetIssues))).Methods(http.MethodGet)
 	apiRouter.HandleFunc(routeAPIRHSStatuses, p.checkAuth(p.handleResponse(p.httpRHSListStatuses))).Methods(http.MethodGet)
+	p.registerRHSIssueRoutes(apiRouter)
 }
 
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {

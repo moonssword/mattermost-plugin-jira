@@ -7,6 +7,7 @@ import {Instance} from 'types/model';
 import {RHSErrorCode, RHSViewState} from 'types/rhs';
 import {RHSSectionID} from 'types/rhs_nav';
 
+import IssueCard from './issue_card';
 import {RHSConnectScreen, RHSNoInstanceScreen} from './rhs_connect_screen';
 import RHSPanelHeader from './rhs_panel_header';
 import RHSSectionTabs, {RHS_SECTION_PANEL_ID, rhsSectionDomId} from './rhs_section_tabs';
@@ -20,6 +21,7 @@ export type Props = {
     connectedInstances: Instance[];
     activeInstanceID: string;
     section: RHSSectionID;
+    issueKey: string;
     issuesError: RHSErrorCode | null;
     isAdmin: boolean;
     channelId: string;
@@ -131,25 +133,35 @@ export default function Rhs(props: Props): JSX.Element {
     case 'main': {
         const active = findRHSSection(section);
         const Section = active.component;
+
+        // The card covers the sections; they stay mounted to keep the list
+        // and its scroll position for "back".
+        const cardOpen = Boolean(props.issueKey);
         content = (
             <>
-                <RHSPanelHeader
-                    instances={connectedInstances}
-                    activeInstanceID={activeInstanceID}
-                    onInstanceChange={props.selectRHSInstance}
-                />
-                <RHSSectionTabs
-                    sections={RHS_SECTIONS}
-                    selected={active.id}
-                    onSelect={props.setRHSSection}
-                />
+                {cardOpen && <IssueCard/>}
                 <div
-                    className='jira-rhs-section'
-                    role='tabpanel'
-                    id={RHS_SECTION_PANEL_ID}
-                    aria-labelledby={rhsSectionDomId(active.id)}
+                    className='jira-rhs-main'
+                    hidden={cardOpen}
                 >
-                    <Section instanceID={activeInstanceID}/>
+                    <RHSPanelHeader
+                        instances={connectedInstances}
+                        activeInstanceID={activeInstanceID}
+                        onInstanceChange={props.selectRHSInstance}
+                    />
+                    <RHSSectionTabs
+                        sections={RHS_SECTIONS}
+                        selected={active.id}
+                        onSelect={props.setRHSSection}
+                    />
+                    <div
+                        className='jira-rhs-section'
+                        role='tabpanel'
+                        id={RHS_SECTION_PANEL_ID}
+                        aria-labelledby={rhsSectionDomId(active.id)}
+                    >
+                        <Section instanceID={activeInstanceID}/>
+                    </div>
                 </div>
             </>
         );

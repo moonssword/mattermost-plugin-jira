@@ -15,4 +15,7 @@ export function isRHSSectionID(value: unknown): value is RHSSectionID {
 
 export type RHSNavState = {
     section: RHSSectionID;
+
+    // Key of the issue whose card is open over the sections, '' when none.
+    issueKey: string;
 };
