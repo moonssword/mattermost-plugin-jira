@@ -41,13 +41,35 @@ func (p *Plugin) loadRHSInstance(instanceID types.ID) (Instance, error) {
 	return instance, nil
 }
 
+// getRHSClient is getClient for RHS endpoints. A user without a stored
+// token gets kvstore.ErrNotFound, which the RHS reports as "not_connected"
+// instead of an internal error. The extra lookup runs only on failure.
+func (p *Plugin) getRHSClient(instanceID, mattermostUserID types.ID) (Client, Instance, *Connection, error) {
+	client, instance, connection, err := p.getClient(instanceID, mattermostUserID)
+	if err == nil {
+		return client, instance, connection, nil
+	}
+	if rhsNotConnected(p.userStore.LoadConnection(instanceID, mattermostUserID)) {
+		return nil, nil, nil, errors.Wrap(kvstore.ErrNotFound, err.Error())
+	}
+	return nil, nil, nil, err
+}
+
+// rhsNotConnected tells whether a stored connection holds no Jira token.
+func rhsNotConnected(stored *Connection, loadErr error) bool {
+	if loadErr != nil {
+		return errors.Is(loadErr, kvstore.ErrNotFound)
+	}
+	return stored == nil || (stored.Oauth1AccessToken == "" && stored.OAuth2Token == nil)
+}
+
 func (p *Plugin) resolveRHSUserClient(instanceID, mattermostUserID types.ID) (Instance, rhsClient, error) {
 	instance, err := p.loadRHSInstance(instanceID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	client, instance, _, err := p.getClient(instance.GetID(), mattermostUserID)
+	client, instance, _, err := p.getRHSClient(instance.GetID(), mattermostUserID)
 	if err != nil {
 		return nil, nil, err
 	}

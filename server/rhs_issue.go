@@ -202,7 +202,7 @@ func (p *Plugin) rhsIssueContext(instanceID, mattermostUserID types.ID, key stri
 	if _, err := p.loadRHSInstance(instanceID); err != nil {
 		return nil, err
 	}
-	client, instance, connection, err := p.getClient(instanceID, mattermostUserID)
+	client, instance, connection, err := p.getRHSClient(instanceID, mattermostUserID)
 	if err != nil {
 		return nil, err
 	}

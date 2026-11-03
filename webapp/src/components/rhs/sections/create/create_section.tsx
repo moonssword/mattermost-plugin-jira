@@ -130,7 +130,7 @@ export default function CreateSection(props: Props): JSX.Element {
     const [fields, setFields] = useState<CreateIssueFields>(() => initialFields(prefill));
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [created, setCreated] = useState<{key: string} | null>(null);
+    const [created, setCreated] = useState<{key: string; posted?: boolean} | null>(null);
     const [replyInThread, setReplyInThread] = useState(true);
     const savedIssueType = useRef('');
 
@@ -279,7 +279,7 @@ export default function CreateSection(props: Props): JSX.Element {
             return;
         }
         setSubmitting(false);
-        setCreated({key: data.key});
+        setCreated({key: data.key, posted: replyInThread});
         props.clearRHSCreate();
     };
 
@@ -329,10 +329,15 @@ export default function CreateSection(props: Props): JSX.Element {
             <div className='jira-rhs-form'>
                 {header}
                 <div
-                    className='jira-rhs-placeholder'
+                    className='jira-rhs-placeholder jira-rhs-placeholder--done'
                     data-testid='rhs-create-done'
                 >
+                    <i
+                        className='icon icon-check-circle jira-rhs-done-icon'
+                        aria-hidden={true}
+                    />
                     <h4 className='jira-rhs-placeholder-title'>{RHS_STRINGS.createDone.replace('{key}', created.key)}</h4>
+                    {created.posted && <p className='jira-rhs-placeholder-text'>{RHS_STRINGS.createDoneHint}</p>}
                     <div className='jira-rhs-form-buttons'>
                         <button
                             type='button'

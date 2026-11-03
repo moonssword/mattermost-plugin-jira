@@ -116,9 +116,13 @@ export default function AttachView(props: Props): JSX.Element {
             <div className='jira-rhs-card'>
                 {header}
                 <div
-                    className='jira-rhs-placeholder'
+                    className='jira-rhs-placeholder jira-rhs-placeholder--done'
                     data-testid='rhs-attach-done'
                 >
+                    <i
+                        className='icon icon-check-circle jira-rhs-done-icon'
+                        aria-hidden={true}
+                    />
                     <h4 className='jira-rhs-placeholder-title'>{RHS_STRINGS.attachDone.replace('{key}', done)}</h4>
                     <p className='jira-rhs-placeholder-text'>{RHS_STRINGS.attachDoneHint}</p>
                     <div className='jira-rhs-form-buttons'>

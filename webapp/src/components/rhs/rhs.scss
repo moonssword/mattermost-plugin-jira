@@ -2244,3 +2244,52 @@
     top: 0;
     background: var(--center-channel-bg);
 }
+
+/* Success screens after create and attach. */
+.jira-rhs-placeholder--done {
+    align-items: center;
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.jira-rhs-done-icon {
+    font-size: 40px;
+    color: var(--online-indicator);
+}
+
+.jira-rhs-done-icon::before {
+    margin: 0;
+}
+
+.jira-rhs-placeholder--done .jira-rhs-form-buttons {
+    justify-content: center;
+    margin-top: 6px;
+}
+
+/* Share in the card is a short button with an icon. */
+.jira-rhs-card-actions .btn .icon::before {
+    margin: 0 4px 0 0;
+}
+
+.jira-rhs-card-actions .btn {
+    display: inline-flex;
+    align-items: center;
+}
+
+/* The plugin's subscription editor carries modal paddings (2em inline);
+   in the 380 px panel 12 px is enough. */
+.jira-rhs-subscription-editor-body form > div {
+    padding: 12px 12px 16px !important;
+}
+
+.jira-rhs-subscription-editor-body .container-fluid {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+/* Keyboard hints mean nothing on touch screens. */
+@media (hover: none) {
+    .jira-rhs-kbd {
+        display: none;
+    }
+}

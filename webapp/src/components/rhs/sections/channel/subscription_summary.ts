@@ -60,8 +60,17 @@ export function subscriptionScope(sub: RHSChannelSubscription): string {
     return parts.join(' · ');
 }
 
+// Events in the order of EVENT_LABELS: the server stores them as a set,
+// so the stored order changes from one save to another.
+const EVENT_ORDER = Object.keys(EVENT_LABELS);
+
+function eventRank(event: string): number {
+    const index = EVENT_ORDER.indexOf(event);
+    return index < 0 ? EVENT_ORDER.length : index;
+}
+
 export function subscriptionEvents(sub: RHSChannelSubscription): string {
-    const events = sub.filters.events || [];
+    const events = [...(sub.filters.events || [])].sort((a, b) => eventRank(a) - eventRank(b));
     const list = events.length ? events.map(rhsEventLabel).join(', ') : RHS_STRINGS.channelAllEvents;
     return RHS_STRINGS.channelEvents.replace('{list}', list);
 }

@@ -445,7 +445,7 @@ func (p *Plugin) rhsBoardClient(r *http.Request) (Instance, Client, error) {
 	if _, err := p.loadRHSInstance(instanceID); err != nil {
 		return nil, nil, err
 	}
-	client, instance, _, err := p.getClient(instanceID, userID)
+	client, instance, _, err := p.getRHSClient(instanceID, userID)
 	if err != nil {
 		return nil, nil, err
 	}

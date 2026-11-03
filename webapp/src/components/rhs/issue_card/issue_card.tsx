@@ -146,10 +146,16 @@ export default function IssueCard(props: Props): JSX.Element {
                             type='button'
                             className='btn btn-tertiary btn-sm'
                             data-testid='rhs-card-share'
+                            title={RHS_STRINGS.shareToChannel}
+                            aria-label={RHS_STRINGS.shareToChannel}
                             disabled={card.pending !== null}
                             onClick={onShare}
                         >
-                            {RHS_STRINGS.shareToChannel}
+                            <i
+                                className='icon icon-share-variant-outline'
+                                aria-hidden={true}
+                            />
+                            {RHS_STRINGS.shareShort}
                         </button>
                     )}
                 </div>

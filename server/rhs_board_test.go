@@ -5,13 +5,17 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	jira "github.com/andygrunwald/go-jira"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mattermost/mattermost-plugin-jira/server/utils/kvstore"
 )
 
 // testAgileClient answers RESTGetRaw from canned JSON keyed by path, and for
@@ -206,4 +210,20 @@ func TestSprintProgressFallsBackToIssuesWithoutPoints(t *testing.T) {
 	progress, err := sprintProgress(client, 7, 3, "customfield_10111")
 	require.NoError(t, err)
 	assert.Equal(t, &RHSBoardProgress{Unit: rhsProgressIssues, ToDo: 1, Done: 1}, progress)
+}
+
+func TestRHSNotConnected(t *testing.T) {
+	assert.True(t, rhsNotConnected(nil, kvstore.ErrNotFound))
+	assert.True(t, rhsNotConnected(&Connection{}, nil))
+	assert.True(t, rhsNotConnected(&Connection{User: jira.User{Name: "ivan"}}, nil), "a name without a token is not a connection")
+	assert.False(t, rhsNotConnected(&Connection{Oauth1AccessToken: "t"}, nil))
+	assert.False(t, rhsNotConnected(nil, errors.New("kv down")))
+}
+
+func TestRHSBoardsForUnconnectedUser(t *testing.T) {
+	err := errors.Wrap(kvstore.ErrNotFound, "no access token")
+	w := httptest.NewRecorder()
+	status, _ := respondRHSErr(w, err)
+	assert.Equal(t, http.StatusUnauthorized, status)
+	assert.Contains(t, w.Body.String(), rhsErrNotConnected)
 }
