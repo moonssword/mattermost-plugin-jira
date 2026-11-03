@@ -61,6 +61,11 @@ type ChannelSubscription struct {
 	Filters    SubscriptionFilters `json:"filters"`
 	Name       string              `json:"name"`
 	InstanceID types.ID            `json:"instance_id"`
+
+	// A paused subscription keeps its filters but posts nothing (set from the RHS).
+	Paused   bool   `json:"paused,omitempty"`
+	PausedAt int64  `json:"paused_at,omitempty"`
+	PausedBy string `json:"paused_by,omitempty"`
 }
 
 type SubscriptionTemplate struct {
@@ -339,6 +344,9 @@ func (p *Plugin) getChannelsSubscribed(wh *webhook, instanceID types.ID) ([]Chan
 	subscriptionMap := make(map[string]bool)
 	subIds := subs.Channel.ByID
 	for _, sub := range subIds {
+		if sub.Paused {
+			continue
+		}
 		if p.matchesSubscriptionFilters(wh, instanceID, sub.Filters) {
 			if !subscriptionMap[sub.ChannelID] {
 				subscriptionMap[sub.ChannelID] = true
@@ -791,6 +799,11 @@ func (p *Plugin) editChannelSubscription(instanceID types.ID, modifiedSubscripti
 		if err != nil {
 			return nil, err
 		}
+
+		// Editors that do not know about pausing must not resume a subscription.
+		modifiedSubscription.Paused = oldSub.Paused
+		modifiedSubscription.PausedAt = oldSub.PausedAt
+		modifiedSubscription.PausedBy = oldSub.PausedBy
 
 		subs.Channel.remove(&oldSub)
 		subs.Channel.add(modifiedSubscription)

@@ -128,10 +128,15 @@ func installRHSCardInstance(t *testing.T, p *Plugin, client Client, typ Instance
 
 func doRHSHTTPPost(t *testing.T, p *Plugin, route string, body interface{}) *httptest.ResponseRecorder {
 	t.Helper()
+	return doRHSHTTPPostAs(t, p, route, "connected_user", body)
+}
+
+func doRHSHTTPPostAs(t *testing.T, p *Plugin, route, userID string, body interface{}) *httptest.ResponseRecorder {
+	t.Helper()
 	raw, err := json.Marshal(body)
 	require.NoError(t, err)
 	request := httptest.NewRequest(http.MethodPost, makeAPIRoute(route), bytes.NewReader(raw))
-	request.Header.Set(HeaderMattermostUserID, "connected_user")
+	request.Header.Set(HeaderMattermostUserID, userID)
 	w := httptest.NewRecorder()
 	p.ServeHTTP(&plugin.Context{}, w, request)
 	return w

@@ -1100,3 +1100,126 @@
 .jira-rhs-link-button:hover {
     background: rgba(var(--button-bg-rgb), 0.08);
 }
+
+/* Channel subscriptions. */
+.jira-rhs-channel {
+    overflow-y: auto;
+    flex: 1;
+    padding: 12px 0 16px;
+}
+
+.jira-rhs-channel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 16px 8px;
+}
+
+.jira-rhs-channel-head .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+}
+
+.jira-rhs-channel-alert,
+.jira-rhs-channel-empty {
+    margin: 0 16px 8px;
+}
+
+.jira-rhs-subscriptions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.jira-rhs-subscription {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 16px;
+    border-top: 1px solid rgba(var(--center-channel-color-rgb), 0.08);
+}
+
+.jira-rhs-subscription--paused .jira-rhs-subscription-name {
+    color: rgba(var(--center-channel-color-rgb), 0.56);
+}
+
+.jira-rhs-subscription-name {
+    font-weight: 600;
+}
+
+.jira-rhs-subscription-actions {
+    display: flex;
+    gap: 4px;
+    margin: 4px 0 0 -4px;
+}
+
+.jira-rhs-link-button--danger {
+    color: var(--error-text);
+}
+
+.jira-rhs-link-button--danger:hover {
+    background: rgba(var(--dnd-indicator-rgb), 0.08);
+}
+
+.jira-rhs-link-button:disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+.jira-rhs-subscription-confirm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.jira-rhs-subscription-confirm .btn {
+    margin: 0;
+}
+
+.jira-rhs-subscription-editor {
+    display: flex;
+    overflow: hidden;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.jira-rhs-subscription-editor-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 8px 4px;
+}
+
+/* The embedded modal editor: let its grid and footer fit the panel width. */
+.jira-rhs-subscription-editor-body .container-fluid {
+    padding: 0 12px;
+}
+
+.jira-rhs-subscription-editor-body .modal-footer {
+    position: sticky;
+    bottom: -8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-top: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
+    background: var(--center-channel-bg);
+}
+
+.jira-rhs-subscription-editor-body .modal-footer .btn {
+    margin: 0;
+}
+
+/* The panel header already names the subscription. */
+.jira-rhs-subscription-editor-body h1,
+.jira-rhs-subscription-editor-body h2 {
+    display: none;
+}
