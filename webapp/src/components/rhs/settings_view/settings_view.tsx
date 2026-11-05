@@ -9,11 +9,17 @@ import {RHSNotificationRole, RHSSettings, RHS_NOTIFICATION_ROLES} from 'types/rh
 import RHSAvatar from '../rhs_avatar';
 import {rhsInstanceKind, rhsInstanceName} from '../rhs_instance_label';
 import {RHSErrorState, RHSLoadingState} from '../rhs_states';
+import {RHS_PREFERENCE_LANGUAGE, RHS_PREFERENCE_STYLE} from '../../../selectors';
+
 import {RHS_STRINGS} from '../rhs_strings';
 
 type SettingsResult = Promise<{data?: RHSSettings; error?: unknown}>;
 
 export type Props = {
+    languagePreference: string;
+    stylePreference: string;
+    defaultStyle: string;
+    saveRHSAppearance: (name: string, value: string) => Promise<{data?: unknown; error?: unknown}>;
     activeInstance: Instance | null;
     installedInstances: Instance[];
     connectedInstances: Instance[];
@@ -25,10 +31,18 @@ export type Props = {
 };
 
 const ROLE_LABELS: Record<RHSNotificationRole, string> = {
-    assignee: RHS_STRINGS.settingsNotifyAssignee,
-    mention: RHS_STRINGS.settingsNotifyMention,
-    reporter: RHS_STRINGS.settingsNotifyReporter,
-    watching: RHS_STRINGS.settingsNotifyWatching,
+    get assignee() {
+        return RHS_STRINGS.settingsNotifyAssignee;
+    },
+    get mention() {
+        return RHS_STRINGS.settingsNotifyMention;
+    },
+    get reporter() {
+        return RHS_STRINGS.settingsNotifyReporter;
+    },
+    get watching() {
+        return RHS_STRINGS.settingsNotifyWatching;
+    },
 };
 
 // SettingsView gathers /jira me, disconnect, settings notifications and, for
@@ -79,6 +93,14 @@ export default function SettingsView(props: Props): JSX.Element {
             return;
         }
         props.closeRHSSettings();
+    };
+
+    const saveAppearance = async (name: string, value: string) => {
+        setError('');
+        const result = await props.saveRHSAppearance(name, value);
+        if (result.error) {
+            setError(RHS_STRINGS.settingsAppearanceFailed);
+        }
     };
 
     const connectedIDs = new Set(props.connectedInstances.map((i) => i.instance_id));
@@ -164,6 +186,42 @@ export default function SettingsView(props: Props): JSX.Element {
                         {error}
                     </div>
                 )}
+
+                <section
+                    className='jira-rhs-settings-block'
+                    data-testid='rhs-settings-appearance'
+                >
+                    <h4 className='jira-rhs-settings-title'>{RHS_STRINGS.settingsAppearance}</h4>
+                    <label className='jira-rhs-settings-row'>
+                        <span>{RHS_STRINGS.settingsLanguage}</span>
+                        <select
+                            className='form-control jira-rhs-settings-select'
+                            data-testid='rhs-settings-language'
+                            value={props.languagePreference}
+                            onChange={(event) => saveAppearance(RHS_PREFERENCE_LANGUAGE, event.target.value)}
+                        >
+                            <option value='auto'>{RHS_STRINGS.settingsLanguageAuto}</option>
+                            <option value='ru'>{RHS_STRINGS.settingsLanguageRu}</option>
+                            <option value='en'>{RHS_STRINGS.settingsLanguageEn}</option>
+                        </select>
+                    </label>
+                    <p className='jira-rhs-small jira-rhs-muted'>{RHS_STRINGS.settingsLanguageHint}</p>
+                    <label className='jira-rhs-settings-row'>
+                        <span>{RHS_STRINGS.settingsStyle}</span>
+                        <select
+                            className='form-control jira-rhs-settings-select'
+                            data-testid='rhs-settings-style'
+                            value={props.stylePreference}
+                            onChange={(event) => saveAppearance(RHS_PREFERENCE_STYLE, event.target.value)}
+                        >
+                            <option value='default'>
+                                {RHS_STRINGS.settingsStyleDefault.replace('{style}', props.defaultStyle === 'cards' ? RHS_STRINGS.settingsStyleCards : RHS_STRINGS.settingsStyleCompact)}
+                            </option>
+                            <option value='compact'>{RHS_STRINGS.settingsStyleCompact}</option>
+                            <option value='cards'>{RHS_STRINGS.settingsStyleCards}</option>
+                        </select>
+                    </label>
+                </section>
 
                 <section className='jira-rhs-settings-block'>
                     <h4 className='jira-rhs-settings-title'>{RHS_STRINGS.settingsNotifications}</h4>

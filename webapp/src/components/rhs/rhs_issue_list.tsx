@@ -11,10 +11,18 @@ import RHSIssueRow from './rhs_issue_row';
 import {RHS_STRINGS} from './rhs_strings';
 
 const groupTitles: Record<RHSGroupKey, string> = {
-    indeterminate: RHS_STRINGS.groupInProgress,
-    new: RHS_STRINGS.groupToDo,
-    done: RHS_STRINGS.groupDone,
-    other: RHS_STRINGS.groupOther,
+    get indeterminate() {
+        return RHS_STRINGS.groupInProgress;
+    },
+    get new() {
+        return RHS_STRINGS.groupToDo;
+    },
+    get done() {
+        return RHS_STRINGS.groupDone;
+    },
+    get other() {
+        return RHS_STRINGS.groupOther;
+    },
 };
 
 export type Props = {

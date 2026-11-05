@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-const REQUIRED_TEXT = 'Обязательное поле';
+import {tr} from 'utils/i18n';
 
 type Props = {
     error: string | null;
@@ -24,7 +24,7 @@ export default function SubscriptionPanelForm(props: Props): JSX.Element {
         <form
             role='form'
             className='jira-rhs-form jira-rhs-form--dense jira-rhs-subscription-form'
-            style={{'--jira-rhs-required-text': JSON.stringify(REQUIRED_TEXT)} as React.CSSProperties}
+            style={{'--jira-rhs-required-text': JSON.stringify(tr('Обязательное поле'))} as React.CSSProperties}
             onSubmit={props.onSave}
             onKeyDown={(event) => {
                 if (event.key === 'Enter' && (event.metaKey || event.ctrlKey) && props.canSave) {
@@ -51,7 +51,7 @@ export default function SubscriptionPanelForm(props: Props): JSX.Element {
                         data-testid='rhs-subscription-form-delete'
                         onClick={props.onDelete}
                     >
-                        {'Удалить'}
+                        {tr('Удалить')}
                     </button>
                 )}
                 <button
@@ -60,7 +60,7 @@ export default function SubscriptionPanelForm(props: Props): JSX.Element {
                     data-testid='rhs-subscription-form-cancel'
                     onClick={props.onCancel}
                 >
-                    {'Отмена'}
+                    {tr('Отмена')}
                 </button>
                 <button
                     type='submit'
@@ -68,7 +68,7 @@ export default function SubscriptionPanelForm(props: Props): JSX.Element {
                     data-testid='rhs-subscription-form-save'
                     disabled={!props.canSave || props.saving}
                 >
-                    {props.saving ? 'Сохраняем…' : props.saveText}
+                    {props.saving ? tr('Сохраняем…') : props.saveText}
                 </button>
             </div>
         </form>

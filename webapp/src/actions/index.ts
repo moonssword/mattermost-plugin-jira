@@ -708,6 +708,8 @@ export {
     toggleJiraRHS,
 } from './rhs_nav';
 
+export {saveRHSAppearance} from './rhs_appearance';
+
 export {
     assignRHSCard,
     clearRHSCardTransitionRequest,

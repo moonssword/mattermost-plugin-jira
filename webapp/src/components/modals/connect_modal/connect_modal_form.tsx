@@ -11,6 +11,8 @@ import {getModalStyles} from 'utils/styles';
 import ReactSelectSetting from 'components/react_select_setting';
 import FormButton from 'components/form_button';
 
+import {tr} from 'utils/i18n';
+
 import {Props} from './props';
 export type State = {
     submitting: boolean;
@@ -32,12 +34,12 @@ export default class ConnectModalForm extends PureComponent<Props, State> {
 
         const selectedInstance = this.state.selectedInstance;
         if (!selectedInstance) {
-            this.setState({error: 'Выберите инстанс Jira'});
+            this.setState({error: tr('Выберите инстанс Jira')});
             return;
         }
 
         if (this.isAlreadyConnectedToInstance(this.state.selectedInstance)) {
-            this.setState({error: 'Вы уже подключены к этому инстансу Jira.'});
+            this.setState({error: tr('Вы уже подключены к этому инстансу Jira.')});
             return;
         }
 
@@ -60,7 +62,7 @@ export default class ConnectModalForm extends PureComponent<Props, State> {
 
         let error = '';
         if (instanceID && this.isAlreadyConnectedToInstance(instanceID)) {
-            error = 'Вы уже подключены к этому инстансу Jira.';
+            error = tr('Вы уже подключены к этому инстансу Jira.');
         }
 
         this.setState({selectedInstance: instanceID, error});
@@ -88,13 +90,13 @@ export default class ConnectModalForm extends PureComponent<Props, State> {
                 <FormButton
                     type='button'
                     btnClass='btn-link'
-                    defaultMessage='Отмена'
+                    defaultMessage={tr('Отмена')}
                     onClick={this.closeModal}
                 />
                 <FormButton
                     type='submit'
                     btnClass='btn btn-primary'
-                    defaultMessage='Подключить'
+                    defaultMessage={tr('Подключить')}
                     disabled={disableSubmit}
                     saving={this.state.submitting}
                 />

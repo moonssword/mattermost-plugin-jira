@@ -27,6 +27,7 @@ import FormButton from 'components/form_button';
 import Loading from 'components/loading';
 import ReactSelectSetting from 'components/react_select_setting';
 import JiraInstanceAndProjectSelector from 'components/jira_instance_and_project_selector';
+import {tr} from 'utils/i18n';
 
 type Props = {
     close: (e?: Event) => void;
@@ -243,7 +244,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
             <div>
                 <ReactSelectSetting
                     name={'issue_type'}
-                    label={'Тип задачи'}
+                    label={tr('Тип задачи')}
                     required={true}
                     onChange={this.handleIssueTypeChange}
                     options={issueOptions}
@@ -295,7 +296,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
                 <FormButton
                     type='button'
                     btnClass='btn-link'
-                    defaultMessage='Отмена'
+                    defaultMessage={tr('Отмена')}
                     onClick={this.handleClose}
                 />
                 <FormButton
@@ -305,7 +306,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
                     saving={this.state.submitting}
                     disabled={disableSubmit}
                 >
-                    {'Создать'}
+                    {tr('Создать')}
                 </FormButton>
             </React.Fragment>
         );

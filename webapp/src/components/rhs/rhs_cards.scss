@@ -1,0 +1,239 @@
+// The "Cards" style of the panel: the same layout with roomier cards, pills and
+// larger corners. Colors come only from the Mattermost theme, so it follows
+// every theme, light or dark.
+.jira-rhs[data-style='cards'] {
+    --jira-rhs-accent: var(--button-bg);
+    --jira-rhs-accent-soft: rgba(var(--button-bg-rgb), 0.12);
+    --jira-rhs-accent-border: rgba(var(--button-bg-rgb), 0.35);
+    --jira-rhs-line: rgba(var(--center-channel-color-rgb), 0.12);
+    --jira-rhs-surface: rgba(var(--center-channel-color-rgb), 0.04);
+
+    // Tabs: two columns on a soft surface.
+    .jira-rhs-sections {
+        gap: 4px;
+        padding: 4px;
+        border: 1px solid var(--jira-rhs-line);
+        border-radius: 14px;
+        background: var(--jira-rhs-surface);
+    }
+
+    .jira-rhs-section-tab {
+        border-radius: 10px;
+        font-weight: 700;
+    }
+
+    .jira-rhs-section-tab--selected {
+        background: var(--center-channel-bg);
+        color: var(--jira-rhs-accent);
+        box-shadow: 0 2px 8px rgba(var(--center-channel-color-rgb), 0.08);
+    }
+
+    // Filter bar, chips and board columns are pills.
+    .jira-rhs-pill,
+    .jira-rhs-chip,
+    .jira-rhs-lane {
+        border-radius: 999px;
+        font-weight: 600;
+        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .jira-rhs-chip--active,
+    .jira-rhs-lane--on {
+        border-color: var(--jira-rhs-accent);
+        background: var(--jira-rhs-accent);
+        color: var(--button-color);
+    }
+
+    .jira-rhs-lane--on .jira-rhs-lane-count {
+        color: var(--button-color);
+    }
+
+    .jira-rhs-icon-button {
+        border-radius: 12px;
+    }
+
+    .jira-rhs-icon-button:hover,
+    .jira-rhs-icon-button--on {
+        background: var(--jira-rhs-accent-soft);
+        color: var(--jira-rhs-accent);
+    }
+
+    // List rows become cards: key and icons on top, the summary below.
+    .jira-rhs-list {
+        padding: 2px 12px 12px;
+    }
+
+    .jira-rhs-group-header {
+        border: 0;
+        background: transparent;
+    }
+
+    .jira-rhs-group-toggle {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        color: var(--jira-rhs-accent);
+    }
+
+    .jira-rhs-row {
+        grid-template-rows: auto auto;
+        grid-template-columns: 16px auto minmax(0, 1fr) 14px 20px;
+        height: auto;
+        margin-bottom: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--jira-rhs-line);
+        border-radius: 14px;
+        background: var(--center-channel-bg);
+        box-shadow: 0 8px 24px rgba(var(--center-channel-color-rgb), 0.04);
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .jira-rhs-row:hover {
+        transform: translateY(-1px);
+        border-color: rgba(var(--button-bg-rgb), 0.28);
+        background: var(--center-channel-bg);
+        box-shadow: 0 12px 28px rgba(var(--button-bg-rgb), 0.08);
+    }
+
+    .jira-rhs-row:focus-visible,
+    .jira-rhs-bcard:focus-within {
+        outline: 2px solid var(--jira-rhs-accent);
+        outline-offset: 2px;
+    }
+
+    .jira-rhs-row-key {
+        font-weight: 700;
+        color: var(--jira-rhs-accent);
+    }
+
+    .jira-rhs-row-summary {
+        display: -webkit-box;
+        overflow: hidden;
+        grid-row: 2;
+        grid-column: 1 / -1;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.35;
+        white-space: normal;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .jira-rhs-row-overdue {
+        grid-row: 1;
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    .jira-rhs-row-priority {
+        grid-row: 1;
+        grid-column: 4;
+    }
+
+    .jira-rhs-mini-avatar {
+        grid-row: 1;
+        grid-column: 5;
+    }
+
+    // Board.
+    .jira-rhs-bcard {
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(var(--center-channel-color-rgb), 0.04);
+    }
+
+    .jira-rhs-bcard--active {
+        border-color: rgba(var(--button-bg-rgb), 0.28);
+    }
+
+    .jira-rhs-bcard-move {
+        border-radius: 999px;
+    }
+
+    // Sprint strip, sections of the card, settings and subscriptions.
+    .jira-rhs-sstrip,
+    .jira-rhs-card-section,
+    .jira-rhs-settings-block,
+    .jira-rhs-subscription {
+        margin: 8px 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--jira-rhs-line);
+        border-radius: 14px;
+        background: var(--jira-rhs-surface);
+    }
+
+    .jira-rhs-pbar,
+    .jira-rhs-pbar > * {
+        border-radius: 999px;
+    }
+
+    // Empty and error states.
+    .jira-rhs-state,
+    .jira-rhs-placeholder {
+        margin: 12px;
+        padding: 28px 16px;
+        border: 1px dashed var(--jira-rhs-line);
+        border-radius: 14px;
+    }
+
+    // Controls.
+    .btn {
+        border-radius: 10px;
+    }
+
+    .btn-tertiary {
+        border: 1px solid var(--jira-rhs-accent-border);
+    }
+
+    .form-control,
+    .jira-rhs-search,
+    .jira-rhs-composer-input,
+    .jira-rhs-search-input {
+        border-radius: 10px;
+    }
+
+    [class*='-control'] {
+        border-radius: 10px;
+    }
+
+    .jira-rhs-form--dense .control-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .jira-rhs-switch {
+        width: 44px;
+        height: 26px;
+        border-radius: 999px;
+    }
+
+    .jira-rhs-switch::after {
+        top: 3px;
+        left: 3px;
+        width: 20px;
+        height: 20px;
+        transition: transform 0.18s ease;
+    }
+
+    .jira-rhs-switch:checked::after {
+        transform: translateX(18px);
+    }
+
+    .jira-rhs-qadd,
+    .jira-rhs-popover,
+    .jira-rhs-menu-list {
+        border-radius: 12px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .jira-rhs-row,
+        .jira-rhs-switch::after {
+            transition: none;
+        }
+
+        .jira-rhs-row:hover {
+            transform: none;
+        }
+    }
+}

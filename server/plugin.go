@@ -78,6 +78,9 @@ type externalConfig struct {
 	// When enabled, a subscription without security level rules will filter out an issue that has a security level assigned
 	SecurityLevelEmptyForJiraSubscriptions bool
 
+	// RHSDefaultStyle is the panel style for users who did not choose their own.
+	RHSDefaultStyle string
+
 	// Hide issue descriptions and comments in Webhook and Subscription messages
 	HideDecriptionComment bool
 

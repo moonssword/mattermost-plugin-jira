@@ -4,6 +4,8 @@
 import React from 'react';
 import {Modal} from 'react-bootstrap';
 
+import {tr} from 'utils/i18n';
+
 import CreateIssueForm from './create_issue_form';
 
 type Props = {
@@ -26,7 +28,7 @@ export default function CreateIssueModal(props: Props) {
             backdrop='static'
         >
             <Modal.Header closeButton={true}>
-                <Modal.Title>{'Новая задача Jira'}</Modal.Title>
+                <Modal.Title>{tr('Новая задача Jira')}</Modal.Title>
             </Modal.Header>
             <CreateIssueForm {...props}/>
         </Modal>

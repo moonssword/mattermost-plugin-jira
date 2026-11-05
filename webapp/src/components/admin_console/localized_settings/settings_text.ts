@@ -105,6 +105,23 @@ export const LOCALIZED_SETTINGS: SettingDescriptor[] = [
         },
     },
     {
+        key: 'RHSDefaultStyle',
+        defaultValue: 'compact',
+        kind: 'radio',
+        label: {
+            ru: 'Стиль правой панели по умолчанию:',
+            en: 'Default style of the right-hand sidebar:',
+        },
+        help: {
+            ru: 'Для пользователей, которые не выбрали стиль сами в настройках панели. В компактном видно больше задач, в карточках просторнее. Цвета берутся из темы Mattermost.',
+            en: 'For users who did not choose a style in the panel settings. Compact shows more issues, Cards is roomier. Colors come from the Mattermost theme.',
+        },
+        options: [
+            {value: 'compact', label: {ru: 'Компактный', en: 'Compact'}},
+            {value: 'cards', label: {ru: 'Карточки', en: 'Cards'}},
+        ],
+    },
+    {
         key: 'secret',
         kind: 'generated',
         label: {ru: 'Секрет вебхука:', en: 'Webhook Secret:'},

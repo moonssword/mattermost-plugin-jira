@@ -50,9 +50,7 @@ export function parseRHSErrorBody(text: string, statusCode: number): RHSFetchErr
             typeof parsed === 'object' &&
             typeof parsed.error === 'string'
         ) {
-            const message = typeof parsed.message === 'string' && parsed.message ?
-                parsed.message :
-                parsed.error;
+            const message = typeof parsed.message === 'string' && parsed.message ? parsed.message : parsed.error;
             return new RHSFetchError(coerceRHSErrorCode(parsed.error), message, statusCode);
         }
     } catch {

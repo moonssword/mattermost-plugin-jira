@@ -5,6 +5,8 @@ import {RHSIssue} from 'types/rhs';
 import {RHSBoard, RHSBoardProgress} from 'types/rhs_board';
 import {RHSTransition} from 'types/rhs_issue';
 
+import {plural, tr} from './i18n';
+
 // A column of the board view. Without a chosen board the columns are the
 // three status categories.
 export type RHSLane = {
@@ -30,7 +32,7 @@ export function buildRHSLanes(issues: RHSIssue[], board: RHSBoard | null, outsid
     if (!board || board.columns.length === 0) {
         return CATEGORY_LANES.map((c) => ({
             id: 'category:' + c.key,
-            name: c.name,
+            name: tr(c.name),
             statusIds: [],
             categoryKey: c.key,
             issues: issues.filter((issue) => (issue.status?.categoryKey === c.key) || (c.key === 'new' && !['indeterminate', 'done'].includes(issue.status?.categoryKey))),
@@ -87,20 +89,6 @@ export function pickRHSTransition(transitions: RHSTransition[], lane: RHSLane): 
     return found || null;
 }
 
-// ruPlural picks the Russian form for 1, 2–4 and 5+ ("задача", "задачи", "задач").
-export function ruPlural(n: number, one: string, few: string, many: string): string {
-    const abs = Math.abs(Math.trunc(n));
-    const mod10 = abs % 10;
-    const mod100 = abs % 100;
-    if (mod10 === 1 && mod100 !== 11) {
-        return one;
-    }
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
-        return few;
-    }
-    return many;
-}
-
 export function formatRHSPoints(n: number): string {
     return Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', ',');
 }
@@ -131,5 +119,5 @@ export function rhsProgressSummary(p: RHSBoardProgress, pointsLabel: string): st
     if (p.unit === 'points') {
         return formatRHSPoints(p.done) + '/' + formatRHSPoints(total) + ' ' + pointsLabel;
     }
-    return p.done + '/' + total + ' ' + ruPlural(total, 'задача', 'задачи', 'задач');
+    return p.done + '/' + total + ' ' + plural(total, ['задача', 'задачи', 'задач'], ['issue', 'issues']);
 }

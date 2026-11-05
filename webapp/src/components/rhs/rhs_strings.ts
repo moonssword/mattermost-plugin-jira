@@ -1,9 +1,13 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// All user-facing text of the Jira RHS. Keep it here so wording stays
-// consistent and can be moved to i18n later.
-export const RHS_STRINGS = {
+import {getCurrentUILanguage} from 'utils/i18n';
+
+import {RHS_STRINGS_EN} from './rhs_strings_en';
+
+// All user-facing text of the Jira RHS, in Russian; the English text is in
+// rhs_strings_en.ts. Keep it here so wording stays consistent.
+const RHS_STRINGS_RU = {
     title: 'Jira',
     openPanel: 'Открыть панель Jira',
 
@@ -174,6 +178,17 @@ export const RHS_STRINGS = {
     settingsNotifyWatching: 'Изменения в задачах, за которыми слежу',
     settingsNotifyFailed: 'Не удалось сохранить настройку',
     settingsVersion: 'Версия плагина {version}',
+    settingsAppearance: 'Внешний вид',
+    settingsLanguage: 'Язык',
+    settingsLanguageAuto: 'Как в Mattermost',
+    settingsLanguageRu: 'Русский',
+    settingsLanguageEn: 'English',
+    settingsLanguageHint: 'Панель и формы. Сообщения бота и ответы /jira остаются на английском.',
+    settingsStyle: 'Стиль',
+    settingsStyleDefault: 'По умолчанию ({style})',
+    settingsStyleCompact: 'Компактный',
+    settingsStyleCards: 'Карточки',
+    settingsAppearanceFailed: 'Не удалось сохранить настройку',
 
     // Channel section
     channelTitle: 'Подписки канала на события Jira',
@@ -241,3 +256,14 @@ export const RHS_STRINGS = {
     attachClose: 'Готово',
     attachPostMissing: 'Сообщение не найдено. Откройте его в канале и попробуйте ещё раз.',
 };
+
+export type RHSStringKey = keyof typeof RHS_STRINGS_RU;
+
+// RHS_STRINGS reads the current language on every access, so text must be read
+// while rendering, not kept in a module-level constant.
+export const RHS_STRINGS: typeof RHS_STRINGS_RU = new Proxy(RHS_STRINGS_RU, {
+    get: (ru, key) => {
+        const dictionary = getCurrentUILanguage() === 'en' ? RHS_STRINGS_EN : ru;
+        return dictionary[key as RHSStringKey];
+    },
+});

@@ -32,9 +32,28 @@ export type RHSSectionDef = {
 // Order here is the order of tabs in the panel. To add a section: add its id to
 // RHSSectionID, create components/rhs/sections/<name>/ and list it here.
 export const RHS_SECTIONS: RHSSectionDef[] = [
-    {id: 'my_issues', title: RHS_STRINGS.sectionMyIssuesShort, component: MyIssuesSection},
-    {id: 'channel', title: RHS_STRINGS.sectionChannel, component: ChannelSection},
-    {id: 'create', title: RHS_STRINGS.sectionCreate, component: CreateSection, tab: false},
+    {
+        id: 'my_issues',
+        get title() {
+            return RHS_STRINGS.sectionMyIssuesShort;
+        },
+        component: MyIssuesSection,
+    },
+    {
+        id: 'channel',
+        get title() {
+            return RHS_STRINGS.sectionChannel;
+        },
+        component: ChannelSection,
+    },
+    {
+        id: 'create',
+        get title() {
+            return RHS_STRINGS.sectionCreate;
+        },
+        component: CreateSection,
+        tab: false,
+    },
 ];
 
 export const RHS_TAB_SECTIONS: RHSSectionDef[] = RHS_SECTIONS.filter((section) => section.tab !== false);

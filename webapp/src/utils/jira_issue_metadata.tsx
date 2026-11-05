@@ -20,6 +20,7 @@ import {
     StringArrayField,
 } from 'types/model';
 import {TicketData, TicketDetails} from 'types/tooltip';
+import {tr} from 'utils/i18n';
 
 type FieldWithInfo = JiraField & {
     changeLogID: string;
@@ -359,7 +360,7 @@ function isValidFieldForEvents(field: JiraField): boolean {
 
 export function getCustomFieldValuesForEvents(metadata: IssueMetadata | null, projectKeys: string[]): ReactSelectOption[] {
     return getCustomFieldsForProjects(metadata, projectKeys).filter(isValidFieldForEvents).map((field) => ({
-        label: `Изменено: ${field.name}`,
+        label: tr('Изменено: {field}', {field: field.name}),
         value: `event_updated_${field.changeLogID}`,
     }));
 }

@@ -25,20 +25,28 @@ import {
     getRHSIssueKey,
     getRHSQuery,
     getRHSSection,
+    getRHSStyle,
     getRHSTotal,
+    getUILanguage,
     getUserConnectedInstances,
     isJiraSystemAdmin,
     isRHSSettingsOpen,
 } from 'selectors';
 
 import {GlobalState} from 'types/store';
+import {setUILanguage} from 'utils/i18n';
 
 import Rhs, {Props} from './rhs';
 
 type DispatchProps = Pick<Props, 'getConnected' | 'handleConnectFlow' | 'openRHSSettings' | 'restoreRHSViewState' | 'selectRHSInstance' | 'setRHSSection' | 'startJiraSetupWizard'>;
 
 const mapStateToProps = (state: GlobalState) => {
+    // Before the render below reads the text.
+    const uiLanguage = getUILanguage(state);
+    setUILanguage(uiLanguage);
     return {
+        uiLanguage,
+        uiStyle: getRHSStyle(state),
         installedInstances: getInstalledInstances(state) || [],
         connectedInstances: getUserConnectedInstances(state),
         activeInstanceID: getRHSActiveInstanceID(state),

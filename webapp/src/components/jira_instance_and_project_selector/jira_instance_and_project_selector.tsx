@@ -15,6 +15,7 @@ import {
 } from 'types/model';
 import ReactSelectSetting from 'components/react_select_setting';
 import {getProjectValues} from 'utils/jira_issue_metadata';
+import {tr} from 'utils/i18n';
 
 export type Props = {
     selectedInstanceID: string | null;
@@ -132,7 +133,7 @@ export default class JiraInstanceAndProjectSelector extends React.PureComponent<
             {label: instance.alias || instance.instance_id, value: instance.instance_id}
         ));
 
-        const label = this.state.disableInstanceSelector ? 'Инстанс (сохранён)' : 'Инстанс';
+        const label = this.state.disableInstanceSelector ? tr('Инстанс (сохранён)') : tr('Инстанс');
         let instanceSelector;
         if (this.props.connectedInstances.length > 1 && this.props.installedInstances.length > 1) {
             instanceSelector = (
@@ -156,7 +157,7 @@ export default class JiraInstanceAndProjectSelector extends React.PureComponent<
             projectSelector = (
                 <ReactSelectSetting
                     name={'projects'}
-                    label={'Проект'}
+                    label={tr('Проект')}
                     limitOptions={true}
                     required={true}
                     onChange={this.handleProjectChange}

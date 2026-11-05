@@ -20,8 +20,11 @@ import {RHS_SEARCH_EVENT} from './sections/my_issues/my_issues';
 import SettingsView from './settings_view';
 
 import './rhs.scss';
+import './rhs_cards.scss';
 
 export type Props = {
+    uiLanguage?: string;
+    uiStyle?: string;
     installedInstances: Instance[];
     connectedInstances: Instance[];
     activeInstanceID: string;
@@ -276,8 +279,10 @@ export default function Rhs(props: Props): JSX.Element {
 
     return (
         <div
+            key={props.uiLanguage}
             className='jira-rhs'
             data-testid='jira-rhs'
+            data-style={props.uiStyle}
             onKeyDown={onKeyDown}
         >
             {content}

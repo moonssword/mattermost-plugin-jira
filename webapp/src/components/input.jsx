@@ -4,6 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
+import {tr} from 'utils/i18n';
+
 import Setting from './setting.jsx';
 
 export default class Input extends PureComponent {
@@ -81,7 +83,7 @@ export default class Input extends PureComponent {
     };
 
     render() {
-        const requiredMsg = 'Обязательное поле.';
+        const requiredMsg = tr('Обязательное поле.');
         const style = getStyle();
         const value = this.props.value || '';
 

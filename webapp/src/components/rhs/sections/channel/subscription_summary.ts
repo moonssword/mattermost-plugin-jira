@@ -1,6 +1,7 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {tr} from 'utils/i18n';
 import {formatRHSShortDate} from 'utils/rhs_time';
 import {RHSChannelSubscription} from 'types/rhs_channel';
 
@@ -34,10 +35,10 @@ const EVENT_LABELS: {[event: string]: string} = {
 
 export function rhsEventLabel(event: string): string {
     if (EVENT_LABELS[event]) {
-        return EVENT_LABELS[event];
+        return tr(EVENT_LABELS[event]);
     }
     if (event.startsWith('event_updated_')) {
-        return 'изменено поле ' + event.slice('event_updated_'.length);
+        return tr('изменено поле {field}', {field: event.slice('event_updated_'.length)});
     }
     return event;
 }

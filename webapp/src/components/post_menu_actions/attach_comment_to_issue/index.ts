@@ -4,12 +4,12 @@
 import {connect} from 'react-redux';
 
 import {GlobalState} from 'types/store';
-import {getCurrentUserLocale, isUserConnected} from 'selectors';
+import {getUILocale, isUserConnected} from 'selectors';
 
 import AttachCommentToIssuePostMenuAction from './attach_comment_to_issue';
 
 function mapStateToProps(state: GlobalState): {actionText: string} {
-    const locale = getCurrentUserLocale(state);
+    const locale = getUILocale(state);
     const userConnected = isUserConnected(state);
 
     if (!userConnected) {

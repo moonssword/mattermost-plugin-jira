@@ -4,6 +4,8 @@
 import React from 'react';
 import {Modal} from 'react-bootstrap';
 
+import {tr} from 'utils/i18n';
+
 import DisconnectModalForm from './disconnect_modal_form';
 import {Props} from './props';
 
@@ -27,7 +29,7 @@ export default function DisconnectModal(props: Props) {
         >
             <Modal.Header closeButton={true}>
                 <Modal.Title>
-                    {'Отключение от Jira'}
+                    {tr('Отключение от Jira')}
                 </Modal.Title>
             </Modal.Header>
             {content}

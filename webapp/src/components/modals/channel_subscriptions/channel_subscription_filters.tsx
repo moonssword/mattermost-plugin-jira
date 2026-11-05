@@ -12,6 +12,8 @@ import {
 
 import {getConflictingFields} from 'utils/jira_issue_metadata';
 
+import {tr} from 'utils/i18n';
+
 import ChannelSubscriptionFilter, {EmptyChannelSubscriptionFilter} from './channel_subscription_filter';
 
 export type Props = {
@@ -96,7 +98,7 @@ export default class ChannelSubscriptionFilters extends React.PureComponent<Prop
                 <label
                     className='control-label margin-bottom'
                 >
-                    {'Фильтры'}
+                    {tr('Фильтры')}
                 </label>
                 <div>
                     {values.map((v, i) => {
@@ -144,7 +146,7 @@ export default class ChannelSubscriptionFilters extends React.PureComponent<Prop
                         type='button'
                     >
                         <span style={style.plusIcon}>{'+'}</span>
-                        {'Добавить фильтр'}
+                        {tr('Добавить фильтр')}
                     </button>
                 </div>
             </div>

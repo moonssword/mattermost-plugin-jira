@@ -4,6 +4,8 @@
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
 
+import {tr} from 'utils/i18n';
+
 export default class FormButton extends PureComponent {
     static propTypes = {
         executing: PropTypes.bool,
@@ -36,11 +38,11 @@ export default class FormButton extends PureComponent {
                         className='fa fa-spin fa-spinner'
                         title={'Loading Icon'}
                     />
-                    {savingMessage}
+                    {tr(savingMessage)}
                 </span>
             );
         } else {
-            contents = defaultMessage;
+            contents = typeof defaultMessage === 'string' ? tr(defaultMessage) : defaultMessage;
         }
 
         let className = 'save-button btn ' + btnClass;

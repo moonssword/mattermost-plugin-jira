@@ -210,6 +210,7 @@ export type PluginSettings = {
     ui_enabled: boolean;
     rhs_enabled: boolean;
     security_level_empty_for_jira_subscriptions: boolean;
+    rhs_default_style?: string;
 };
 
 export type GetConnectedResponse = {

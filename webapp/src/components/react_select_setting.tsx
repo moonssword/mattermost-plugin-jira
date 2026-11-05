@@ -13,6 +13,7 @@ import Setting from 'components/setting';
 import {getStyleForReactSelect} from 'utils/styles';
 
 import {ReactSelectOption} from 'types/model';
+import {tr} from 'utils/i18n';
 
 const MAX_NUM_OPTIONS = 100;
 
@@ -30,8 +31,6 @@ export type Props = Omit<AsyncProps<ReactSelectOption, boolean, GroupBase<ReactS
 type State = {
     invalid: boolean;
 };
-
-const SELECT_PLACEHOLDER = 'Выберите…';
 
 export default class ReactSelectSetting extends React.PureComponent<Props, State> {
     state: State = {invalid: false};
@@ -92,7 +91,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
     };
 
     render() {
-        const requiredMsg = 'Обязательное поле.';
+        const requiredMsg = tr('Обязательное поле.');
         let validationError = null;
 
         if (this.props.required && this.state.invalid) {
@@ -111,7 +110,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             selectComponent = (
                 <AsyncSelect
                     {...this.props}
-                    placeholder={this.props.placeholder ?? SELECT_PLACEHOLDER}
+                    placeholder={this.props.placeholder ?? tr('Выберите…')}
                     loadOptions={this.filterOptions}
                     defaultOptions={true}
                     menuPortalTarget={document.body}
@@ -124,8 +123,8 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             selectComponent = (
                 <CreatableSelect
                     {...this.props}
-                    noOptionsMessage={() => 'Начните вводить…'}
-                    formatCreateLabel={(value) => `Добавить «${value}»`}
+                    noOptionsMessage={() => tr('Начните вводить…')}
+                    formatCreateLabel={(value) => tr('Добавить «{value}»', {value})}
                     placeholder=''
                     menuPortalTarget={document.body}
                     menuPlacement='auto'
@@ -137,7 +136,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             selectComponent = (
                 <ReactSelect
                     {...this.props}
-                    placeholder={this.props.placeholder ?? SELECT_PLACEHOLDER}
+                    placeholder={this.props.placeholder ?? tr('Выберите…')}
                     menuPortalTarget={document.body}
                     menuPlacement='auto'
                     onChange={this.handleChange}
@@ -149,7 +148,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             <Setting
                 inputId={this.props.name}
                 {...this.props}
-                placeholder={this.props.placeholder ?? SELECT_PLACEHOLDER}
+                placeholder={this.props.placeholder ?? tr('Выберите…')}
             >
                 {selectComponent}
                 {validationError}

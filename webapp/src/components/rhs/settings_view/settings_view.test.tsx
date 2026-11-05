@@ -30,6 +30,10 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         activeInstance: dc,
         installedInstances: [dc],
         connectedInstances: [dc],
+        languagePreference: 'auto',
+        stylePreference: 'default',
+        defaultStyle: 'compact',
+        saveRHSAppearance: jest.fn(async () => ({data: true})),
         closeRHSSettings: jest.fn(),
         loadRHSSettings: jest.fn(async () => ({data: userSettings})),
         setRHSNotificationRole: jest.fn(async (role, enabled) => ({data: {...userSettings, notifications: {...userSettings.notifications, [role]: enabled}}})),
@@ -79,6 +83,24 @@ describe('components/rhs/settings_view', () => {
         render(<SettingsView {...props}/>);
         fireEvent.click(await screen.findByTestId('rhs-settings-connect-' + cloud.instance_id));
         expect(props.handleConnectFlow).toHaveBeenCalledWith(cloud.instance_id);
+    });
+
+    test('language and style are saved as personal choices', async () => {
+        const props = makeProps();
+        render(<SettingsView {...props}/>);
+        const language = await screen.findByTestId('rhs-settings-language');
+        expect(screen.getByTestId('rhs-settings-style')).toHaveTextContent('По умолчанию (Компактный)');
+        fireEvent.change(language, {target: {value: 'en'}});
+        await waitFor(() => expect(props.saveRHSAppearance).toHaveBeenCalledWith('language', 'en'));
+        fireEvent.change(screen.getByTestId('rhs-settings-style'), {target: {value: 'cards'}});
+        await waitFor(() => expect(props.saveRHSAppearance).toHaveBeenCalledWith('style', 'cards'));
+    });
+
+    test('a failed save of the appearance is reported', async () => {
+        const props = makeProps({saveRHSAppearance: jest.fn(async () => ({error: new Error('x')}))});
+        render(<SettingsView {...props}/>);
+        fireEvent.change(await screen.findByTestId('rhs-settings-language'), {target: {value: 'en'}});
+        expect(await screen.findByText(RHS_STRINGS.settingsAppearanceFailed)).toBeInTheDocument();
     });
 
     test('a load error offers a retry; back closes', async () => {

@@ -15,6 +15,7 @@ import {getStyleForReactSelect} from 'utils/styles';
 import {Props as ReactSelectSettingProps} from 'components/react_select_setting';
 import Setting from 'components/setting';
 import {TEAM_FIELD} from '../../constant';
+import {tr} from 'utils/i18n';
 
 const searchDebounceDelay = 400;
 
@@ -173,7 +174,7 @@ export default class BackendSelector extends React.PureComponent<Props, State> {
             );
         }
 
-        const requiredMsg = 'Обязательное поле.';
+        const requiredMsg = tr('Обязательное поле.');
         let validationError = null;
         if (this.props.required && this.state.invalid) {
             validationError = (

@@ -3,6 +3,8 @@
 
 import React from 'react';
 
+import {plural} from 'utils/i18n';
+
 import {RHSErrorCode} from 'types/rhs';
 import {RHSBoard, RHSBoardProgress} from 'types/rhs_board';
 import {
@@ -10,7 +12,6 @@ import {
     rhsDaysLeft,
     rhsProgressSummary,
     rhsProgressTotal,
-    ruPlural,
 } from 'utils/rhs_board_lanes';
 import {formatRHSShortDate} from 'utils/rhs_time';
 
@@ -52,7 +53,7 @@ function daysLong(endDate: string | undefined, nowMs: number): string {
     if (days === 0) {
         return ends + ' · ' + RHS_STRINGS.sprintLastDay;
     }
-    return ends + ' · ' + RHS_STRINGS.sprintDaysLeft.replace('{n}', days + ' ' + ruPlural(days, 'день', 'дня', 'дней'));
+    return ends + ' · ' + RHS_STRINGS.sprintDaysLeft.replace('{n}', days + ' ' + plural(days, ['день', 'дня', 'дней'], ['day', 'days']));
 }
 
 function amount(n: number, p: RHSBoardProgress): string {

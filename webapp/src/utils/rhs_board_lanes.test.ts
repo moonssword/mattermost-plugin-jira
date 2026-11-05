@@ -1,8 +1,13 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+// Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
 import {RHSIssue} from 'types/rhs';
 import {RHSBoard} from 'types/rhs_board';
+
+import {plural} from './i18n';
 
 import {
     RHS_OUTSIDE_LANE_ID,
@@ -12,7 +17,6 @@ import {
     pickRHSTransition,
     rhsDaysLeft,
     rhsProgressSummary,
-    ruPlural,
 } from './rhs_board_lanes';
 
 function issue(key: string, id: string, categoryKey: string): RHSIssue {
@@ -65,7 +69,7 @@ describe('utils/rhs_board_lanes', () => {
     });
 
     test('Russian plural forms', () => {
-        expect([1, 2, 5, 11, 12, 21, 22, 25, 111].map((n) => ruPlural(n, 'задача', 'задачи', 'задач'))).toEqual(
+        expect([1, 2, 5, 11, 12, 21, 22, 25, 111].map((n) => plural(n, ['задача', 'задачи', 'задач'], ['one', 'many']))).toEqual(
             ['задача', 'задачи', 'задач', 'задач', 'задач', 'задача', 'задачи', 'задач', 'задач'],
         );
     });

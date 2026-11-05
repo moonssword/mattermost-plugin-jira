@@ -2313,3 +2313,12 @@
 .jira-rhs-board .jira-rhs-lanebg {
     flex: 1 0 auto;
 }
+
+.jira-rhs-settings-select {
+    flex: 0 1 190px;
+    min-width: 0;
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-weight: 400;
+}

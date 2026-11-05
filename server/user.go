@@ -219,13 +219,15 @@ func (p *Plugin) UpdateUserDefaults(mattermostUserID, instanceID types.ID, saved
 func (p *Plugin) httpGetSettingsInfo(w http.ResponseWriter, r *http.Request) (int, error) {
 	conf := p.getConfig()
 	return respondJSON(w, struct {
-		UIEnabled                              bool `json:"ui_enabled"`
-		RHSEnabled                             bool `json:"rhs_enabled"`
-		SecurityLevelEmptyForJiraSubscriptions bool `json:"security_level_empty_for_jira_subscriptions"`
+		UIEnabled                              bool   `json:"ui_enabled"`
+		RHSEnabled                             bool   `json:"rhs_enabled"`
+		SecurityLevelEmptyForJiraSubscriptions bool   `json:"security_level_empty_for_jira_subscriptions"`
+		RHSDefaultStyle                        string `json:"rhs_default_style"`
 	}{
 		UIEnabled:                              conf.EnableJiraUI,
 		RHSEnabled:                             conf.EnableJiraRHS,
 		SecurityLevelEmptyForJiraSubscriptions: conf.SecurityLevelEmptyForJiraSubscriptions,
+		RHSDefaultStyle:                        conf.RHSDefaultStyle,
 	})
 }
 

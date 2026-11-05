@@ -8,6 +8,7 @@ import debounce from 'debounce-promise';
 import AsyncSelect from 'react-select/async';
 
 import {getStyleForReactSelect} from 'utils/styles';
+import {tr} from 'utils/i18n';
 
 const searchDebounceDelay = 400;
 
@@ -120,7 +121,7 @@ export default class JiraIssueSelector extends Component {
             );
         }
 
-        const requiredMsg = 'Обязательное поле.';
+        const requiredMsg = tr('Обязательное поле.');
         let validationError = null;
         if (this.props.required && this.state.invalid) {
             validationError = (
@@ -137,12 +138,12 @@ export default class JiraIssueSelector extends Component {
                     className={'control-label'}
                     htmlFor={'issue'}
                 >
-                    {'Задача Jira'}
+                    {tr('Задача Jira')}
                 </label>
                 {this.props.required && requiredStar}
                 <AsyncSelect
                     name={'issue'}
-                    placeholder={'Поиск задач по тексту…'}
+                    placeholder={tr('Поиск задач по тексту…')}
                     onChange={this.onChange}
                     required={true}
                     disabled={false}

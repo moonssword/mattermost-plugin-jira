@@ -43,6 +43,13 @@
                 "default": false
             },
             {
+                "key": "RHSDefaultStyle",
+                "display_name": "Default style of the right-hand sidebar:",
+                "type": "custom",
+                "help_text": "The look of the panel for users who did not choose their own. Compact shows more issues; Cards is roomier. Colors come from the Mattermost theme.",
+                "default": "compact"
+            },
+            {
                 "key": "secret",
                 "display_name": "Webhook Secret:",
                 "type": "custom",

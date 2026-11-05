@@ -7,6 +7,8 @@ import FullScreenModal from '../full_screen_modal/full_screen_modal';
 
 import {AllProjectMetadata} from 'types/model';
 
+import {tr} from 'utils/i18n';
+
 import ChannelSubscriptionsModalInner from './channel_subscriptions_internal';
 import {SharedProps} from './shared_props';
 
@@ -48,14 +50,14 @@ export default class ChannelSubscriptionsModal extends PureComponent<Props, Stat
 
         const subsResponse = await this.props.fetchChannelSubscriptions(this.props.channel.id);
         if (subsResponse.error) {
-            this.props.sendEphemeralPost('У вас нет прав менять подписки этого канала. Подписка на события Jira присылает в канал уведомления, например об изменении задачи или о создании задачи с определённой меткой. Чтобы получить доступ, обратитесь к администратору Mattermost.');
+            this.props.sendEphemeralPost(tr('У вас нет прав менять подписки этого канала. Подписка на события Jira присылает в канал уведомления, например об изменении задачи или о создании задачи с определённой меткой. Чтобы получить доступ, обратитесь к администратору Mattermost.'));
             this.props.close();
             return;
         }
 
         const projectResponses = await this.props.fetchJiraProjectMetadataForAllInstances();
         if (projectResponses.error) {
-            this.props.sendEphemeralPost('Не удалось получить данные проектов.');
+            this.props.sendEphemeralPost(tr('Не удалось получить данные проектов.'));
             this.props.close();
             return;
         }

@@ -18,6 +18,7 @@ import JiraIssueSelector from 'components/jira_issue_selector';
 import Validator from 'components/validator';
 
 import JiraInstanceAndProjectSelector from 'components/jira_instance_and_project_selector';
+import {tr} from 'utils/i18n';
 
 function getPostDisplayMessage(post: Post): string {
     if (post.message) {
@@ -29,18 +30,18 @@ function getPostDisplayMessage(post: Post): string {
     if (files && files.length > 0) {
         const fileNames = files.map((file) => file.name);
         if (fileNames.length === 1) {
-            return `Вложенный файл: ${fileNames[0]}`;
+            return tr('Вложенный файл: {name}', {name: fileNames[0]});
         }
-        return `Вложенные файлы: ${fileNames.join(', ')}`;
+        return tr('Вложенные файлы: {names}', {names: fileNames.join(', ')});
     }
 
     // Fallback: check file_ids if metadata.files is not populated
     const fileIds = post.file_ids;
     if (fileIds && fileIds.length > 0) {
         if (fileIds.length === 1) {
-            return 'Вложенный файл';
+            return tr('Вложенный файл');
         }
-        return `Вложенных файлов: ${fileIds.length}`;
+        return tr('Вложенных файлов: {n}', {n: fileIds.length});
     }
 
     return '';
@@ -146,7 +147,7 @@ export default class AttachCommentToIssueForm extends PureComponent<Props, State
                     <Input
                         addValidate={this.validator.addComponent}
                         removeValidate={this.validator.removeComponent}
-                        label='Сообщение для задачи Jira'
+                        label={tr('Сообщение для задачи Jira')}
                         type='textarea'
                         isDisabled={true}
                         value={getPostDisplayMessage(this.props.post)}
@@ -173,18 +174,18 @@ export default class AttachCommentToIssueForm extends PureComponent<Props, State
                     <FormButton
                         type='button'
                         btnClass='btn-link'
-                        defaultMessage='Отмена'
+                        defaultMessage={tr('Отмена')}
                         onClick={this.handleClose}
                     />
                     <FormButton
                         type='submit'
                         btnClass='btn btn-primary'
                         saving={submitting}
-                        defaultMessage='Приложить'
-                        savingMessage='Прикладываем…'
+                        defaultMessage={tr('Приложить')}
+                        savingMessage={tr('Прикладываем…')}
                         disabled={disableSubmit}
                     >
-                        {'Приложить'}
+                        {tr('Приложить')}
                     </FormButton>
                 </Modal.Footer>
             </form>

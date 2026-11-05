@@ -89,6 +89,7 @@ function makeRHSStore() {
             },
             users: {
                 currentUserId: 'user-1',
+                profiles: {},
             },
         },
         [pluginStateKey]: pluginState,

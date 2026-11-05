@@ -9,15 +9,23 @@ import {
     disconnectUser,
     handleConnectFlow,
     loadRHSSettings,
+    saveRHSAppearance,
     setRHSNotificationRole,
 } from 'actions';
-import {getInstalledInstances, getRHSActiveInstanceID, getUserConnectedInstances} from 'selectors';
+import {
+    getInstalledInstances,
+    getRHSActiveInstanceID,
+    getRHSDefaultStyle,
+    getRHSLanguagePreference,
+    getRHSStylePreference,
+    getUserConnectedInstances,
+} from 'selectors';
 
 import {GlobalState} from 'types/store';
 
 import SettingsView, {Props} from './settings_view';
 
-type DispatchProps = Pick<Props, 'closeRHSSettings' | 'disconnectUser' | 'handleConnectFlow' | 'loadRHSSettings' | 'setRHSNotificationRole'>;
+type DispatchProps = Pick<Props, 'saveRHSAppearance' | 'closeRHSSettings' | 'disconnectUser' | 'handleConnectFlow' | 'loadRHSSettings' | 'setRHSNotificationRole'>;
 
 const mapStateToProps = (state: GlobalState) => {
     const connected = getUserConnectedInstances(state);
@@ -26,6 +34,9 @@ const mapStateToProps = (state: GlobalState) => {
         activeInstance: connected.find((i) => i.instance_id === activeID) || null,
         installedInstances: getInstalledInstances(state) || [],
         connectedInstances: connected,
+        languagePreference: getRHSLanguagePreference(state),
+        stylePreference: getRHSStylePreference(state),
+        defaultStyle: getRHSDefaultStyle(state),
     };
 };
 
@@ -34,6 +45,7 @@ const actionCreators = {
     disconnectUser,
     handleConnectFlow,
     loadRHSSettings,
+    saveRHSAppearance,
     setRHSNotificationRole,
 };
 

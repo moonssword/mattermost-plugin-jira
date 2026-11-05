@@ -5,6 +5,8 @@ import React, {Component} from 'react';
 import {Modal} from 'react-bootstrap';
 import {FormattedMessage} from 'react-intl';
 
+import {tr} from 'utils/i18n';
+
 export type Props = {
 
     /*
@@ -154,7 +156,7 @@ export default class ConfirmModal extends Component<Props, State> {
             cancelText = (
                 <FormattedMessage
                     id='confirm_modal.cancel'
-                    defaultMessage='Отмена'
+                    defaultMessage={tr('Отмена')}
                 />
             );
         }

@@ -21,6 +21,7 @@ import AttachCommentToIssueModal from 'components/modals/attach_comment_modal';
 import SetupUI from 'components/setup_ui';
 import LinkTooltip from 'components/jira_ticket_tooltip';
 import {isCombinedUserActivityPost} from 'utils/posts';
+import {setUILanguage} from 'utils/i18n';
 import {getRHSPluginActions} from 'utils/rhs_controller';
 import {registerJiraRHS, shouldRegisterJiraRHS} from 'utils/rhs_register';
 import {GlobalState} from 'types/store';
@@ -41,7 +42,12 @@ import {
 } from './actions';
 
 import Hooks from './hooks/hooks';
-import {canUserConnect, getInstalledInstances, isUserConnected} from './selectors';
+import {
+    canUserConnect,
+    getInstalledInstances,
+    getUILanguage,
+    isUserConnected,
+} from './selectors';
 
 export const setupUILater = (registry: any, store: Store<object, Action<object>>): () => Promise<void> => async () => {
     registry.registerReducer(reducers);
@@ -152,6 +158,11 @@ export default class Plugin {
         // custom settings and the plugin reducer must register here — not in setupUILater.
         registry.registerReducer(reducers);
         registerLocalizedSettings(registry);
+
+        // Modals and forms outside the panel read the language while rendering.
+        const syncLanguage = () => setUILanguage(getUILanguage(store.getState() as GlobalState));
+        syncLanguage();
+        store.subscribe(syncLanguage);
 
         this.setupUI = setupUILater(registry, store);
         this.haveSetupUI = false;

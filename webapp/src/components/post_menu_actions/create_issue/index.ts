@@ -5,12 +5,12 @@ import {connect} from 'react-redux';
 
 import {GlobalState} from 'types/store';
 
-import {canUserConnect, getCurrentUserLocale, isUserConnected} from 'selectors';
+import {canUserConnect, getUILocale, isUserConnected} from 'selectors';
 
 import CreateIssuePostMenuAction from './create_issue';
 
 function mapStateToProps(state: GlobalState): {actionText: string} {
-    const locale = getCurrentUserLocale(state);
+    const locale = getUILocale(state);
     const userConnected: boolean = isUserConnected(state);
     const userCanConnect: boolean = canUserConnect(state);
 

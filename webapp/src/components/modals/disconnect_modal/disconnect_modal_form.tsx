@@ -11,6 +11,8 @@ import {getModalStyles} from 'utils/styles';
 import FormButton from 'components/form_button';
 import ReactSelectSetting from 'components/react_select_setting';
 
+import {tr} from 'utils/i18n';
+
 import {Props} from './props';
 export type State = {
     submitting: boolean;
@@ -32,7 +34,7 @@ export default class DisconnectModalForm extends PureComponent<Props, State> {
 
         const selectedInstance = this.state.selectedInstance;
         if (!selectedInstance) {
-            this.setState({error: 'Выберите инстанс Jira'});
+            this.setState({error: tr('Выберите инстанс Jira')});
             return;
         }
 
@@ -40,7 +42,7 @@ export default class DisconnectModalForm extends PureComponent<Props, State> {
             if (error) {
                 this.setState({error: error.toString()});
             } else {
-                this.props.sendEphemeralPost(`Вы отключены от инстанса Jira ${selectedInstance}`);
+                this.props.sendEphemeralPost(tr('Вы отключены от инстанса Jira {instance}', {instance: selectedInstance}));
                 this.props.closeModal();
             }
         });
@@ -78,13 +80,13 @@ export default class DisconnectModalForm extends PureComponent<Props, State> {
                 <FormButton
                     type='button'
                     btnClass='btn-link'
-                    defaultMessage='Отмена'
+                    defaultMessage={tr('Отмена')}
                     onClick={this.closeModal}
                 />
                 <FormButton
                     type='submit'
                     btnClass='btn btn-primary'
-                    defaultMessage='Отключить'
+                    defaultMessage={tr('Отключить')}
                     disabled={!this.state.selectedInstance}
                     saving={this.state.submitting}
                 />

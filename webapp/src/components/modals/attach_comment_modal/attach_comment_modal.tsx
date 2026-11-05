@@ -6,6 +6,8 @@ import {Modal} from 'react-bootstrap';
 
 import {Theme} from 'mattermost-redux/selectors/entities/preferences';
 
+import {tr} from 'utils/i18n';
+
 import AttachCommentToIssueForm from './attach_comment_form';
 
 type Props = {
@@ -31,7 +33,7 @@ export default function AttachCommentToIssueModal(props: Props) {
         >
             <Modal.Header closeButton={true}>
                 <Modal.Title>
-                    {'Приложить сообщение к задаче Jira'}
+                    {tr('Приложить сообщение к задаче Jira')}
                 </Modal.Title>
             </Modal.Header>
             <AttachCommentToIssueForm {...props}/>

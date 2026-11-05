@@ -10,10 +10,18 @@ import RHSMenu, {RHSMenuItem} from '../../rhs_menu';
 import {RHS_STRINGS} from '../../rhs_strings';
 
 export const RHS_FILTER_LABELS: Record<RHSFilter, string> = {
-    assigned: RHS_STRINGS.filterAssigned,
-    reported: RHS_STRINGS.filterReported,
-    watching: RHS_STRINGS.filterWatching,
-    sprint: RHS_STRINGS.filterSprint,
+    get assigned() {
+        return RHS_STRINGS.filterAssigned;
+    },
+    get reported() {
+        return RHS_STRINGS.filterReported;
+    },
+    get watching() {
+        return RHS_STRINGS.filterWatching;
+    },
+    get sprint() {
+        return RHS_STRINGS.filterSprint;
+    },
 };
 
 export type Props = {

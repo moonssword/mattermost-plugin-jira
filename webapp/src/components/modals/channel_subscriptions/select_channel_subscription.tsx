@@ -7,6 +7,8 @@ import {AllProjectMetadata, ChannelSubscription} from 'types/model';
 
 import ConfirmModal from 'components/confirm_modal';
 
+import {tr} from 'utils/i18n';
+
 import {SharedProps} from './shared_props';
 
 type Props = SharedProps & {
@@ -124,7 +126,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={(): void => this.props.showEditChannelSubscription(sub)}
                         type='button'
                     >
-                        {'Изменить'}
+                        {tr('Изменить')}
                     </button>
                     {' - '}
                     <button
@@ -132,7 +134,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={(): void => this.handleDeleteChannelSubscription(sub)}
                         type='button'
                     >
-                        {'Удалить'}
+                        {tr('Удалить')}
                     </button>
                 </td>
             </tr>
@@ -157,7 +159,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={() => this.props.showEditSubscriptionTemplate(sub)}
                         type='button'
                     >
-                        {'Изменить'}
+                        {tr('Изменить')}
                     </button>
                     {' - '}
                     <button
@@ -165,7 +167,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={() => this.handleDeleteChannelSubscription(sub, true)}
                         type='button'
                     >
-                        {'Удалить'}
+                        {tr('Удалить')}
                     </button>
                 </td>
             </tr>
@@ -184,55 +186,55 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
         }
 
         let confirmDeleteMessage = '';
-        confirmDeleteMessage = `Удалить ${isTemplate ? 'шаблон подписки' : 'подписку'}?`;
+        confirmDeleteMessage = isTemplate ? tr('Удалить шаблон подписки?') : tr('Удалить подписку?');
         if (subscriptionToDelete && subscriptionToDelete.name) {
-            confirmDeleteMessage = `Удалить ${isTemplate ? 'шаблон подписки' : 'подписку'} «${subscriptionToDelete.name}»?`;
+            confirmDeleteMessage = tr(isTemplate ? 'Удалить шаблон подписки «{name}»?' : 'Удалить подписку «{name}»?', {name: subscriptionToDelete.name});
         }
 
         let confirmModal = null;
         if (showConfirmModal) {
             confirmModal = (
                 <ConfirmModal
-                    cancelButtonText={'Отмена'}
-                    confirmButtonText={'Удалить'}
+                    cancelButtonText={tr('Отмена')}
+                    confirmButtonText={tr('Удалить')}
                     confirmButtonClass={'btn btn-danger'}
                     hideCancel={false}
                     message={confirmDeleteMessage}
                     onCancel={this.handleCancelDelete}
                     onConfirm={this.handleConfirmDelete}
                     show={true}
-                    title={isTemplate ? 'Шаблон подписки' : 'Подписка'}
+                    title={isTemplate ? tr('Шаблон подписки') : tr('Подписка')}
                 />
             );
         }
 
-        let titleMessage = <h2 className='text-center'>{'Подписки Jira в канале'} <strong>{channel.display_name}</strong></h2>;
+        let titleMessage = <h2 className='text-center'>{tr('Подписки Jira в канале')} <strong>{channel.display_name}</strong></h2>;
         if (omitDisplayName) {
-            titleMessage = <h2 className='text-center'>{'Подписки Jira'}</h2>;
+            titleMessage = <h2 className='text-center'>{tr('Подписки Jira')}</h2>;
         }
 
-        const subscriptionTemplateTitle = <h2 className='text-center'>{'Шаблоны подписок Jira'}</h2>;
+        const subscriptionTemplateTitle = <h2 className='text-center'>{tr('Шаблоны подписок Jira')}</h2>;
         const showInstanceColumn = this.props.installedInstances.length > 1;
         let subscriptionRows;
         let subscriptionTemplateRows;
         const columns = (
             <thead>
                 <tr>
-                    <th scope='col'>{'Название'}</th>
+                    <th scope='col'>{tr('Название')}</th>
                     <th
                         className='th-col'
                         scope='col'
-                    >{'Проект'}</th>
+                    >{tr('Проект')}</th>
                     {showInstanceColumn &&
                     <th
                         className='th-col'
                         scope='col'
-                    >{'Инстанс'}</th>
+                    >{tr('Инстанс')}</th>
                     }
                     <th
                         className='th-col'
                         scope='col'
-                    >{'Действия'}</th>
+                    >{tr('Действия')}</th>
                 </tr>
             </thead>
         );
@@ -250,7 +252,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
         } else {
             subscriptionRows = (
                 <p>
-                    {'Нажмите «Создать подписку», чтобы получать в этот канал уведомления о задачах Jira.'}
+                    {tr('Нажмите «Создать подписку», чтобы получать в этот канал уведомления о задачах Jira.')}
                 </p>
             );
         }
@@ -268,7 +270,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
             );
         } else {
             subscriptionTemplateRows = (
-                <p>{'Нажмите «Создать шаблон», чтобы создать шаблон подписки.'}</p>
+                <p>{tr('Нажмите «Создать шаблон», чтобы создать шаблон подписки.')}</p>
             );
         }
 
@@ -281,7 +283,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={this.props.showCreateChannelSubscription}
                         type='button'
                     >
-                        {'Создать подписку'}
+                        {tr('Создать подписку')}
                     </button>
                 </div>
                 {subscriptionRows}
@@ -295,7 +297,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={this.props.showCreateSubscriptionTemplate}
                         type='button'
                     >
-                        {'Создать шаблон'}
+                        {tr('Создать шаблон')}
                     </button>
                 </div>
                 {subscriptionTemplateRows}

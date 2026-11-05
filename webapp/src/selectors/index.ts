@@ -17,7 +17,9 @@ import {
     RHS_DEFAULT_FILTER,
     RHS_DEFAULT_SORT,
 } from 'types/rhs';
+import {RHSLanguagePreference, RHSStyle, RHSStylePreference} from 'types/rhs_appearance';
 import {RHSSectionID, RHS_DEFAULT_SECTION} from 'types/rhs_nav';
+import {UILanguage, uiLanguageForLocale} from 'utils/i18n';
 import {resolveRHSInstanceID} from 'utils/rhs_resolve';
 import {GlobalState, pluginStateKey} from 'types/store';
 
@@ -166,3 +168,40 @@ export const getRHSEstimateField = (state: GlobalState): string => {
 };
 
 export const isRHSListStale = (state: GlobalState): boolean => Boolean(getPluginState(state).rhs?.stale);
+
+export const RHS_PREFERENCE_CATEGORY = 'pp_' + manifest.id;
+export const RHS_PREFERENCE_LANGUAGE = 'language';
+export const RHS_PREFERENCE_STYLE = 'style';
+
+// Personal choices are Mattermost preferences, so they follow the user between
+// devices. 'auto' and 'default' mean the user did not choose anything.
+function getRHSPreference(state: GlobalState, name: string): string {
+    const preferences = (state.entities as unknown as {preferences?: {myPreferences?: {[key: string]: {value?: string}}}}).preferences?.myPreferences;
+    return preferences?.[RHS_PREFERENCE_CATEGORY + '--' + name]?.value || '';
+}
+
+export const getRHSLanguagePreference = (state: GlobalState): RHSLanguagePreference => {
+    const value = getRHSPreference(state, RHS_PREFERENCE_LANGUAGE);
+    return value === 'ru' || value === 'en' ? value : 'auto';
+};
+
+// getUILocale is the locale the plugin UI follows: the user's choice, else the
+// language of Mattermost.
+export const getUILocale = (state: GlobalState): string => {
+    const preference = getRHSLanguagePreference(state);
+    return preference === 'auto' ? getCurrentUserLocale(state) : preference;
+};
+
+export const getUILanguage = (state: GlobalState): UILanguage => uiLanguageForLocale(getUILocale(state));
+
+export const getRHSStylePreference = (state: GlobalState): RHSStylePreference => {
+    const value = getRHSPreference(state, RHS_PREFERENCE_STYLE);
+    return value === 'compact' || value === 'cards' ? value : 'default';
+};
+
+export const getRHSDefaultStyle = (state: GlobalState): RHSStyle => (getPluginSettings(state)?.rhs_default_style === 'cards' ? 'cards' : 'compact');
+
+export const getRHSStyle = (state: GlobalState): RHSStyle => {
+    const preference = getRHSStylePreference(state);
+    return preference === 'default' ? getRHSDefaultStyle(state) : preference;
+};
