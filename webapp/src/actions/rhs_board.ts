@@ -6,12 +6,14 @@ import {Dispatch} from 'redux';
 import ActionTypes from '../action_types';
 import {RHSFetchError} from '../client/rhs';
 import {getRHSBoard, getRHSBoards, getRHSIssueTransitions} from '../client/rhs_board';
-import {transitionRHSIssue} from '../client/rhs_issue';
+import {getRHSTransitionScreen, transitionRHSIssue} from '../client/rhs_issue';
 import {getPluginServerRoute, getRHSEstimateField} from '../selectors';
 
 import {RHSBoardPrefs, RHSBoardRef, RHSListView} from 'types/rhs_board';
 import {GlobalState, pluginStateKey} from 'types/store';
 import {loadRHSBoardPrefs, saveRHSBoardPrefs} from 'utils/rhs_board_prefs';
+
+import {openRHSIssue} from './rhs_card';
 
 import {refreshRHSIssuesInPlace} from './rhs';
 
@@ -126,8 +128,15 @@ export const loadRHSIssueTransitions = (key: string): Thunk<Promise<{data?: Awai
 export const moveRHSIssue = (key: string, transitionID: string): Thunk<Promise<{data?: unknown; error?: unknown}>> => {
     return async (dispatch, getState) => {
         const instanceID = getState()[pluginStateKey].rhs.instanceID;
+        const baseUrl = getPluginServerRoute(getState());
         try {
-            await transitionRHSIssue(getPluginServerRoute(getState()), instanceID, key, transitionID);
+            const screen = await getRHSTransitionScreen(baseUrl, instanceID, key, transitionID);
+            if (Object.keys(screen.fields).length > 0) {
+                await dispatch(openRHSIssue(key) as never);
+                dispatch({type: ActionTypes.RHS_CARD_TRANSITION_REQUESTED, data: transitionID});
+                return {data: true};
+            }
+            await transitionRHSIssue(baseUrl, instanceID, key, transitionID);
         } catch (error) {
             return {error};
         }

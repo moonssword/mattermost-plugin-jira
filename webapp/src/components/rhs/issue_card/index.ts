@@ -5,34 +5,41 @@ import {connect} from 'react-redux';
 import {Dispatch, bindActionCreators} from 'redux';
 
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/common';
+import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 
 import {
     assignRHSCard,
+    clearRHSCardTransitionRequest,
     closeRHSIssue,
     commentRHSCard,
     fetchRHSIssueCard,
+    loadRHSCardTransitionScreen,
     searchRHSCardAssignees,
     shareRHSCard,
     transitionRHSCard,
 } from 'actions';
-import {getRHSCard} from 'selectors';
+import {getRHSActiveInstanceID, getRHSCard} from 'selectors';
 
 import {GlobalState} from 'types/store';
 
 import IssueCard, {Props} from './issue_card';
 
-type DispatchProps = Omit<Props, 'card' | 'channelId'>;
+type DispatchProps = Omit<Props, 'card' | 'channelId' | 'instanceID' | 'theme'>;
 
 const mapStateToProps = (state: GlobalState) => ({
     card: getRHSCard(state),
     channelId: getCurrentChannelId(state) || '',
+    instanceID: getRHSActiveInstanceID(state),
+    theme: getTheme(state),
 });
 
 const actionCreators = {
     assignRHSCard,
+    clearRHSCardTransitionRequest,
     closeRHSIssue,
     commentRHSCard,
     fetchRHSIssueCard,
+    loadRHSCardTransitionScreen,
     searchRHSCardAssignees,
     shareRHSCard,
     transitionRHSCard,

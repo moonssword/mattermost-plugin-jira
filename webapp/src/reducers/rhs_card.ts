@@ -17,6 +17,7 @@ export const defaultRHSCardState: RHSCardState = {
     actionError: null,
     actionErrorMessage: '',
     requestId: 0,
+    requestedTransition: '',
 };
 
 // rhsCard holds the open issue card. Responses for another key or an older
@@ -67,6 +68,8 @@ export default function rhsCard(state: RHSCardState = defaultRHSCardState, actio
             return state;
         }
         return {...state, pending: null};
+    case ActionTypes.RHS_CARD_TRANSITION_REQUESTED:
+        return {...state, requestedTransition: action.data};
     case ActionTypes.CLOSE_RHS_ISSUE:
         return {...defaultRHSCardState, requestId: state.requestId};
     default:

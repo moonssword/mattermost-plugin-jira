@@ -1,7 +1,13 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RHSAssignTarget, RHSIssueCard, RHSUser} from 'types/rhs_issue';
+import {
+    RHSAssignTarget,
+    RHSIssueCard,
+    RHSTransitionScreen,
+    RHSTransitionValues,
+    RHSUser,
+} from 'types/rhs_issue';
 
 import {rhsRequest} from './rhs';
 
@@ -15,8 +21,12 @@ export function getRHSIssueCard(baseUrl: string, instanceID: string, key: string
     return rhsRequest<RHSIssueCard>(`${baseUrl}/api/v2/rhs/issue${buildQueryString({instance_id: instanceID, key})}`);
 }
 
-export function transitionRHSIssue(baseUrl: string, instanceID: string, key: string, transitionID: string): Promise<RHSIssueCard> {
-    return post(`${baseUrl}/api/v2/rhs/issue/transition`, {instance_id: instanceID, key, transition_id: transitionID});
+export function transitionRHSIssue(baseUrl: string, instanceID: string, key: string, transitionID: string, values?: RHSTransitionValues): Promise<RHSIssueCard> {
+    return post(`${baseUrl}/api/v2/rhs/issue/transition`, {instance_id: instanceID, key, transition_id: transitionID, ...values});
+}
+
+export function getRHSTransitionScreen(baseUrl: string, instanceID: string, key: string, transitionID: string): Promise<RHSTransitionScreen> {
+    return rhsRequest<RHSTransitionScreen>(`${baseUrl}/api/v2/rhs/issue/transition/screen${buildQueryString({instance_id: instanceID, key, transition_id: transitionID})}`);
 }
 
 export function assignRHSIssue(baseUrl: string, instanceID: string, key: string, target: RHSAssignTarget): Promise<RHSIssueCard> {

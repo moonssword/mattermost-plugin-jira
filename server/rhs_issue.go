@@ -55,6 +55,7 @@ func (p *Plugin) registerRHSIssueRoutes(apiRouter *mux.Router) {
 	apiRouter.HandleFunc(routeAPIRHSIssueComment, p.checkAuth(p.handleResponse(p.httpRHSCommentIssue))).Methods(http.MethodPost)
 	apiRouter.HandleFunc(routeAPIRHSIssueShare, p.checkAuth(p.handleResponse(p.httpRHSShareIssue))).Methods(http.MethodPost)
 	apiRouter.HandleFunc(routeAPIRHSAssignableUsers, p.checkAuth(p.handleResponse(p.httpRHSAssignableUsers))).Methods(http.MethodGet)
+	p.registerRHSTransitionRoutes(apiRouter)
 }
 
 // RHSUser is a Jira user as the panel shows it. Avatars are not passed on:
@@ -241,6 +242,9 @@ type rhsIssueRequest struct {
 	AssignToMe   bool     `json:"assign_to_me,omitempty"`
 	Body         string   `json:"body,omitempty"`
 	ChannelID    string   `json:"channel_id,omitempty"`
+	// Values of the transition screen, passed to Jira as they are.
+	Fields  map[string]interface{} `json:"fields,omitempty"`
+	Comment string                 `json:"comment,omitempty"`
 }
 
 func (p *Plugin) decodeRHSIssueRequest(r *http.Request) (*rhsIssueContext, *rhsIssueRequest, error) {
@@ -274,7 +278,7 @@ func (p *Plugin) httpRHSTransitionIssue(w http.ResponseWriter, r *http.Request) 
 	if in.TransitionID == "" {
 		return respondRHSErr(w, errors.Wrap(ErrInvalidRHSTab, "transition_id is required"))
 	}
-	if err = ctx.client.DoTransition(ctx.key, in.TransitionID); err != nil {
+	if err = runRHSTransition(ctx.client, ctx.key, in); err != nil {
 		return respondRHSErr(w, rhsJiraError(err))
 	}
 	return p.respondRHSCard(w, ctx)

@@ -710,9 +710,11 @@ export {
 
 export {
     assignRHSCard,
+    clearRHSCardTransitionRequest,
     closeRHSIssue,
     commentRHSCard,
     fetchRHSIssueCard,
+    loadRHSCardTransitionScreen,
     openRHSIssue,
     searchRHSCardAssignees,
     shareRHSCard,

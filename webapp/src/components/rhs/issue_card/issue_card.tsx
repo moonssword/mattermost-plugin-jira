@@ -3,10 +3,15 @@
 
 import React, {useEffect, useRef, useState} from 'react';
 
+import {Theme} from 'mattermost-redux/selectors/entities/preferences';
+
 import {RHSErrorCode} from 'types/rhs';
 import {
     RHSAssignTarget,
     RHSCardState,
+    RHSTransition,
+    RHSTransitionScreen,
+    RHSTransitionValues,
     RHSUser,
     isSameRHSUser,
 } from 'types/rhs_issue';
@@ -21,15 +26,20 @@ import {RHS_STRINGS} from '../rhs_strings';
 import AssigneeField, {RHSUserLabel} from './assignee_field';
 import {CommentComposer, CommentList} from './comments';
 import StatusMenu from './status_menu';
+import TransitionForm from './transition_form';
 
 type Result = Promise<{data?: unknown; error?: unknown}>;
 
 export type Props = {
     card: RHSCardState;
     channelId: string;
+    instanceID: string;
+    theme: Theme;
     closeRHSIssue: () => void;
     fetchRHSIssueCard: (key: string) => Result;
-    transitionRHSCard: (transitionID: string) => Result;
+    transitionRHSCard: (transitionID: string, values?: RHSTransitionValues) => Result;
+    loadRHSCardTransitionScreen: (transitionID: string) => Promise<{data?: RHSTransitionScreen; error?: unknown}>;
+    clearRHSCardTransitionRequest: () => unknown;
     assignRHSCard: (target: RHSAssignTarget) => Result;
     commentRHSCard: (text: string) => Result;
     shareRHSCard: (channelId: string) => Result;
@@ -71,6 +81,8 @@ export default function IssueCard(props: Props): JSX.Element {
     const [shared, setShared] = useState(false);
     const sharedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const backButton = useRef<HTMLButtonElement>(null);
+    const [screenForm, setScreenForm] = useState<{transition: RHSTransition; screen: RHSTransitionScreen} | null>(null);
+    const [checkingScreen, setCheckingScreen] = useState(false);
 
     useEffect(() => {
         backButton.current?.focus();
@@ -80,6 +92,38 @@ export default function IssueCard(props: Props): JSX.Element {
             }
         };
     }, []);
+
+    // A transition with a screen opens its form; without one it runs at once.
+    // If the screen cannot be read, Jira still explains a refused transition.
+    const startTransition = async (id: string) => {
+        const transition = data?.transitions.find((t) => t.id === id);
+        setCheckingScreen(true);
+        const {data: screen} = await props.loadRHSCardTransitionScreen(id);
+        setCheckingScreen(false);
+        if (transition && screen && Object.keys(screen.fields).length > 0) {
+            setScreenForm({transition, screen});
+            return;
+        }
+        props.transitionRHSCard(id);
+    };
+
+    useEffect(() => {
+        if (card.requestedTransition && data) {
+            props.clearRHSCardTransitionRequest();
+            startTransition(card.requestedTransition);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [card.requestedTransition, data]);
+
+    const submitScreen = async (values: RHSTransitionValues) => {
+        if (!screenForm) {
+            return;
+        }
+        const {error} = await props.transitionRHSCard(screenForm.transition.id, values);
+        if (!error) {
+            setScreenForm(null);
+        }
+    };
 
     const onShare = async () => {
         const result = await props.shareRHSCard(props.channelId);
@@ -127,8 +171,8 @@ export default function IssueCard(props: Props): JSX.Element {
                     <StatusMenu
                         status={data.status}
                         transitions={data.transitions}
-                        busy={card.pending === 'transition'}
-                        onTransition={(id) => props.transitionRHSCard(id)}
+                        busy={card.pending === 'transition' || checkingScreen}
+                        onTransition={startTransition}
                     />
                     {!assignedToMe && (
                         <button
@@ -255,11 +299,33 @@ export default function IssueCard(props: Props): JSX.Element {
         );
     }
 
+    if (data && screenForm) {
+        body = (
+            <TransitionForm
+                transition={screenForm.transition}
+                fields={screenForm.screen.fields}
+                instanceID={props.instanceID}
+                projectKey={data.project}
+                browseUrl={data.browseUrl}
+                theme={props.theme}
+                busy={card.pending === 'transition'}
+                error={card.actionError ? cardErrorText(card.actionError, card.actionErrorMessage) : ''}
+                onSubmit={submitScreen}
+                onCancel={() => setScreenForm(null)}
+            />
+        );
+    }
+
     return (
         <div
             className='jira-rhs-card'
             onKeyDown={(event) => {
-                if (event.key === 'Escape' && !event.defaultPrevented) {
+                if (event.key !== 'Escape' || event.defaultPrevented) {
+                    return;
+                }
+                if (screenForm) {
+                    setScreenForm(null);
+                } else {
                     props.closeRHSIssue();
                 }
             }}
@@ -298,7 +364,7 @@ export default function IssueCard(props: Props): JSX.Element {
                 )}
             </div>
             {body}
-            {data && (
+            {data && !screenForm && (
                 <CommentComposer
                     busy={card.pending !== null}
                     onSend={props.commentRHSCard}

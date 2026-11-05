@@ -56,6 +56,7 @@ export default {
     RHS_CARD_ACTION_STARTED: `${PluginId}_rhs_card_action_started`,
     RHS_CARD_ACTION_FAILED: `${PluginId}_rhs_card_action_failed`,
     RHS_CARD_ACTION_DONE: `${PluginId}_rhs_card_action_done`,
+    RHS_CARD_TRANSITION_REQUESTED: `${PluginId}_rhs_card_transition_requested`,
     SET_RHS_CREATE: `${PluginId}_set_rhs_create`,
     OPEN_RHS_ATTACH: `${PluginId}_open_rhs_attach`,
     OPEN_RHS_SETTINGS: `${PluginId}_open_rhs_settings`,

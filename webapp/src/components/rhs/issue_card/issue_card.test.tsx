@@ -19,6 +19,11 @@ import {RHS_STRINGS} from '../rhs_strings';
 import {RHS_ASSIGNEE_SEARCH_DEBOUNCE_MS} from './assignee_field';
 import IssueCard, {Props, cardErrorText} from './issue_card';
 
+jest.mock('../sections/create/panel_fields', () => ({
+    __esModule: true,
+    default: () => <div data-testid='fields'/>,
+}));
+
 const me = {name: 'ivan', displayName: 'Иван Петров'};
 
 const data: RHSIssueCard = {
@@ -48,6 +53,10 @@ function makeProps(card: Partial<RHSCardState> = {}, overrides: Partial<Props> =
     return {
         card: {...defaultRHSCardState, key: 'BACK-412', data, ...card},
         channelId: 'channel-1',
+        instanceID: 'instance-1',
+        theme: {} as Props['theme'],
+        loadRHSCardTransitionScreen: jest.fn(async () => ({data: {fields: {}}})),
+        clearRHSCardTransitionRequest: jest.fn(),
         closeRHSIssue: jest.fn(),
         fetchRHSIssueCard: jest.fn(async () => ({})),
         transitionRHSCard: jest.fn(async () => ({})),
@@ -98,14 +107,58 @@ describe('components/rhs/issue_card', () => {
         expect(props.fetchRHSIssueCard).toHaveBeenCalledWith('BACK-412');
     });
 
-    test('status menu lists transitions and runs the chosen one', () => {
+    test('status menu lists transitions and runs the chosen one', async () => {
         const props = makeProps();
         render(<IssueCard {...props}/>);
         fireEvent.click(screen.getByTestId('rhs-card-status'));
         expect(screen.getByTestId('rhs-card-transitions')).toHaveTextContent('Открыта');
         fireEvent.click(screen.getByTestId('rhs-card-transition-31'));
-        expect(props.transitionRHSCard).toHaveBeenCalledWith('31');
+        await waitFor(() => expect(props.transitionRHSCard).toHaveBeenCalledWith('31'));
+        expect(props.loadRHSCardTransitionScreen).toHaveBeenCalledWith('31');
         expect(screen.queryByTestId('rhs-card-transitions')).toBeNull();
+    });
+
+    test('a transition with a screen opens its form and runs only on submit', async () => {
+        const fields = {resolution: {name: 'Решение', required: false, schema: {type: 'resolution'}, allowedValues: [{id: '1', name: 'Готово'}]}};
+        const props = makeProps({}, {
+            loadRHSCardTransitionScreen: jest.fn(async () => ({data: {fields}})) as unknown as Props['loadRHSCardTransitionScreen'],
+        });
+        render(<IssueCard {...props}/>);
+        fireEvent.click(screen.getByTestId('rhs-card-status'));
+        fireEvent.click(screen.getByTestId('rhs-card-transition-31'));
+        await screen.findByTestId('rhs-transition-form');
+        expect(props.transitionRHSCard).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByTestId('rhs-transition-submit'));
+        await waitFor(() => expect(props.transitionRHSCard).toHaveBeenCalledWith('31', {fields: {}, comment: ''}));
+        await waitFor(() => expect(screen.queryByTestId('rhs-transition-form')).toBeNull());
+    });
+
+    test('a failed screen form stays open, cancel returns to the card', async () => {
+        const fields = {resolution: {name: 'Решение', required: false, schema: {type: 'resolution'}, allowedValues: [{id: '1', name: 'Готово'}]}};
+        const props = makeProps({}, {
+            loadRHSCardTransitionScreen: jest.fn(async () => ({data: {fields}})) as unknown as Props['loadRHSCardTransitionScreen'],
+            transitionRHSCard: jest.fn(async () => ({error: new Error('нет')})),
+        });
+        render(<IssueCard {...props}/>);
+        fireEvent.click(screen.getByTestId('rhs-card-status'));
+        fireEvent.click(screen.getByTestId('rhs-card-transition-31'));
+        fireEvent.click(await screen.findByTestId('rhs-transition-submit'));
+        await waitFor(() => expect(props.transitionRHSCard).toHaveBeenCalled());
+        expect(screen.getByTestId('rhs-transition-form')).toBeTruthy();
+        fireEvent.click(screen.getByTestId('rhs-transition-cancel'));
+        expect(screen.queryByTestId('rhs-transition-form')).toBeNull();
+        expect(screen.getByTestId('rhs-card')).toBeTruthy();
+    });
+
+    test('a transition requested from the board opens its form', async () => {
+        const fields = {resolution: {name: 'Решение', required: false, schema: {type: 'resolution'}, allowedValues: [{id: '1', name: 'Готово'}]}};
+        const props = makeProps({requestedTransition: '31'}, {
+            loadRHSCardTransitionScreen: jest.fn(async () => ({data: {fields}})) as unknown as Props['loadRHSCardTransitionScreen'],
+        });
+        render(<IssueCard {...props}/>);
+        await screen.findByTestId('rhs-transition-form');
+        expect(props.clearRHSCardTransitionRequest).toHaveBeenCalled();
     });
 
     test('assign to me is hidden when the issue is already mine', () => {

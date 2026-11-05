@@ -1,6 +1,8 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {JiraField} from './model';
+
 import {RHSErrorCode, RHSIssue, RHSIssueStatus} from './rhs';
 
 // A Jira user. Cloud identifies users by accountId, Server/DC by name.
@@ -37,6 +39,16 @@ export type RHSIssueCard = RHSIssue & {
     me: RHSUser;
 };
 
+// Screen of a transition: no fields means Jira shows no form for it.
+export type RHSTransitionScreen = {
+    fields: {[key: string]: JiraField};
+};
+
+export type RHSTransitionValues = {
+    fields: {[key: string]: unknown};
+    comment: string;
+};
+
 // Card actions that change the issue; only one runs at a time.
 export type RHSCardAction = 'transition' | 'assign' | 'comment' | 'share';
 
@@ -53,6 +65,9 @@ export type RHSCardState = {
     actionError: RHSErrorCode | null;
     actionErrorMessage: string;
     requestId: number;
+
+    // Transition chosen outside the card, on the board: the card opens its form.
+    requestedTransition: string;
 };
 
 export function isSameRHSUser(a: RHSUser | null | undefined, b: RHSUser | null | undefined): boolean {

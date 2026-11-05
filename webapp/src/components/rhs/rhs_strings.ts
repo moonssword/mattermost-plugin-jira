@@ -124,6 +124,15 @@ export const RHS_STRINGS = {
     assigneeNoResults: 'Никого не нашли',
     assigneeTypeHint: 'Начните вводить имя или логин',
     cancel: 'Отмена',
+
+    // Transition screen
+    transitionTitle: 'Смена статуса: {status}',
+    transitionComment: 'Комментарий',
+    transitionSubmit: 'Применить',
+    transitionSubmitting: 'Применяем…',
+    transitionEmptyHint: 'Пустые поля останутся без изменений.',
+    transitionHidden: 'Заполняются только в Jira: {fields}.',
+    transitionBlocked: 'Этот переход требует полей, которых нет в панели: {fields}.',
     comments: 'Комментарии',
     commentsOlder: 'Показаны последние {shown} из {total}. Остальные — в Jira.',
     noComments: 'Комментариев пока нет',

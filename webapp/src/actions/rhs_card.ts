@@ -9,6 +9,7 @@ import {
     assignRHSIssue,
     commentRHSIssue,
     getRHSIssueCard,
+    getRHSTransitionScreen,
     searchRHSAssignableUsers,
     shareRHSIssue,
     transitionRHSIssue,
@@ -19,6 +20,7 @@ import {
     RHSAssignTarget,
     RHSCardAction,
     RHSIssueCard,
+    RHSTransitionValues,
     RHSUser,
 } from 'types/rhs_issue';
 import {GlobalState, pluginStateKey} from 'types/store';
@@ -91,8 +93,23 @@ function runCardAction(kind: RHSCardAction, call: (baseUrl: string, instanceID: 
     };
 }
 
-export const transitionRHSCard = (transitionID: string) =>
-    runCardAction('transition', (baseUrl, instanceID, key) => transitionRHSIssue(baseUrl, instanceID, key, transitionID));
+export const transitionRHSCard = (transitionID: string, values?: RHSTransitionValues) =>
+    runCardAction('transition', (baseUrl, instanceID, key) => transitionRHSIssue(baseUrl, instanceID, key, transitionID, values));
+
+// loadRHSCardTransitionScreen asks Jira which fields a transition of the open
+// card requires. It does not change the card.
+export const loadRHSCardTransitionScreen = (transitionID: string) => {
+    return async (_: Dispatch, getState: () => GlobalState) => {
+        const {baseUrl, instanceID, key} = cardContext(getState());
+        try {
+            return {data: await getRHSTransitionScreen(baseUrl, instanceID, key, transitionID)};
+        } catch (error) {
+            return {error: asRHSError(error)};
+        }
+    };
+};
+
+export const clearRHSCardTransitionRequest = () => ({type: ActionTypes.RHS_CARD_TRANSITION_REQUESTED, data: ''});
 
 export const assignRHSCard = (target: RHSAssignTarget) =>
     runCardAction('assign', (baseUrl, instanceID, key) => assignRHSIssue(baseUrl, instanceID, key, target));
