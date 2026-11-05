@@ -134,7 +134,7 @@ func normalizeRHSIssue(instance Instance, issue jira.Issue) RHSIssue {
 	f := issue.Fields
 	out.Summary = f.Summary
 	out.IssueType = f.Type.Name
-	out.IssueTypeIconURL = f.Type.IconURL
+	out.IssueTypeIconURL = rhsIconURL(instance, f.Type.IconURL)
 	out.Project = f.Project.Key
 	out.Updated = rhsTimeRFC3339(f.Updated)
 	out.Created = rhsTimeRFC3339(f.Created)
@@ -143,7 +143,7 @@ func normalizeRHSIssue(instance Instance, issue jira.Issue) RHSIssue {
 	}
 	if f.Priority != nil {
 		out.Priority = f.Priority.Name
-		out.PriorityIconURL = f.Priority.IconURL
+		out.PriorityIconURL = rhsIconURL(instance, f.Priority.IconURL)
 	}
 	if f.Assignee != nil {
 		out.AssigneeName = f.Assignee.DisplayName

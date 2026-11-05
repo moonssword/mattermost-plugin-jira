@@ -5,6 +5,7 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -131,4 +132,28 @@ func normalizeServerSearchResult(requestedStartAt int, result serverSearchResult
 		out.NextPageToken = strconv.Itoa(next)
 	}
 	return out
+}
+
+// GetRHSIcon implements rhsIconFetcher. The body is an image, not JSON, so it
+// is read here rather than decoded by the Jira client.
+func (client jiraServerClient) GetRHSIcon(iconPath string) (string, []byte, error) {
+	req, err := client.Jira.NewRequest(http.MethodGet, iconPath, nil)
+	if err != nil {
+		return "", nil, err
+	}
+	resp, err := client.Jira.Do(req, nil)
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", nil, userFriendlyJiraError(resp, err)
+	}
+	data, err := io.ReadAll(io.LimitReader(resp.Body, rhsIconMaxBytes+1))
+	if err != nil {
+		return "", nil, errors.Wrap(err, "failed to read the icon")
+	}
+	if len(data) > rhsIconMaxBytes {
+		return "", nil, ErrRHSIconTooLarge
+	}
+	return resp.Header.Get("Content-Type"), data, nil
 }
