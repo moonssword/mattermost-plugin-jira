@@ -27,7 +27,7 @@ export default function DisconnectModal(props: Props) {
         >
             <Modal.Header closeButton={true}>
                 <Modal.Title>
-                    {'Disconnect from Jira'}
+                    {'Отключение от Jira'}
                 </Modal.Title>
             </Modal.Header>
             {content}

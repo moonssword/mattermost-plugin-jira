@@ -124,6 +124,7 @@ export const RHS_STRINGS = {
     assigneeNoResults: 'Никого не нашли',
     assigneeTypeHint: 'Начните вводить имя или логин',
     cancel: 'Отмена',
+    channelInModal: 'Открыть подписки в отдельном окне',
 
     // Transition screen
     transitionTitle: 'Смена статуса: {status}',

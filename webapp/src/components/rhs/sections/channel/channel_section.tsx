@@ -19,6 +19,7 @@ export type Props = SharedProps & {
     instanceID: string;
     channelId: string;
     isDirectOrGroup: boolean;
+    openChannelSettings: (channelID: string) => unknown;
     loadRHSChannelSubscriptions: (channelID: string) => Result;
     setRHSSubscriptionPaused: (channelID: string, subscriptionID: string, paused: boolean) => Result;
 };
@@ -115,7 +116,7 @@ export default function ChannelSection(props: Props): JSX.Element {
                 className='jira-rhs-subscription-editor'
                 data-testid='rhs-subscription-editor'
             >
-                <div className='jira-rhs-card-top'>
+                <div className='jira-rhs-form-header'>
                     <button
                         type='button'
                         className='jira-rhs-icon-button'
@@ -129,13 +130,30 @@ export default function ChannelSection(props: Props): JSX.Element {
                             aria-hidden={true}
                         />
                     </button>
-                    <span className='jira-rhs-attach-title'>
+                    <span className='jira-rhs-form-title'>
                         {editing.mode === 'create' ? RHS_STRINGS.channelEditTitleNew : (editing.sub.name || RHS_STRINGS.channelEditTitle)}
                     </span>
+                    <button
+                        type='button'
+                        className='jira-rhs-icon-button'
+                        aria-label={RHS_STRINGS.channelInModal}
+                        title={RHS_STRINGS.channelInModal}
+                        data-testid='rhs-subscription-in-modal'
+                        onClick={() => {
+                            finishEditing();
+                            props.openChannelSettings(channelId);
+                        }}
+                    >
+                        <i
+                            className='icon icon-arrow-expand'
+                            aria-hidden={true}
+                        />
+                    </button>
                 </div>
                 <div className='jira-rhs-subscription-editor-body'>
                     <EditChannelSubscription
                         {...props}
+                        panel={true}
                         finishEditSubscription={finishEditing}
                         selectedSubscription={editing.mode === 'edit' ? editing.sub : null}
                         creatingSubscription={editing.mode === 'create'}

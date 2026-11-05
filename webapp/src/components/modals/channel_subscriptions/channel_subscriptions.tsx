@@ -48,14 +48,14 @@ export default class ChannelSubscriptionsModal extends PureComponent<Props, Stat
 
         const subsResponse = await this.props.fetchChannelSubscriptions(this.props.channel.id);
         if (subsResponse.error) {
-            this.props.sendEphemeralPost('You do not have permission to edit subscriptions for this channel. Subscribing to Jira events will create notifications in this channel when certain events occur, such as an issue being updated or created with a specific label. Speak to your Mattermost administrator to request access to this functionality.');
+            this.props.sendEphemeralPost('У вас нет прав менять подписки этого канала. Подписка на события Jira присылает в канал уведомления, например об изменении задачи или о создании задачи с определённой меткой. Чтобы получить доступ, обратитесь к администратору Mattermost.');
             this.props.close();
             return;
         }
 
         const projectResponses = await this.props.fetchJiraProjectMetadataForAllInstances();
         if (projectResponses.error) {
-            this.props.sendEphemeralPost('Failed to fetch project metadata for any projects.');
+            this.props.sendEphemeralPost('Не удалось получить данные проектов.');
             this.props.close();
             return;
         }

@@ -75,7 +75,7 @@ describe('components/DisconnectModalForm', () => {
         });
 
         expect(disconnectUser).toHaveBeenCalledWith('https://something.atlassian.net');
-        expect(sendEphemeralPost).toHaveBeenCalledWith('Successfully disconnected from Jira instance https://something.atlassian.net');
+        expect(sendEphemeralPost).toHaveBeenCalledWith('Вы отключены от инстанса Jira https://something.atlassian.net');
         expect(closeModal).toHaveBeenCalled();
     });
 

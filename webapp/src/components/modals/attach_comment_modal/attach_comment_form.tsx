@@ -29,18 +29,18 @@ function getPostDisplayMessage(post: Post): string {
     if (files && files.length > 0) {
         const fileNames = files.map((file) => file.name);
         if (fileNames.length === 1) {
-            return `Attached file: ${fileNames[0]}`;
+            return `Вложенный файл: ${fileNames[0]}`;
         }
-        return `Attached files: ${fileNames.join(', ')}`;
+        return `Вложенные файлы: ${fileNames.join(', ')}`;
     }
 
     // Fallback: check file_ids if metadata.files is not populated
     const fileIds = post.file_ids;
     if (fileIds && fileIds.length > 0) {
         if (fileIds.length === 1) {
-            return 'Attached file';
+            return 'Вложенный файл';
         }
-        return `Attached ${fileIds.length} files`;
+        return `Вложенных файлов: ${fileIds.length}`;
     }
 
     return '';
@@ -146,7 +146,7 @@ export default class AttachCommentToIssueForm extends PureComponent<Props, State
                     <Input
                         addValidate={this.validator.addComponent}
                         removeValidate={this.validator.removeComponent}
-                        label='Message Attached to Jira Issue'
+                        label='Сообщение для задачи Jira'
                         type='textarea'
                         isDisabled={true}
                         value={getPostDisplayMessage(this.props.post)}
@@ -173,18 +173,18 @@ export default class AttachCommentToIssueForm extends PureComponent<Props, State
                     <FormButton
                         type='button'
                         btnClass='btn-link'
-                        defaultMessage='Cancel'
+                        defaultMessage='Отмена'
                         onClick={this.handleClose}
                     />
                     <FormButton
                         type='submit'
                         btnClass='btn btn-primary'
                         saving={submitting}
-                        defaultMessage='Attach'
-                        savingMessage='Attaching'
+                        defaultMessage='Приложить'
+                        savingMessage='Прикладываем…'
                         disabled={disableSubmit}
                     >
-                        {'Attach'}
+                        {'Приложить'}
                     </FormButton>
                 </Modal.Footer>
             </form>

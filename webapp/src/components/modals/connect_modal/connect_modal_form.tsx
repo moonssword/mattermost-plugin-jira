@@ -32,12 +32,12 @@ export default class ConnectModalForm extends PureComponent<Props, State> {
 
         const selectedInstance = this.state.selectedInstance;
         if (!selectedInstance) {
-            this.setState({error: 'Please select a Jira instance'});
+            this.setState({error: 'Выберите инстанс Jira'});
             return;
         }
 
         if (this.isAlreadyConnectedToInstance(this.state.selectedInstance)) {
-            this.setState({error: 'You are already connected to this Jira instance.'});
+            this.setState({error: 'Вы уже подключены к этому инстансу Jira.'});
             return;
         }
 
@@ -60,7 +60,7 @@ export default class ConnectModalForm extends PureComponent<Props, State> {
 
         let error = '';
         if (instanceID && this.isAlreadyConnectedToInstance(instanceID)) {
-            error = 'You are already connected to this Jira instance.';
+            error = 'Вы уже подключены к этому инстансу Jira.';
         }
 
         this.setState({selectedInstance: instanceID, error});
@@ -88,13 +88,13 @@ export default class ConnectModalForm extends PureComponent<Props, State> {
                 <FormButton
                     type='button'
                     btnClass='btn-link'
-                    defaultMessage='Cancel'
+                    defaultMessage='Отмена'
                     onClick={this.closeModal}
                 />
                 <FormButton
                     type='submit'
                     btnClass='btn btn-primary'
-                    defaultMessage='Connect'
+                    defaultMessage='Подключить'
                     disabled={disableSubmit}
                     saving={this.state.submitting}
                 />

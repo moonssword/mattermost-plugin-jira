@@ -31,7 +31,7 @@ export default function AttachCommentToIssueModal(props: Props) {
         >
             <Modal.Header closeButton={true}>
                 <Modal.Title>
-                    {'Attach Message to Jira Issue'}
+                    {'Приложить сообщение к задаче Jira'}
                 </Modal.Title>
             </Modal.Header>
             <AttachCommentToIssueForm {...props}/>

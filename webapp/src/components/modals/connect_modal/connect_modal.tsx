@@ -27,7 +27,7 @@ export default function ConnectModal(props: Props) {
         >
             <Modal.Header closeButton={true}>
                 <Modal.Title>
-                    {'Connect to Jira'}
+                    {'Подключение к Jira'}
                 </Modal.Title>
             </Modal.Header>
             {content}

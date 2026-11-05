@@ -124,7 +124,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={(): void => this.props.showEditChannelSubscription(sub)}
                         type='button'
                     >
-                        {'Edit'}
+                        {'Изменить'}
                     </button>
                     {' - '}
                     <button
@@ -132,7 +132,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={(): void => this.handleDeleteChannelSubscription(sub)}
                         type='button'
                     >
-                        {'Delete'}
+                        {'Удалить'}
                     </button>
                 </td>
             </tr>
@@ -157,7 +157,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={() => this.props.showEditSubscriptionTemplate(sub)}
                         type='button'
                     >
-                        {'Edit'}
+                        {'Изменить'}
                     </button>
                     {' - '}
                     <button
@@ -165,7 +165,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={() => this.handleDeleteChannelSubscription(sub, true)}
                         type='button'
                     >
-                        {'Delete'}
+                        {'Удалить'}
                     </button>
                 </td>
             </tr>
@@ -184,55 +184,55 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
         }
 
         let confirmDeleteMessage = '';
-        confirmDeleteMessage = `Are you sure to delete the subscription ${isTemplate ? 'template' : ''}?`;
+        confirmDeleteMessage = `Удалить ${isTemplate ? 'шаблон подписки' : 'подписку'}?`;
         if (subscriptionToDelete && subscriptionToDelete.name) {
-            confirmDeleteMessage = `Are you sure to delete the subscription  ${isTemplate ? 'template' : ''} "${subscriptionToDelete.name}"?`;
+            confirmDeleteMessage = `Удалить ${isTemplate ? 'шаблон подписки' : 'подписку'} «${subscriptionToDelete.name}»?`;
         }
 
         let confirmModal = null;
         if (showConfirmModal) {
             confirmModal = (
                 <ConfirmModal
-                    cancelButtonText={'Cancel'}
-                    confirmButtonText={'Delete'}
+                    cancelButtonText={'Отмена'}
+                    confirmButtonText={'Удалить'}
                     confirmButtonClass={'btn btn-danger'}
                     hideCancel={false}
                     message={confirmDeleteMessage}
                     onCancel={this.handleCancelDelete}
                     onConfirm={this.handleConfirmDelete}
                     show={true}
-                    title={isTemplate ? 'Subscription Template' : 'Subscription'}
+                    title={isTemplate ? 'Шаблон подписки' : 'Подписка'}
                 />
             );
         }
 
-        let titleMessage = <h2 className='text-center'>{'Jira Subscriptions in'} <strong>{channel.display_name}</strong></h2>;
+        let titleMessage = <h2 className='text-center'>{'Подписки Jira в канале'} <strong>{channel.display_name}</strong></h2>;
         if (omitDisplayName) {
-            titleMessage = <h2 className='text-center'>{'Jira Subscriptions'}</h2>;
+            titleMessage = <h2 className='text-center'>{'Подписки Jira'}</h2>;
         }
 
-        const subscriptionTemplateTitle = <h2 className='text-center'>{'Jira Subscription Templates'}</h2>;
+        const subscriptionTemplateTitle = <h2 className='text-center'>{'Шаблоны подписок Jira'}</h2>;
         const showInstanceColumn = this.props.installedInstances.length > 1;
         let subscriptionRows;
         let subscriptionTemplateRows;
         const columns = (
             <thead>
                 <tr>
-                    <th scope='col'>{'Name'}</th>
+                    <th scope='col'>{'Название'}</th>
                     <th
                         className='th-col'
                         scope='col'
-                    >{'Project'}</th>
+                    >{'Проект'}</th>
                     {showInstanceColumn &&
                     <th
                         className='th-col'
                         scope='col'
-                    >{'Instance'}</th>
+                    >{'Инстанс'}</th>
                     }
                     <th
                         className='th-col'
                         scope='col'
-                    >{'Actions'}</th>
+                    >{'Действия'}</th>
                 </tr>
             </thead>
         );
@@ -250,7 +250,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
         } else {
             subscriptionRows = (
                 <p>
-                    {'Click "Create Subscription" to receive Jira issue notifications in this channel.'}
+                    {'Нажмите «Создать подписку», чтобы получать в этот канал уведомления о задачах Jira.'}
                 </p>
             );
         }
@@ -268,7 +268,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
             );
         } else {
             subscriptionTemplateRows = (
-                <p>{'Click "Create Template" to create a subscription template.'}</p>
+                <p>{'Нажмите «Создать шаблон», чтобы создать шаблон подписки.'}</p>
             );
         }
 
@@ -281,7 +281,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={this.props.showCreateChannelSubscription}
                         type='button'
                     >
-                        {'Create Subscription'}
+                        {'Создать подписку'}
                     </button>
                 </div>
                 {subscriptionRows}
@@ -295,7 +295,7 @@ export default class SelectChannelSubscriptionInternal extends React.PureCompone
                         onClick={this.props.showCreateSubscriptionTemplate}
                         type='button'
                     >
-                        {'Create Template'}
+                        {'Создать шаблон'}
                     </button>
                 </div>
                 {subscriptionTemplateRows}

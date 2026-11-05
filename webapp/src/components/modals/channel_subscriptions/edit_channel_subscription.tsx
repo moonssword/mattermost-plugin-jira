@@ -32,32 +32,33 @@ import {
 } from 'types/model';
 
 import ChannelSubscriptionFilters from './channel_subscription_filters';
+import SubscriptionPanelForm from './subscription_panel_form';
 import {SharedProps} from './shared_props';
 
 const JiraEventOptions: ReactSelectOption[] = [
-    {value: 'event_created', label: 'Issue Created'},
-    {value: 'event_deleted', label: 'Issue Deleted'},
-    {value: 'event_deleted_unresolved', label: 'Issue Deleted, Unresolved'},
-    {value: 'event_updated_reopened', label: 'Issue Reopened'},
-    {value: 'event_updated_resolved', label: 'Issue Resolved'},
-    {value: 'event_created_comment', label: 'Comment Created'},
-    {value: 'event_updated_comment', label: 'Comment Updated'},
-    {value: 'event_deleted_comment', label: 'Comment Deleted'},
-    {value: 'event_updated_any', label: 'Issue Updated: Any'},
-    {value: 'event_updated_affects_version', label: 'Issue Updated: Affects Version'},
-    {value: 'event_updated_assignee', label: 'Issue Updated: Assignee'},
-    {value: 'event_updated_attachment', label: 'Issue Updated: Attachment'},
-    {value: 'event_updated_description', label: 'Issue Updated: Description'},
-    {value: 'event_updated_fix_version', label: 'Issue Updated: Fix Version'},
-    {value: 'event_updated_issue_type', label: 'Issue Updated: Issue Type'},
-    {value: 'event_updated_labels', label: 'Issue Updated: Labels'},
-    {value: 'event_updated_priority', label: 'Issue Updated: Priority'},
-    {value: 'event_updated_rank', label: 'Issue Updated: Rank'},
-    {value: 'event_updated_reporter', label: 'Issue Updated: Reporter'},
-    {value: 'event_updated_sprint', label: 'Issue Updated: Sprint'},
-    {value: 'event_updated_status', label: 'Issue Updated: Status'},
-    {value: 'event_updated_summary', label: 'Issue Updated: Summary'},
-    {value: 'event_updated_components', label: 'Issue Updated: Components'},
+    {value: 'event_created', label: 'Задача создана'},
+    {value: 'event_deleted', label: 'Задача удалена'},
+    {value: 'event_deleted_unresolved', label: 'Удалена нерешённая задача'},
+    {value: 'event_updated_reopened', label: 'Задача переоткрыта'},
+    {value: 'event_updated_resolved', label: 'Задача решена'},
+    {value: 'event_created_comment', label: 'Новый комментарий'},
+    {value: 'event_updated_comment', label: 'Комментарий изменён'},
+    {value: 'event_deleted_comment', label: 'Комментарий удалён'},
+    {value: 'event_updated_any', label: 'Изменено: любое поле'},
+    {value: 'event_updated_affects_version', label: 'Изменено: затронутая версия'},
+    {value: 'event_updated_assignee', label: 'Изменено: исполнитель'},
+    {value: 'event_updated_attachment', label: 'Изменено: вложение'},
+    {value: 'event_updated_description', label: 'Изменено: описание'},
+    {value: 'event_updated_fix_version', label: 'Изменено: версия исправления'},
+    {value: 'event_updated_issue_type', label: 'Изменено: тип задачи'},
+    {value: 'event_updated_labels', label: 'Изменено: метки'},
+    {value: 'event_updated_priority', label: 'Изменено: приоритет'},
+    {value: 'event_updated_rank', label: 'Изменено: ранг'},
+    {value: 'event_updated_reporter', label: 'Изменено: автор'},
+    {value: 'event_updated_sprint', label: 'Изменено: спринт'},
+    {value: 'event_updated_status', label: 'Изменено: статус'},
+    {value: 'event_updated_summary', label: 'Изменено: тема'},
+    {value: 'event_updated_components', label: 'Изменено: компоненты'},
 ];
 
 export type Props = SharedProps & {
@@ -66,6 +67,7 @@ export type Props = SharedProps & {
     creatingSubscription: boolean;
     creatingSubscriptionTemplate: boolean;
     selectedSubscriptionTemplate: ChannelSubscription | null;
+    panel?: boolean; // the dense style of the panel forms
 };
 
 export type State = {
@@ -266,8 +268,8 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                 const fieldsStr = selectedConflictingFields.map((cf) => cf.field.name).join(', ');
                 const conflictingIssueType = conflictingFields[0].issueTypes[0];
 
-                let errorStr = `Issue Type(s) "${conflictingIssueType.name}" does not have filter field(s): "${fieldsStr}".  `;
-                errorStr += 'Please update the conflicting fields or create a separate subscription.';
+                let errorStr = `У типа задачи «${conflictingIssueType.name}» нет полей фильтра: «${fieldsStr}». `;
+                errorStr += 'Измените эти поля или создайте отдельную подписку.';
                 this.setState({conflictingError: errorStr});
                 return;
             }
@@ -278,7 +280,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
 
     fetchIssueMetadata = (projectKeys: string[], instanceID: string) => {
         if (!instanceID) {
-            this.setState({getMetaDataErr: 'No Jira instance is selected.'});
+            this.setState({getMetaDataErr: 'Не выбран инстанс Jira.'});
         }
 
         this.props.fetchJiraIssueMetadataForProjects(projectKeys, instanceID).then(({data, error}) => {
@@ -286,13 +288,13 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
             const state = {fetchingIssueMetadata: false, jiraIssueMetadata} as State;
 
             if (error) {
-                state.getMetaDataErr = `The project ${projectKeys[0]} is unavailable. Please contact your system administrator.`;
+                state.getMetaDataErr = `Проект ${projectKeys[0]} недоступен. Обратитесь к системному администратору.`;
             }
 
             const filterFields = getCustomFieldFiltersForProjects(jiraIssueMetadata, this.state.filters.projects, this.state.filters.issue_types);
             for (const v of this.state.filters.fields) {
                 if (!filterFields.find((f) => f.key === v.key)) {
-                    state.error = 'A field in this subscription has been removed from Jira, so the subscription is invalid. When this form is submitted, the configured field will be removed from the subscription to make the subscription valid again.';
+                    state.error = 'Поле из этой подписки удалено в Jira, поэтому подписка недействительна. При сохранении формы поле будет убрано из подписки, и она снова заработает.';
                 }
             }
 
@@ -385,7 +387,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         }
 
         if (!this.state.subscriptionName || this.state.subscriptionName.trim() === '') {
-            this.setState({error: 'Name cannot be empty or only whitespaces.'});
+            this.setState({error: 'Название не может быть пустым.'});
             return;
         }
 
@@ -491,7 +493,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                     <React.Fragment>
                         <ReactSelectSetting
                             name='template'
-                            label='Use Template'
+                            label='Использовать шаблон'
                             options={this.state.templateOptions}
                             onChange={this.handleTemplateChange}
                             value={this.state.templateOptions && this.state.templateOptions.find((option) => option.value === this.state.selectedTemplateID)}
@@ -501,7 +503,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         />
                         <ReactSelectSetting
                             name='events'
-                            label='Events'
+                            label='События'
                             required={true}
                             onChange={this.handleSettingChange}
                             options={eventOptions}
@@ -513,7 +515,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         />
                         <ReactSelectSetting
                             name='issue_types'
-                            label='Issue Type'
+                            label='Типы задач'
                             required={true}
                             onChange={this.handleIssueChange}
                             options={issueOptions}
@@ -540,7 +542,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         />
                         <div>
                             <label className='control-label margin-bottom'>
-                                {'Approximate JQL Output'}
+                                {'Примерный запрос JQL'}
                             </label>
                             <div style={getBaseStyles(this.props.theme).codeBlock}>
                                 <span>{generateJQLStringFromSubscriptionFilters(this.state.jiraIssueMetadata, filterFields, this.state.filters, this.props.securityLevelEmptyForJiraSubscriptions)}</span>
@@ -548,8 +550,8 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                             {this.shouldShowEmptySecurityLevelMessage() && (
                                 <div>
                                     <span>
-                                        <strong>{'Note'}</strong>
-                                        {' that since you have not selected a security level filter, the subscription will only allow issues that have no security level assigned.'}
+                                        <strong>{'Обратите внимание:'}</strong>
+                                        {' фильтр по уровню безопасности не выбран, поэтому подписка будет срабатывать только для задач без уровня безопасности.'}
                                     </span>
                                 </div>
                             )}
@@ -558,7 +560,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                                     href='https://github.com/mattermost/mattermost-plugin-jira#create-a-channel-subscription'
                                     target='_blank'
                                     rel='noopener noreferrer'
-                                >{'Learn More'}</a>
+                                >{'Подробнее'}</a>
                             </div>
                         </div>
                     </React.Fragment>
@@ -569,8 +571,8 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                 <React.Fragment>
                     <div className='container-fluid'>
                         <Input
-                            label='Subscription Name'
-                            placeholder='Name'
+                            label='Название подписки'
+                            placeholder='Название'
                             type={'input'}
                             maxLength={100}
                             required={true}
@@ -603,11 +605,11 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
 
         const {showConfirmModal} = this.state;
 
-        let confirmMessage = 'Are you sure you want to discard your changes?';
+        let confirmMessage = 'Отменить внесённые изменения?';
         if (this.state.confirmActionType === 'delete') {
-            confirmMessage = `Are you sure to delete the subscription${this.props.selectedSubscription?.name ? ` "${this.props.selectedSubscription.name}"` : ''}?`;
+            confirmMessage = `Удалить подписку${this.props.selectedSubscription?.name ? ` «${this.props.selectedSubscription.name}»` : ''}?`;
             if (this.props.selectedSubscriptionTemplate) {
-                confirmMessage = `Are you sure to delete the subscription template${this.props.selectedSubscriptionTemplate.name ? ` "${this.props.selectedSubscriptionTemplate.name}"` : ''}?`;
+                confirmMessage = `Удалить шаблон подписки${this.props.selectedSubscriptionTemplate.name ? ` «${this.props.selectedSubscriptionTemplate.name}»` : ''}?`;
             }
         }
 
@@ -615,15 +617,15 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         if (this.props.selectedSubscription || this.props.selectedSubscriptionTemplate || this.props.creatingSubscriptionTemplate) {
             confirmComponent = (
                 <ConfirmModal
-                    cancelButtonText='Cancel'
-                    confirmButtonText={this.state.confirmActionType === 'delete' ? 'Delete' : 'Discard'}
+                    cancelButtonText='Назад'
+                    confirmButtonText={this.state.confirmActionType === 'delete' ? 'Удалить' : 'Отменить изменения'}
                     confirmButtonClass={'btn btn-danger'}
                     hideCancel={false}
                     message={confirmMessage}
                     onCancel={this.handleCancelAction}
                     onConfirm={this.handleConfirmAction}
                     show={this.state.showConfirmModal}
-                    title={this.props.selectedSubscription ? 'Subscription' : 'Subscription Template'}
+                    title={this.props.selectedSubscription ? 'Подписка' : 'Шаблон подписки'}
                 />
             );
         }
@@ -642,19 +644,37 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
         let saveSubscriptionButtonText = '';
         let headerText = '';
         if (this.props.selectedSubscription || this.props.creatingSubscription) {
-            saveSubscriptionButtonText = 'Save Subscription';
-            headerText = 'Edit Jira Subscription for ';
+            saveSubscriptionButtonText = 'Сохранить';
+            headerText = 'Изменение подписки Jira в канале ';
             if (this.props.creatingSubscription) {
-                saveSubscriptionButtonText = 'Add Subscription';
-                headerText = 'Add Jira Subscription in ';
+                saveSubscriptionButtonText = 'Создать подписку';
+                headerText = 'Новая подписка Jira в канале ';
             }
         } else {
-            saveSubscriptionButtonText = 'Add Template';
-            headerText = 'Add Subscription Template';
+            saveSubscriptionButtonText = 'Создать шаблон';
+            headerText = 'Новый шаблон подписки';
             if (this.props.selectedSubscriptionTemplate && this.props.selectedSubscriptionTemplate.name) {
-                saveSubscriptionButtonText = 'Save Template';
-                headerText = 'Edit Subscription Template';
+                saveSubscriptionButtonText = 'Сохранить шаблон';
+                headerText = 'Изменение шаблона подписки';
             }
+        }
+
+        if (this.props.panel) {
+            return (
+                <SubscriptionPanelForm
+                    error={this.state.error || this.state.getMetaDataErr}
+                    canDelete={enableDeleteButton}
+                    canSave={enableSubmitButton}
+                    saving={this.state.submitting}
+                    saveText={saveSubscriptionButtonText}
+                    onSave={this.handleCreate}
+                    onDelete={this.handleDeleteChannelSubscription}
+                    onCancel={this.handleCancel}
+                >
+                    {component}
+                    {confirmComponent}
+                </SubscriptionPanelForm>
+            );
         }
 
         return (
@@ -674,14 +694,14 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         id='jira-delete-subscription'
                         type='button'
                         btnClass='btn-danger pull-left'
-                        defaultMessage='Delete'
+                        defaultMessage='Удалить'
                         disabled={!enableDeleteButton}
                         onClick={this.handleDeleteChannelSubscription}
                     />
                     <FormButton
                         type='button'
                         btnClass='btn-link'
-                        defaultMessage='Cancel'
+                        defaultMessage='Отмена'
                         onClick={this.handleCancel}
                     />
                     <FormButton
@@ -691,7 +711,7 @@ export default class EditChannelSubscription extends PureComponent<Props, State>
                         btnClass='btn-primary'
                         saving={this.props.creatingSubscriptionTemplate || this.props.selectedSubscriptionTemplate ? this.state.submittingTemplate : this.state.submitting}
                         defaultMessage={saveSubscriptionButtonText}
-                        savingMessage='Saving...'
+                        savingMessage='Сохраняем…'
                     />
                 </Modal.Footer>
             </form>

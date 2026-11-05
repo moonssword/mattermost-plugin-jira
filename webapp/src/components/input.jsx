@@ -81,7 +81,7 @@ export default class Input extends PureComponent {
     };
 
     render() {
-        const requiredMsg = 'This field is required.';
+        const requiredMsg = 'Обязательное поле.';
         const style = getStyle();
         const value = this.props.value || '';
 

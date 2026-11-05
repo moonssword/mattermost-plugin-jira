@@ -31,6 +31,8 @@ type State = {
     invalid: boolean;
 };
 
+const SELECT_PLACEHOLDER = 'Выберите…';
+
 export default class ReactSelectSetting extends React.PureComponent<Props, State> {
     state: State = {invalid: false};
 
@@ -90,7 +92,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
     };
 
     render() {
-        const requiredMsg = 'This field is required.';
+        const requiredMsg = 'Обязательное поле.';
         let validationError = null;
 
         if (this.props.required && this.state.invalid) {
@@ -109,6 +111,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             selectComponent = (
                 <AsyncSelect
                     {...this.props}
+                    placeholder={this.props.placeholder ?? SELECT_PLACEHOLDER}
                     loadOptions={this.filterOptions}
                     defaultOptions={true}
                     menuPortalTarget={document.body}
@@ -121,8 +124,8 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             selectComponent = (
                 <CreatableSelect
                     {...this.props}
-                    noOptionsMessage={() => 'Start typing...'}
-                    formatCreateLabel={(value) => `Add "${value}"`}
+                    noOptionsMessage={() => 'Начните вводить…'}
+                    formatCreateLabel={(value) => `Добавить «${value}»`}
                     placeholder=''
                     menuPortalTarget={document.body}
                     menuPlacement='auto'
@@ -134,6 +137,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             selectComponent = (
                 <ReactSelect
                     {...this.props}
+                    placeholder={this.props.placeholder ?? SELECT_PLACEHOLDER}
                     menuPortalTarget={document.body}
                     menuPlacement='auto'
                     onChange={this.handleChange}
@@ -145,6 +149,7 @@ export default class ReactSelectSetting extends React.PureComponent<Props, State
             <Setting
                 inputId={this.props.name}
                 {...this.props}
+                placeholder={this.props.placeholder ?? SELECT_PLACEHOLDER}
             >
                 {selectComponent}
                 {validationError}

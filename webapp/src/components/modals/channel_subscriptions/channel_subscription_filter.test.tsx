@@ -165,7 +165,7 @@ describe('components/ChannelSubscriptionFilter', () => {
         });
 
         result = ref.current?.checkFieldConflictError();
-        expect(result).toEqual('FieldName does not exist for issue type(s): Task.');
+        expect(result).toEqual('Поля «FieldName» нет у типов задач: Task.');
     });
 
     test('checkInclusionError should return an error string when there is an invalid inclusion value', async () => {
@@ -199,6 +199,6 @@ describe('components/ChannelSubscriptionFilter', () => {
 
         // The error is returned by checkInclusionError method
         const error = ref.current?.checkInclusionError();
-        expect(error).toEqual('Security level inclusion cannot be "Exclude Any". Note that the default value is now "Empty".');
+        expect(error).toEqual('Для уровня безопасности нельзя выбрать «Исключить». Значение по умолчанию теперь «Пусто».');
     });
 });

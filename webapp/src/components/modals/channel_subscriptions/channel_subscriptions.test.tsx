@@ -102,6 +102,6 @@ describe('components/ChannelSettingsModal', () => {
             await ref.current?.fetchData();
         });
 
-        expect(sendEphemeralPost).toHaveBeenCalledWith('You do not have permission to edit subscriptions for this channel. Subscribing to Jira events will create notifications in this channel when certain events occur, such as an issue being updated or created with a specific label. Speak to your Mattermost administrator to request access to this functionality.');
+        expect(sendEphemeralPost).toHaveBeenCalledWith('У вас нет прав менять подписки этого канала. Подписка на события Jira присылает в канал уведомления, например об изменении задачи или о создании задачи с определённой меткой. Чтобы получить доступ, обратитесь к администратору Mattermost.');
     });
 });

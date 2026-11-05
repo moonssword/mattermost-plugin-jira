@@ -28,7 +28,7 @@ export type State = {
 };
 
 const isAssignedLabel = ' is assigned';
-const unAssignedLabel = 'Unassigned';
+const unAssignedLabel = 'Не назначен';
 const jiraTicketSummaryMaxLength = 80;
 const maxTicketDescriptionLength = 160;
 
@@ -98,7 +98,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
         if (ticketId && !ticketDetails) {
             this.props.fetchIssueByKey(ticketId, issueKey.instanceID).then((res: {data?: TicketData, error?: any}) => {
                 if (res.error) {
-                    this.setState({error: 'There was a problem loading the details for this Jira link'});
+                    this.setState({error: 'Не удалось загрузить данные по этой ссылке Jira'});
                     return;
                 }
 
@@ -123,7 +123,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
 
     fixVersionLabel(fixVersion: string): ReactNode {
         if (fixVersion) {
-            const fixVersionString = 'Fix Version :';
+            const fixVersionString = 'Версия исправления:';
             return (
                 <div className='fix-version-label'>
                     {fixVersionString}
@@ -203,7 +203,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                         {SVGIcons.exclamationTriangle}
                     </SVGWrapper>
                     <div className='jira-issue-error-message'>{error}</div>
-                    <p className='jira-issue-error-footer'>{'Check your connection or try again later'}</p>
+                    <p className='jira-issue-error-footer'>{'Проверьте соединение или повторите позже'}</p>
                 </div>
             );
         }
@@ -265,7 +265,7 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                             target='_blank'
                             rel='noopener noreferrer'
                         >
-                            {'See more'}
+                            {'Подробнее'}
                         </a>
                     </div>
                     <div className='popover-body__labels'>

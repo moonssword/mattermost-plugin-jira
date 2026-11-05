@@ -97,6 +97,6 @@ describe('components/ConnectModalForm', () => {
             ref.current?.handleInstanceChoice('', 'https://something.atlassian.net');
         });
         expect(ref.current?.state.selectedInstance).toEqual('https://something.atlassian.net');
-        expect(ref.current?.state.error).toEqual('You are already connected to this Jira instance.');
+        expect(ref.current?.state.error).toEqual('Вы уже подключены к этому инстансу Jira.');
     });
 });

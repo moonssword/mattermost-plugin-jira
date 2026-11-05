@@ -173,7 +173,7 @@ export default class BackendSelector extends React.PureComponent<Props, State> {
             );
         }
 
-        const requiredMsg = 'This field is required.';
+        const requiredMsg = 'Обязательное поле.';
         let validationError = null;
         if (this.props.required && this.state.invalid) {
             validationError = (

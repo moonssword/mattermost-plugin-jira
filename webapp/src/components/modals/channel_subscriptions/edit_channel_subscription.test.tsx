@@ -281,7 +281,7 @@ describe('components/EditChannelSubscription', () => {
             await Promise.resolve();
         });
         expect(refError.current?.state.fetchingIssueMetadata).toBe(false);
-        expect(refError.current?.state.getMetaDataErr).toEqual('The project KT is unavailable. Please contact your system administrator.');
+        expect(refError.current?.state.getMetaDataErr).toEqual('Проект KT недоступен. Обратитесь к системному администратору.');
     });
 
     test('should show an error when a previously configured field is not in the issue metadata', async () => {
@@ -330,7 +330,7 @@ describe('components/EditChannelSubscription', () => {
         expect(ref.current?.state.fetchingIssueMetadata).toBe(false);
         expect(ref.current?.state.getMetaDataErr).toBe(null);
 
-        const expected = 'A field in this subscription has been removed from Jira, so the subscription is invalid. When this form is submitted, the configured field will be removed from the subscription to make the subscription valid again.';
+        const expected = 'Поле из этой подписки удалено в Jira, поэтому подписка недействительна. При сохранении формы поле будет убрано из подписки, и она снова заработает.';
         expect(ref.current?.state.error).toEqual(expected);
     });
 
@@ -722,7 +722,7 @@ describe('components/EditChannelSubscription', () => {
         await act(async () => {
             ref.current?.handleIssueChange('issue_types', ['10004', '10000']);
         });
-        expect(ref.current?.state.conflictingError).toEqual('Issue Type(s) "Epic" does not have filter field(s): "Affects versions".  Please update the conflicting fields or create a separate subscription.');
+        expect(ref.current?.state.conflictingError).toEqual('У типа задачи «Epic» нет полей фильтра: «Affects versions». Измените эти поля или создайте отдельную подписку.');
 
         expect(ref.current).toBeDefined();
     });

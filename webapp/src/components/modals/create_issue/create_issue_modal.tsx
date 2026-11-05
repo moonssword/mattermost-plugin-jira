@@ -26,7 +26,7 @@ export default function CreateIssueModal(props: Props) {
             backdrop='static'
         >
             <Modal.Header closeButton={true}>
-                <Modal.Title>{'Create Jira Issue'}</Modal.Title>
+                <Modal.Title>{'Новая задача Jira'}</Modal.Title>
             </Modal.Header>
             <CreateIssueForm {...props}/>
         </Modal>

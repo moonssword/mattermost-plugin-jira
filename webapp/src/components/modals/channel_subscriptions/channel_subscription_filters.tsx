@@ -96,7 +96,7 @@ export default class ChannelSubscriptionFilters extends React.PureComponent<Prop
                 <label
                     className='control-label margin-bottom'
                 >
-                    {'Filters'}
+                    {'Фильтры'}
                 </label>
                 <div>
                     {values.map((v, i) => {
@@ -144,7 +144,7 @@ export default class ChannelSubscriptionFilters extends React.PureComponent<Prop
                         type='button'
                     >
                         <span style={style.plusIcon}>{'+'}</span>
-                        {'Add Filter'}
+                        {'Добавить фильтр'}
                     </button>
                 </div>
             </div>

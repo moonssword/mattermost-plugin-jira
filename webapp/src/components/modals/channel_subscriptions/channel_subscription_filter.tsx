@@ -161,7 +161,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
         const inclusion = this.props.value && this.props.value.inclusion;
 
         if (isSecurityLevelField(this.props.field) && inclusion === FilterFieldInclusion.EXCLUDE_ANY && this.props.securityLevelEmptyForJiraSubscriptions) {
-            return 'Security level inclusion cannot be "Exclude Any". Note that the default value is now "Empty".';
+            return 'Для уровня безопасности нельзя выбрать «Исключить». Значение по умолчанию теперь «Пусто».';
         }
 
         return null;
@@ -170,7 +170,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
     checkFieldConflictError = (): string | null => {
         const conflictIssueTypes = this.getConflictingIssueTypes().map((it) => it.name);
         if (conflictIssueTypes.length) {
-            return `${this.props.field.name} does not exist for issue type(s): ${conflictIssueTypes.join(', ')}.`;
+            return `Поля «${this.props.field.name}» нет у типов задач: ${conflictIssueTypes.join(', ')}.`;
         }
         return null;
     };
@@ -188,19 +188,19 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
         let subtext = '';
         switch (value) {
         case FilterFieldInclusion.INCLUDE_ANY:
-            subtext = 'Includes either of the values (or)';
+            subtext = 'Любое из значений (или)';
             break;
         case FilterFieldInclusion.INCLUDE_ALL:
-            subtext = 'Includes all of the values (and)';
+            subtext = 'Все значения сразу (и)';
             break;
         case FilterFieldInclusion.EXCLUDE_ANY:
-            subtext = 'Excludes all of the values';
+            subtext = 'Ни одного из значений';
             break;
         case FilterFieldInclusion.EMPTY:
-            subtext = 'Includes when the value is empty';
+            subtext = 'Когда значение пустое';
             break;
         case FilterFieldInclusion.INCLUDE_OR_EMPTY:
-            subtext = 'Includes the specified values or when the value is empty';
+            subtext = 'Указанные значения или пустое';
             break;
         }
 
@@ -226,25 +226,25 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
         let chosenFieldType = null;
 
         let inclusionSelectOptions: ReactSelectOption[] = [
-            {label: 'Include', value: FilterFieldInclusion.INCLUDE_ANY},
-            {label: 'Include All', value: FilterFieldInclusion.INCLUDE_ALL},
-            {label: 'Exclude', value: FilterFieldInclusion.EXCLUDE_ANY},
-            {label: 'Empty', value: FilterFieldInclusion.EMPTY},
-            {label: 'Include or Empty', value: FilterFieldInclusion.INCLUDE_OR_EMPTY},
+            {label: 'Включить', value: FilterFieldInclusion.INCLUDE_ANY},
+            {label: 'Включить все', value: FilterFieldInclusion.INCLUDE_ALL},
+            {label: 'Исключить', value: FilterFieldInclusion.EXCLUDE_ANY},
+            {label: 'Пусто', value: FilterFieldInclusion.EMPTY},
+            {label: 'Включить или пусто', value: FilterFieldInclusion.INCLUDE_OR_EMPTY},
         ];
 
         if (isSecurityLevelField(field) && value.inclusion !== FilterFieldInclusion.EXCLUDE_ANY && this.props.securityLevelEmptyForJiraSubscriptions) {
             inclusionSelectOptions = [
-                {label: 'Include', value: FilterFieldInclusion.INCLUDE_ANY},
-                {label: 'Include All', value: FilterFieldInclusion.INCLUDE_ALL},
-                {label: 'Empty', value: FilterFieldInclusion.EMPTY},
+                {label: 'Включить', value: FilterFieldInclusion.INCLUDE_ANY},
+                {label: 'Включить все', value: FilterFieldInclusion.INCLUDE_ALL},
+                {label: 'Пусто', value: FilterFieldInclusion.EMPTY},
             ];
         }
 
         if (field.key === FIELD_KEY_STATUS) {
             inclusionSelectOptions = [
-                {label: 'Include', value: FilterFieldInclusion.INCLUDE_ANY},
-                {label: 'Exclude', value: FilterFieldInclusion.EXCLUDE_ANY},
+                {label: 'Включить', value: FilterFieldInclusion.INCLUDE_ANY},
+                {label: 'Исключить', value: FilterFieldInclusion.EXCLUDE_ANY},
             ];
         }
 
@@ -291,7 +291,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
                     className='btn btn-info'
                     type='button'
                 >
-                    {'Cancel'}
+                    {'Убрать'}
                 </button>
             );
         }
@@ -392,15 +392,15 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
 
         const confirmDeleteModal = (
             <ConfirmModal
-                cancelButtonText={'Cancel'}
-                confirmButtonText={'Delete'}
+                cancelButtonText={'Отмена'}
+                confirmButtonText={'Удалить'}
                 confirmButtonClass={'btn btn-danger'}
                 hideCancel={false}
-                message={'Are you sure you want to delete this filter?'}
+                message={'Удалить этот фильтр?'}
                 onCancel={this.handleCancelDelete}
                 onConfirm={this.handleConfirmDelete}
                 show={this.state.showConfirmDeleteModal}
-                title={'Field Filter'}
+                title={'Фильтр по полю'}
             />
         );
 

@@ -120,7 +120,7 @@ export default class JiraIssueSelector extends Component {
             );
         }
 
-        const requiredMsg = 'This field is required.';
+        const requiredMsg = 'Обязательное поле.';
         let validationError = null;
         if (this.props.required && this.state.invalid) {
             validationError = (
@@ -137,12 +137,12 @@ export default class JiraIssueSelector extends Component {
                     className={'control-label'}
                     htmlFor={'issue'}
                 >
-                    {'Jira Issue'}
+                    {'Задача Jira'}
                 </label>
                 {this.props.required && requiredStar}
                 <AsyncSelect
                     name={'issue'}
-                    placeholder={'Search for issues containing text...'}
+                    placeholder={'Поиск задач по тексту…'}
                     onChange={this.onChange}
                     required={true}
                     disabled={false}

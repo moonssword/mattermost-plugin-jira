@@ -1208,37 +1208,51 @@
 }
 
 .jira-rhs-subscription-editor-body {
-    overflow-y: auto;
-    flex: 1;
-    padding: 8px 4px;
-}
-
-/* The embedded modal editor: let its grid and footer fit the panel width. */
-.jira-rhs-subscription-editor-body .container-fluid {
-    padding: 0 12px;
-}
-
-.jira-rhs-subscription-editor-body .modal-footer {
-    position: sticky;
-    bottom: -8px;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 6px;
-    margin-top: 12px;
-    padding: 10px 12px;
-    border-top: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
-    background: var(--center-channel-bg);
+    overflow: hidden;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
 }
 
-.jira-rhs-subscription-editor-body .modal-footer .btn {
+/* The subscription form is a dense panel form: the body scrolls, the footer stays. */
+.jira-rhs-subscription-editor-body .jira-rhs-subscription-form {
+    height: 100%;
+}
+
+.jira-rhs-subscription-form .container-fluid {
+    width: 100%;
     margin: 0;
+    padding: 0;
 }
 
-/* The panel header already names the subscription. */
-.jira-rhs-subscription-editor-body h1,
-.jira-rhs-subscription-editor-body h2 {
-    display: none;
+.jira-rhs-subscription-form .container-fluid + .container-fluid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.jira-rhs-subscription-form .form-group.less,
+.jira-rhs-subscription-form .margin-bottom {
+    margin-bottom: 0;
+}
+
+.jira-rhs-subscription-form .row {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.jira-rhs-subscription-form .row > [class*='col-'] {
+    float: none;
+    width: 100%;
+    padding-right: 0;
+    padding-left: 0;
+    text-align: left;
+}
+
+.jira-rhs-form-delete {
+    margin-right: auto;
+    color: var(--error-text);
 }
 
 /* Settings. */
@@ -2278,14 +2292,7 @@
 
 /* The plugin's subscription editor carries modal paddings (2em inline);
    in the 380 px panel 12 px is enough. */
-.jira-rhs-subscription-editor-body form > div {
-    padding: 12px 12px 16px !important;
-}
 
-.jira-rhs-subscription-editor-body .container-fluid {
-    padding-right: 0;
-    padding-left: 0;
-}
 
 /* Keyboard hints mean nothing on touch screens. */
 @media (hover: none) {

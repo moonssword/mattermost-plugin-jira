@@ -243,7 +243,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
             <div>
                 <ReactSelectSetting
                     name={'issue_type'}
-                    label={'Issue Type'}
+                    label={'Тип задачи'}
                     required={true}
                     onChange={this.handleIssueTypeChange}
                     options={issueOptions}
@@ -295,7 +295,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
                 <FormButton
                     type='button'
                     btnClass='btn-link'
-                    defaultMessage='Cancel'
+                    defaultMessage='Отмена'
                     onClick={this.handleClose}
                 />
                 <FormButton
@@ -305,7 +305,7 @@ export default class CreateIssueForm extends React.PureComponent<Props, State> {
                     saving={this.state.submitting}
                     disabled={disableSubmit}
                 >
-                    {'Create'}
+                    {'Создать'}
                 </FormButton>
             </React.Fragment>
         );

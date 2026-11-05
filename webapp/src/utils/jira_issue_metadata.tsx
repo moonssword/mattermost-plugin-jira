@@ -359,7 +359,7 @@ function isValidFieldForEvents(field: JiraField): boolean {
 
 export function getCustomFieldValuesForEvents(metadata: IssueMetadata | null, projectKeys: string[]): ReactSelectOption[] {
     return getCustomFieldsForProjects(metadata, projectKeys).filter(isValidFieldForEvents).map((field) => ({
-        label: `Issue Updated: Custom - ${field.name}`,
+        label: `Изменено: ${field.name}`,
         value: `event_updated_${field.changeLogID}`,
     }));
 }

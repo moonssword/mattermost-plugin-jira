@@ -19,8 +19,8 @@ export default class FormButton extends PureComponent {
 
     static defaultProps = {
         disabled: false,
-        savingMessage: 'Creating',
-        defaultMessage: 'Create',
+        savingMessage: 'Создаём…',
+        defaultMessage: 'Создать',
         btnClass: 'btn-primary',
         extraClasses: '',
     };

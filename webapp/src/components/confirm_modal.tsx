@@ -154,7 +154,7 @@ export default class ConfirmModal extends Component<Props, State> {
             cancelText = (
                 <FormattedMessage
                     id='confirm_modal.cancel'
-                    defaultMessage='Cancel'
+                    defaultMessage='Отмена'
                 />
             );
         }
