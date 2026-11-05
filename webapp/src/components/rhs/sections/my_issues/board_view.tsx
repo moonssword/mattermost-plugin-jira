@@ -138,6 +138,7 @@ export default function BoardView(props: Props): JSX.Element {
                             key={issue.key}
                             className={'jira-rhs-bcard' + (active ? ' jira-rhs-bcard--active' : '')}
                             data-testid={'rhs-bcard-' + issue.key}
+                            data-category={issue.status.categoryKey}
                             onMouseEnter={() => activate(issue)}
                             onFocus={() => activate(issue)}
                         >

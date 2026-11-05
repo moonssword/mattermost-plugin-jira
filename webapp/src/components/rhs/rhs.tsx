@@ -109,6 +109,17 @@ export default function Rhs(props: Props): JSX.Element {
     }
 
     // Live updates refresh the list only while the panel is on screen.
+    // Select menus render in <body>, outside the styled panel.
+    useEffect(() => {
+        if (props.uiStyle !== 'cards') {
+            return () => {
+                // nothing to undo
+            };
+        }
+        document.body.style.setProperty('--jira-rhs-menu-radius', '10px');
+        return () => document.body.style.removeProperty('--jira-rhs-menu-radius');
+    }, [props.uiStyle]);
+
     useEffect(() => {
         setRHSMounted(true);
         return () => setRHSMounted(false);

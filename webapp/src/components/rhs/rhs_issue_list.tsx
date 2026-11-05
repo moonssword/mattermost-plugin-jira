@@ -66,6 +66,7 @@ export default function RHSIssueList(props: Props): JSX.Element {
                     <section
                         key={group.key}
                         className='jira-rhs-group'
+                        data-category={group.key}
                         aria-label={groupTitles[group.key]}
                         data-testid={'rhs-group-' + group.key}
                     >

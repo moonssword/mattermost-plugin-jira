@@ -111,6 +111,7 @@ export default function RHSIssueRow(props: Props): JSX.Element {
     return (
         <a
             className={'jira-rhs-row' + (done ? ' jira-rhs-row--done' : '')}
+            data-category={issue.status.categoryKey}
             data-testid={'rhs-issue-' + issue.key}
             href={issue.browseUrl}
             target='_blank'

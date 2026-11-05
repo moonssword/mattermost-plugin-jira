@@ -1,109 +1,284 @@
-// The "Cards" style of the panel: the same layout with roomier cards, pills and
-// larger corners. Colors come only from the Mattermost theme, so it follows
-// every theme, light or dark.
+// The "Cards" style of the panel. One scale everywhere: 12 px gutter, 34 px
+// controls, 8/10/14 px corners. Colors come only from the Mattermost theme, so
+// the style holds in every theme, light or dark.
 .jira-rhs[data-style='cards'] {
-    --jira-rhs-accent: var(--button-bg);
-    --jira-rhs-accent-soft: rgba(var(--button-bg-rgb), 0.12);
-    --jira-rhs-accent-border: rgba(var(--button-bg-rgb), 0.35);
-    --jira-rhs-line: rgba(var(--center-channel-color-rgb), 0.12);
-    --jira-rhs-surface: rgba(var(--center-channel-color-rgb), 0.04);
+    --jc-accent: var(--button-bg);
+    --jc-accent-rgb: var(--button-bg-rgb);
+    --jc-text: var(--center-channel-color);
+    --jc-muted: rgba(var(--center-channel-color-rgb), 0.64);
+    --jc-line: rgba(var(--center-channel-color-rgb), 0.12);
+    --jc-line-strong: rgba(var(--center-channel-color-rgb), 0.2);
+    --jc-surface: rgba(var(--center-channel-color-rgb), 0.035);
+    --jc-card: var(--center-channel-bg);
+    --jc-shadow: 0 1px 2px rgba(var(--center-channel-color-rgb), 0.06), 0 6px 16px rgba(var(--center-channel-color-rgb), 0.05);
+    --jc-shadow-hover: 0 2px 4px rgba(var(--jc-accent-rgb), 0.1), 0 10px 24px rgba(var(--jc-accent-rgb), 0.12);
+    --jc-ring: 0 0 0 3px rgba(var(--jc-accent-rgb), 0.18);
 
-    // Tabs: two columns on a soft surface.
+    background:
+        radial-gradient(120% 200px at 0 0, rgba(var(--jc-accent-rgb), 0.09), transparent 70%),
+        radial-gradient(90% 160px at 100% 0, rgba(var(--online-indicator-rgb), 0.08), transparent 70%),
+        var(--center-channel-bg);
+
+    a:focus-visible,
+    button:focus-visible,
+    select:focus-visible {
+        outline: 2px solid var(--jc-accent);
+        outline-offset: 2px;
+    }
+
+    // ---- Panel top
+    .jira-rhs-panel-header {
+        padding: 8px 12px 6px 16px;
+    }
+
     .jira-rhs-sections {
         gap: 4px;
+        margin: 2px 12px 8px;
         padding: 4px;
-        border: 1px solid var(--jira-rhs-line);
+        border: 1px solid var(--jc-line);
         border-radius: 14px;
-        background: var(--jira-rhs-surface);
+        background: var(--jc-surface);
     }
 
     .jira-rhs-section-tab {
+        height: 30px;
+        padding: 0;
         border-radius: 10px;
+        font-size: 12.5px;
         font-weight: 700;
+        transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .jira-rhs-section-tab--selected {
-        background: var(--center-channel-bg);
-        color: var(--jira-rhs-accent);
-        box-shadow: 0 2px 8px rgba(var(--center-channel-color-rgb), 0.08);
+    .jira-rhs-section-tab:hover {
+        color: var(--jc-text);
     }
 
-    // Filter bar, chips and board columns are pills.
-    .jira-rhs-pill,
+    .jira-rhs-section-tab--selected,
+    .jira-rhs-section-tab--selected:hover {
+        color: var(--jc-accent);
+        background: var(--jc-card);
+        box-shadow: 0 1px 3px rgba(var(--center-channel-color-rgb), 0.14);
+    }
+
+    .jira-rhs-section-count {
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 700;
+        background: rgba(var(--center-channel-color-rgb), 0.08);
+    }
+
+    .jira-rhs-section-tab--selected .jira-rhs-section-count {
+        color: var(--jc-accent);
+        background: rgba(var(--jc-accent-rgb), 0.12);
+    }
+
+    // ---- Sprint
+    .jira-rhs-sstrip,
+    .jira-rhs-sprint {
+        margin: 0 12px 8px;
+        border: 1px solid var(--jc-line);
+        border-radius: 14px;
+        background: var(--jc-card);
+        box-shadow: var(--jc-shadow);
+    }
+
+    .jira-rhs-sstrip {
+        min-height: 40px;
+        padding: 4px 6px 4px 14px;
+    }
+
+    .jira-rhs-sprint {
+        gap: 8px;
+        padding: 10px 6px 12px 14px;
+    }
+
+    .jira-rhs-pbar {
+        overflow: hidden;
+        height: 6px;
+        border-radius: 999px;
+    }
+
+    .jira-rhs-legend {
+        padding-right: 8px;
+    }
+
+    // ---- Filter bar
+    .jira-rhs-fbar {
+        gap: 6px;
+        padding: 0 12px 8px;
+    }
+
+    .jira-rhs-pill {
+        height: 30px;
+        padding: 0 8px 0 10px;
+        border-color: var(--jc-line-strong);
+        border-radius: 999px;
+        background: var(--jc-card);
+        transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    .jira-rhs-pill:hover {
+        border-color: rgba(var(--jc-accent-rgb), 0.5);
+        color: var(--jc-accent);
+    }
+
     .jira-rhs-chip,
     .jira-rhs-lane {
         border-radius: 999px;
-        font-weight: 600;
-        transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
     }
 
     .jira-rhs-chip--active,
-    .jira-rhs-lane--on {
-        border-color: var(--jira-rhs-accent);
-        background: var(--jira-rhs-accent);
+    .jira-rhs-lane--on,
+    .jira-rhs-lane--on:hover {
+        border-color: var(--jc-accent);
         color: var(--button-color);
-    }
-
-    .jira-rhs-lane--on .jira-rhs-lane-count {
-        color: var(--button-color);
+        background: var(--jc-accent);
     }
 
     .jira-rhs-icon-button {
-        border-radius: 12px;
+        border-radius: 10px;
+        transition: background 0.15s ease, color 0.15s ease;
     }
 
     .jira-rhs-icon-button:hover,
-    .jira-rhs-icon-button--on {
-        background: var(--jira-rhs-accent-soft);
-        color: var(--jira-rhs-accent);
+    .jira-rhs-icon-button--on,
+    .jira-rhs-icon-button--on:hover {
+        color: var(--jc-accent);
+        background: rgba(var(--jc-accent-rgb), 0.12);
     }
 
-    // List rows become cards: key and icons on top, the summary below.
+    .jira-rhs-search-row {
+        gap: 4px;
+        margin: 0;
+        padding: 0 8px 8px 12px;
+    }
+
+    .jira-rhs-search {
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    .jira-rhs-search-icon {
+        left: 11px;
+    }
+
+    .jira-rhs-found {
+        padding: 0 14px 4px;
+        border: 0;
+    }
+
+    // ---- List: a card per issue, its status as a colored edge
     .jira-rhs-list {
-        padding: 2px 12px 12px;
+        padding: 0 12px 12px;
     }
 
     .jira-rhs-group-header {
+        margin: 0;
+        padding: 8px 2px 8px;
         border: 0;
-        background: transparent;
     }
 
     .jira-rhs-group-toggle {
         font-size: 11px;
         font-weight: 700;
-        letter-spacing: 0.07em;
-        color: var(--jira-rhs-accent);
+        letter-spacing: 0.06em;
+    }
+
+    .jira-rhs-group-count {
+        min-width: 18px;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .jira-rhs-group[data-category='indeterminate'] {
+        .jira-rhs-group-toggle {
+            color: var(--jc-accent);
+        }
+
+        .jira-rhs-group-count {
+            color: var(--jc-accent);
+            background: rgba(var(--jc-accent-rgb), 0.12);
+        }
+    }
+
+    .jira-rhs-group[data-category='done'] {
+        .jira-rhs-group-toggle {
+            color: var(--online-indicator);
+        }
+
+        .jira-rhs-group-count {
+            color: var(--online-indicator);
+            background: rgba(var(--online-indicator-rgb), 0.14);
+        }
+    }
+
+    .jira-rhs-row,
+    .jira-rhs-bcard {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--jc-line);
+        border-radius: 14px;
+        background: var(--jc-card);
+        box-shadow: var(--jc-shadow);
+        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .jira-rhs-row::before,
+    .jira-rhs-bcard::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 3px;
+        background: rgba(var(--center-channel-color-rgb), 0.2);
+        content: '';
+    }
+
+    .jira-rhs-row[data-category='indeterminate']::before,
+    .jira-rhs-bcard[data-category='indeterminate']::before {
+        background: var(--jc-accent);
+    }
+
+    .jira-rhs-row[data-category='done']::before,
+    .jira-rhs-bcard[data-category='done']::before {
+        background: var(--online-indicator);
+    }
+
+    .jira-rhs-row:hover,
+    .jira-rhs-bcard:hover,
+    .jira-rhs-bcard--active {
+        transform: translateY(-1px);
+        border-color: rgba(var(--jc-accent-rgb), 0.35);
+        box-shadow: var(--jc-shadow-hover);
     }
 
     .jira-rhs-row {
         grid-template-rows: auto auto;
         grid-template-columns: 16px auto minmax(0, 1fr) 14px 20px;
+        gap: 6px 8px;
         height: auto;
         margin-bottom: 8px;
-        padding: 10px 12px;
-        border: 1px solid var(--jira-rhs-line);
-        border-radius: 14px;
-        background: var(--center-channel-bg);
-        box-shadow: 0 8px 24px rgba(var(--center-channel-color-rgb), 0.04);
-        transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        padding: 10px 12px 11px 14px;
     }
 
     .jira-rhs-row:hover {
-        transform: translateY(-1px);
-        border-color: rgba(var(--button-bg-rgb), 0.28);
-        background: var(--center-channel-bg);
-        box-shadow: 0 12px 28px rgba(var(--button-bg-rgb), 0.08);
+        background: var(--jc-card);
     }
 
-    .jira-rhs-row:focus-visible,
-    .jira-rhs-bcard:focus-within {
-        outline: 2px solid var(--jira-rhs-accent);
-        outline-offset: 2px;
+    .jira-rhs-row--done {
+        opacity: 0.72;
     }
 
-    .jira-rhs-row-key {
+    .jira-rhs-row-key,
+    .jira-rhs-bcard-foot .jira-rhs-row-key {
+        font-size: 11.5px;
         font-weight: 700;
-        color: var(--jira-rhs-accent);
+        color: var(--jc-accent);
     }
 
     .jira-rhs-row-summary {
@@ -111,7 +286,7 @@
         overflow: hidden;
         grid-row: 2;
         grid-column: 1 / -1;
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 600;
         line-height: 1.35;
         white-space: normal;
@@ -130,109 +305,630 @@
         grid-column: 4;
     }
 
-    .jira-rhs-mini-avatar {
+    .jira-rhs-row > .jira-rhs-mini-avatar {
         grid-row: 1;
         grid-column: 5;
     }
 
-    // Board.
-    .jira-rhs-bcard {
-        border-radius: 14px;
-        box-shadow: 0 8px 24px rgba(var(--center-channel-color-rgb), 0.04);
+    .jira-rhs-load-more {
+        border-radius: 10px;
     }
 
-    .jira-rhs-bcard--active {
-        border-color: rgba(var(--button-bg-rgb), 0.28);
+    // ---- Board
+    .jira-rhs-lanes {
+        gap: 6px;
+        padding: 2px 12px 10px;
+        background: var(--center-channel-bg);
+    }
+
+    .jira-rhs-lane {
+        height: 28px;
+        padding: 0 12px;
+        border-color: var(--jc-line-strong);
+    }
+
+    .jira-rhs-lane--on .jira-rhs-lane-count {
+        opacity: 0.9;
+    }
+
+    .jira-rhs-lanebg {
+        gap: 8px;
+        padding: 2px 12px 12px;
+        border: 0;
+        background: transparent;
+    }
+
+    .jira-rhs-lane-empty {
+        padding: 28px 16px;
+        border: 1px dashed var(--jc-line-strong);
+        border-radius: 14px;
+        text-align: center;
+    }
+
+    .jira-rhs-bcard-main {
+        gap: 8px;
+        padding: 11px 12px 10px 14px;
+        border-radius: 14px;
+        font-size: 13.5px;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+
+    .jira-rhs-bcard-foot {
+        font-weight: 400;
     }
 
     .jira-rhs-bcard-move {
+        top: 8px;
+        right: 8px;
+        height: 24px;
+        padding: 0 10px;
+        border-radius: 999px;
+        box-shadow: 0 2px 6px rgba(var(--jc-accent-rgb), 0.3);
+    }
+
+    // ---- Bottom bar
+    .jira-rhs-qadd {
+        width: calc(100% - 24px);
+        height: 36px;
+        margin: 8px 12px 10px;
+        padding: 0 8px 0 12px;
+        border: 1px solid var(--jc-line);
+        border-radius: 10px;
+        color: var(--jc-muted);
+        background: var(--jc-surface);
+        transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    .jira-rhs-qadd:hover {
+        border-color: rgba(var(--jc-accent-rgb), 0.35);
+        color: var(--jc-accent);
+        background: rgba(var(--jc-accent-rgb), 0.08);
+    }
+
+    .jira-rhs-kbd {
+        border-radius: 6px;
+        background: var(--jc-card);
+    }
+
+    // ---- Issue card
+    .jira-rhs-card-top,
+    .jira-rhs-form-header {
+        min-height: 44px;
+        padding: 0 10px 0 8px;
+        border-bottom: 1px solid var(--jc-line);
+        background: var(--center-channel-bg);
+    }
+
+    .jira-rhs-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .jira-rhs-card-kind {
+        padding: 0 2px;
+        font-size: 12px;
+        color: var(--jc-muted);
+    }
+
+    .jira-rhs-card-summary {
+        margin: 0;
+        padding: 0 2px 2px;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .jira-rhs-card-actions {
+        padding: 0 2px 2px;
+    }
+
+    .jira-rhs-status-button {
+        height: 30px;
+        padding: 0 6px 0 8px;
+        border-color: var(--jc-line-strong);
+        border-radius: 10px;
+        background: var(--jc-card);
+        transition: border-color 0.15s ease;
+    }
+
+    .jira-rhs-status-button:hover {
+        border-color: rgba(var(--jc-accent-rgb), 0.5);
+    }
+
+    .jira-rhs-status {
+        padding: 2px 8px;
         border-radius: 999px;
     }
 
-    // Sprint strip, sections of the card, settings and subscriptions.
-    .jira-rhs-sstrip,
-    .jira-rhs-card-section,
+    .jira-rhs-status--indeterminate {
+        color: var(--jc-accent);
+        background: rgba(var(--jc-accent-rgb), 0.12);
+    }
+
+    .jira-rhs-status--done {
+        color: var(--online-indicator);
+        background: rgba(var(--online-indicator-rgb), 0.14);
+    }
+
+    .jira-rhs-card-fields,
+    .jira-rhs-card-section {
+        margin: 0;
+        padding: 12px 14px;
+        border: 1px solid var(--jc-line);
+        border-radius: 14px;
+        background: var(--jc-card);
+        box-shadow: var(--jc-shadow);
+    }
+
+    .jira-rhs-card-fields dt {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--jc-muted);
+    }
+
+    .jira-rhs-card-section h4,
+    .jira-rhs-settings-title {
+        margin: 0 0 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--jc-accent);
+    }
+
+    .jira-rhs-composer {
+        gap: 6px;
+        padding: 10px 12px 12px;
+        border-top: 1px solid var(--jc-line);
+    }
+
+    .jira-rhs-popover,
+    .jira-rhs-menu-list {
+        overflow: hidden;
+        padding: 6px;
+        border-color: var(--jc-line);
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(var(--center-channel-color-rgb), 0.08), 0 12px 32px rgba(var(--center-channel-color-rgb), 0.16);
+    }
+
+    .jira-rhs-popover-item,
+    .jira-rhs-menu-item {
+        border-radius: 8px;
+        transition: background 0.15s ease;
+    }
+
+    .jira-rhs-popover-item:hover,
+    .jira-rhs-menu-item:hover {
+        background: rgba(var(--jc-accent-rgb), 0.08);
+    }
+
+    .jira-rhs-popover-title {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+
+    // ---- Settings, channel and other blocks
+    .jira-rhs-settings {
+        padding: 12px;
+    }
+
+    .jira-rhs-settings-account {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+    }
+
     .jira-rhs-settings-block,
     .jira-rhs-subscription {
-        margin: 8px 12px;
+        margin: 0 0 8px;
         padding: 12px 14px;
-        border: 1px solid var(--jira-rhs-line);
+        border: 1px solid var(--jc-line);
         border-radius: 14px;
-        background: var(--jira-rhs-surface);
+        background: var(--jc-card);
+        box-shadow: var(--jc-shadow);
     }
 
-    .jira-rhs-pbar,
-    .jira-rhs-pbar > * {
-        border-radius: 999px;
+    .jira-rhs-settings-version {
+        text-align: center;
     }
 
-    // Empty and error states.
-    .jira-rhs-state,
-    .jira-rhs-placeholder {
-        margin: 12px;
-        padding: 28px 16px;
-        border: 1px dashed var(--jira-rhs-line);
-        border-radius: 14px;
+    .jira-rhs-channel-head {
+        padding: 2px 12px 8px 14px;
     }
 
-    // Controls.
-    .btn {
+    .jira-rhs-subscriptions {
+        padding: 0 12px 12px;
+    }
+
+    .jira-rhs-subscription--paused {
+        border-style: dashed;
+        background: var(--jc-surface);
+        box-shadow: none;
+    }
+
+    .jira-rhs-subscription-name {
+        font-size: 13.5px;
+        font-weight: 700;
+    }
+
+    .jira-rhs-subscription-actions {
+        gap: 4px;
+        margin: 6px 0 -4px -8px;
+    }
+
+    .jira-rhs-link-button {
+        padding: 3px 8px;
+        border-radius: 8px;
+        transition: background 0.15s ease;
+    }
+
+    .jira-rhs-link-button:hover {
+        text-decoration: none;
+        background: rgba(var(--jc-accent-rgb), 0.1);
+    }
+
+    .jira-rhs-link-button--danger:hover {
+        background: rgba(var(--error-text-color-rgb), 0.1);
+    }
+
+    .jira-rhs-attach-item,
+    .jira-rhs-board-option {
+        margin-bottom: 6px;
+        border: 1px solid var(--jc-line);
+        border-radius: 12px;
+        background: var(--jc-card);
+        transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .jira-rhs-attach-item:hover,
+    .jira-rhs-board-option:hover {
+        border-color: rgba(var(--jc-accent-rgb), 0.35);
+    }
+
+    .jira-rhs-attach-item--selected,
+    .jira-rhs-board-option--selected {
+        border-color: var(--jc-accent);
+        background: rgba(var(--jc-accent-rgb), 0.08);
+    }
+
+    .jira-rhs-attach-list,
+    .jira-rhs-board-list {
+        padding: 0 12px 12px;
+    }
+
+    .jira-rhs-srcq,
+    .jira-rhs-quote,
+    .jira-rhs-attach-note {
         border-radius: 10px;
     }
 
-    .btn-tertiary {
-        border: 1px solid var(--jira-rhs-accent-border);
+    .jira-rhs-card-alert,
+    .jira-rhs-channel-alert,
+    .jira-rhs-card-note {
+        border-radius: 10px;
+    }
+
+    .jira-rhs-state,
+    .jira-rhs-placeholder,
+    .jira-rhs-channel-empty {
+        margin: 0 12px 12px;
+        padding: 28px 16px;
+        border: 1px dashed var(--jc-line-strong);
+        border-radius: 14px;
+        text-align: center;
+    }
+
+    .jira-rhs-done-icon {
+        color: var(--online-indicator);
+    }
+
+    // ---- Controls: same height, corners and focus everywhere
+    .btn {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        height: 34px;
+        padding: 0 14px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        transition: background 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+
+    .btn-sm {
+        height: 30px;
+        padding: 0 12px;
+        font-size: 12.5px;
+    }
+
+    .btn-primary:not(:disabled) {
+        box-shadow: 0 2px 8px rgba(var(--jc-accent-rgb), 0.28);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        filter: brightness(1.08);
+    }
+
+    .btn-tertiary:not(.jira-rhs-form-delete) {
+        color: var(--jc-accent);
+        background: rgba(var(--jc-accent-rgb), 0.1);
+    }
+
+    .btn-tertiary:hover:not(.jira-rhs-form-delete):not(:disabled) {
+        background: rgba(var(--jc-accent-rgb), 0.16);
     }
 
     .form-control,
-    .jira-rhs-search,
-    .jira-rhs-composer-input,
+    .jira-rhs-search-input,
+    .jira-rhs-composer-input {
+        border-color: var(--jc-line-strong);
+        border-radius: 10px;
+        background-color: var(--jc-card);
+        box-shadow: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    input.form-control,
     .jira-rhs-search-input {
-        border-radius: 10px;
+        height: 34px;
     }
 
-    [class*='-control'] {
-        border-radius: 10px;
+    .form-control:focus,
+    .jira-rhs-search-input:focus,
+    .jira-rhs-composer-input:focus {
+        border-color: var(--jc-accent);
+        box-shadow: var(--jc-ring);
     }
 
-    .jira-rhs-form--dense .control-label {
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+    [class*='-control']:not(.form-control) {
+        min-height: 34px;
+        border-color: var(--jc-line-strong);
+        border-radius: 10px;
+        background-color: var(--jc-card);
+        box-shadow: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    [class*='-control']:not(.form-control):hover {
+        border-color: rgba(var(--jc-accent-rgb), 0.5);
+    }
+
+    [class*='-control']:not(.form-control):focus-within {
+        border-color: var(--jc-accent);
+        box-shadow: var(--jc-ring);
+    }
+
+    // The same text inset in inputs and selects.
+    input.form-control,
+    textarea.form-control {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    [class*='-control']:not(.form-control) > div:first-child {
+        padding-left: 10px;
+    }
+
+    [class*='-singleValue'],
+    [class*='-placeholder'] {
+        margin-left: 0;
+    }
+
+    [class*='-multiValue'] {
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(var(--jc-accent-rgb), 0.12);
+    }
+
+    [class*='-multiValue'] > div:first-child {
+        padding-left: 8px;
+        color: var(--jc-text);
+    }
+
+    select.form-control {
+        padding-right: 28px;
+        appearance: none;
+        cursor: pointer;
+    }
+
+    // A chevron like in the other selects, in the color of the theme.
+    .jira-rhs-settings-row:has(select) {
+        position: relative;
+    }
+
+    .jira-rhs-settings-row:has(select)::after {
+        position: absolute;
+        top: 50%;
+        right: 13px;
+        width: 7px;
+        height: 7px;
+        margin-top: -6px;
+        border-right: 1.5px solid var(--jc-muted);
+        border-bottom: 1.5px solid var(--jc-muted);
+        transform: rotate(45deg);
+        content: '';
+        pointer-events: none;
+    }
+
+    .jira-rhs-settings-select {
+        flex: 0 1 180px;
+        height: 34px;
+        padding-left: 10px;
+    }
+
+    input[type='checkbox']:not(.jira-rhs-switch) {
+        accent-color: var(--jc-accent);
     }
 
     .jira-rhs-switch {
-        width: 44px;
-        height: 26px;
+        width: 36px;
+        height: 20px;
         border-radius: 999px;
     }
 
     .jira-rhs-switch::after {
-        top: 3px;
-        left: 3px;
-        width: 20px;
-        height: 20px;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
         transition: transform 0.18s ease;
     }
 
     .jira-rhs-switch:checked::after {
-        transform: translateX(18px);
+        transform: translateX(16px);
     }
 
-    .jira-rhs-qadd,
-    .jira-rhs-popover,
-    .jira-rhs-menu-list {
-        border-radius: 12px;
+    .jira-rhs-switch:checked {
+        background: var(--jc-accent);
+    }
+
+    // ---- Forms: creation, transition, subscription
+    .jira-rhs-form {
+        background: var(--jc-surface);
+    }
+
+    .jira-rhs-form-header {
+        background: var(--center-channel-bg);
+    }
+
+    .jira-rhs-form-title {
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .jira-rhs-form-body,
+    .jira-rhs-form--dense .jira-rhs-form-body {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .jira-rhs-form--dense .jira-rhs-form-two,
+    .jira-rhs-form--dense .jira-rhs-fields {
+        gap: 12px 8px;
+    }
+
+    .jira-rhs-form--dense .control-label,
+    .jira-rhs-form--dense .form-group > .control-label {
+        margin: 0 0 5px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--jc-muted);
+    }
+
+    .jira-rhs-form--dense .form-group > .error-text {
+        margin-left: 2px !important;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .jira-rhs-form--dense textarea.form-control {
+        padding: 8px 10px;
+        line-height: 1.45;
+    }
+
+    .jira-rhs-form-footer,
+    .jira-rhs-form--dense .jira-rhs-form-footer {
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px 12px;
+        border-top: 1px solid var(--jc-line);
+        background: var(--center-channel-bg);
+    }
+
+    .jira-rhs-form--dense .jira-rhs-checkbox {
+        margin-right: auto;
+        font-size: 12.5px;
+    }
+
+    .jira-rhs-form-footer .btn {
+        flex: 0 0 auto;
+        height: 34px;
+        padding: 0 14px;
+    }
+
+    .btn.jira-rhs-form-delete {
+        margin-right: auto;
+    }
+
+    .jira-rhs-srcq {
+        background: var(--jc-card);
+    }
+
+    // Empty help lines must not add to the gaps between fields.
+    .jira-rhs-form-body .help-text:empty,
+    .jira-rhs-form-body .form-group > div > .help-text:empty {
+        display: none;
+    }
+
+    .jira-rhs-form-body .form-group,
+    .jira-rhs-form-body .container-fluid > * {
+        margin-bottom: 0;
+    }
+
+    .jira-rhs-subscription-form .container-fluid + .container-fluid {
+        gap: 12px;
+    }
+
+    // One filter is one card: field, condition, values and its remove button.
+    .jira-rhs-subscription-form .margin-bottom > div > div > .row {
+        position: relative;
+        margin-bottom: 8px;
+        padding: 12px 40px 12px 12px;
+        border: 1px solid var(--jc-line);
+        border-radius: 14px;
+        background: var(--jc-card);
+        box-shadow: var(--jc-shadow);
+    }
+
+    .jira-rhs-subscription-form .margin-bottom > div > div > .row > [class*='col-'] > .row > [class*='col-'] + [class*='col-'] {
+        margin-top: 8px;
+    }
+
+    .jira-rhs-subscription-form .margin-bottom > div > div > .row > [class*='col-']:last-of-type {
+        position: absolute;
+        top: 12px;
+        right: 8px;
+        width: auto;
+    }
+
+    .jira-rhs-subscription-form .margin-bottom > div > div > .row button {
+        padding: 6px;
+        border-radius: 8px;
+    }
+
+    .jira-rhs-subscription-form .margin-bottom > div > button {
+        height: 30px;
+        padding: 0 10px 0 6px;
+        border-radius: 10px;
+        color: var(--jc-accent);
+        transition: background 0.15s ease;
+    }
+
+    .jira-rhs-subscription-form .margin-bottom > div > button:hover:not(:disabled) {
+        background: rgba(var(--jc-accent-rgb), 0.1);
+    }
+
+    .jira-rhs-subscription-form .margin-bottom > div > button:disabled {
+        color: var(--jc-muted);
     }
 
     @media (prefers-reduced-motion: reduce) {
         .jira-rhs-row,
+        .jira-rhs-bcard,
         .jira-rhs-switch::after {
             transition: none;
         }
 
-        .jira-rhs-row:hover {
+        .jira-rhs-row:hover,
+        .jira-rhs-bcard:hover,
+        .jira-rhs-bcard--active {
             transform: none;
         }
     }

@@ -101,10 +101,14 @@ export const getStyleForReactSelect = (theme: Theme) => {
         }),
         menu: (provided: ProvidedStyle) => ({
             ...provided,
+
             color: theme.centerChannelColor,
             background: theme.centerChannelBg,
             border: '1px solid ' + changeOpacity(theme.centerChannelColor, 0.2),
-            borderRadius: '0 0 2px 2px',
+
+            // The menus render outside the panel; its style passes the radius through <body>.
+            borderRadius: 'var(--jira-rhs-menu-radius, 0 0 2px 2px)',
+            overflow: 'hidden',
             boxShadow: changeOpacity(theme.centerChannelColor, 0.2) + ' 1px 3px 12px',
             marginTop: '4px',
         }),
