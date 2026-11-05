@@ -3,7 +3,7 @@
 
 // English for the Russian source strings of the plugin's forms and modals.
 export const TR_EN: {[source: string]: string} = {
-    'Загрузка': 'Loading',
+    Загрузка: 'Loading',
     ' фильтр по уровню безопасности не выбран, поэтому подписка будет срабатывать только для задач без уровня безопасности.': ' that since you have not selected a security level filter, the subscription will only allow issues that have no security level assigned.',
     '{n} дн назад': '{n} d ago',
     '{n} мин назад': '{n} min ago',

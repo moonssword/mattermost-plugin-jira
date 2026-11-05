@@ -25,10 +25,13 @@ const screens: [string, JSX.Element][] = [
     ['fields', <RHSSkeletonFields key='fields'/>],
     ['subscriptions', <RHSSkeletonSubscriptions key='subscriptions'/>],
     ['settings', <RHSSkeletonSettings key='settings'/>],
-    ['options', <RHSSkeletonOptions
-        key='options'
-        itemClassName='x'
-    />],
+    [
+        'options',
+        <RHSSkeletonOptions
+            key='options'
+            itemClassName='x'
+        />,
+    ],
     ['sprint', <RHSSkeletonSprint key='sprint'/>],
     ['modal', <Loading key='modal'/>],
 ];
