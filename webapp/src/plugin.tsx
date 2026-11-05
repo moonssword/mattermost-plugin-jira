@@ -14,7 +14,7 @@ import CreateIssuePostMenuAction from 'components/post_menu_actions/create_issue
 import CreateIssueModal from 'components/modals/create_issue';
 
 import ChannelSubscriptionsModal from 'components/modals/channel_subscriptions';
-import RHSStatusSetting from 'components/admin_console/rhs_status_setting';
+import {registerLocalizedSettings} from 'components/admin_console/localized_settings';
 
 import AttachCommentToIssuePostMenuAction from 'components/post_menu_actions/attach_comment_to_issue';
 import AttachCommentToIssueModal from 'components/modals/attach_comment_modal';
@@ -151,7 +151,7 @@ export default class Plugin {
         // System Console loads this bundle without mounting SetupUI, so admin
         // custom settings and the plugin reducer must register here — not in setupUILater.
         registry.registerReducer(reducers);
-        registry.registerAdminConsoleCustomSetting('RHSStatusTabs', RHSStatusSetting, {showTitle: true});
+        registerLocalizedSettings(registry);
 
         this.setupUI = setupUILater(registry, store);
         this.haveSetupUI = false;

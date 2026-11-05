@@ -17,16 +17,11 @@ export type Props = {
     activeInstance: Instance | null;
     installedInstances: Instance[];
     connectedInstances: Instance[];
-    defaultInstanceID: string;
-    channelId: string;
-    teamId: string;
-    adminConsoleURL: string;
     closeRHSSettings: () => void;
     loadRHSSettings: () => SettingsResult;
     setRHSNotificationRole: (role: RHSNotificationRole, enabled: boolean) => SettingsResult;
     disconnectUser: (instanceID: string) => Promise<{error?: unknown}>;
     handleConnectFlow: (instanceID?: string) => void;
-    startJiraSetupWizard: (channelId: string, teamId: string) => Promise<{data?: unknown; error?: unknown}>;
 };
 
 const ROLE_LABELS: Record<RHSNotificationRole, string> = {
@@ -36,22 +31,8 @@ const ROLE_LABELS: Record<RHSNotificationRole, string> = {
     watching: RHS_STRINGS.settingsNotifyWatching,
 };
 
-// maskWebhookSecret hides the secret in the shown URL; copying uses the full one.
-export function maskWebhookSecret(url: string): string {
-    return url.replace(/([?&]secret=)[^&]*/, '$1•••');
-}
-
-function navigateInApp(url: string) {
-    const history = (window as unknown as {WebappUtils?: {browserHistory?: {push: (path: string) => void}}}).WebappUtils?.browserHistory;
-    if (history) {
-        history.push(url);
-        return;
-    }
-    window.location.assign(url);
-}
-
 // SettingsView gathers /jira me, disconnect, settings notifications and, for
-// system admins, the instance list, webhook URL and setup wizard.
+// system admins use the block in the System Console.
 export default function SettingsView(props: Props): JSX.Element {
     const [settings, setSettings] = useState<RHSSettings | null>(null);
     const [failed, setFailed] = useState(false);
@@ -59,8 +40,6 @@ export default function SettingsView(props: Props): JSX.Element {
     const [error, setError] = useState('');
     const [confirmDisconnect, setConfirmDisconnect] = useState(false);
     const [disconnecting, setDisconnecting] = useState(false);
-    const [copied, setCopied] = useState(false);
-    const [wizard, setWizard] = useState<'' | 'started' | 'failed'>('');
 
     const load = async () => {
         setFailed(false);
@@ -100,20 +79,6 @@ export default function SettingsView(props: Props): JSX.Element {
             return;
         }
         props.closeRHSSettings();
-    };
-
-    const copyWebhook = async (url: string) => {
-        try {
-            await navigator.clipboard.writeText(url);
-            setCopied(true);
-        } catch {
-            setCopied(false);
-        }
-    };
-
-    const runWizard = async () => {
-        const result = await props.startJiraSetupWizard(props.channelId, props.teamId);
-        setWizard(result.error ? 'failed' : 'started');
     };
 
     const connectedIDs = new Set(props.connectedInstances.map((i) => i.instance_id));
@@ -220,79 +185,6 @@ export default function SettingsView(props: Props): JSX.Element {
                         </label>
                     ))}
                 </section>
-
-                {settings.admin && (
-                    <section
-                        className='jira-rhs-settings-block'
-                        data-testid='rhs-settings-admin'
-                    >
-                        <h4 className='jira-rhs-settings-title'>
-                            {RHS_STRINGS.settingsAdmin}
-                            <span className='jira-rhs-small jira-rhs-muted'>{' · ' + RHS_STRINGS.settingsAdminHint}</span>
-                        </h4>
-
-                        <div className='jira-rhs-settings-row jira-rhs-settings-row--top'>
-                            <div className='jira-rhs-settings-col'>
-                                <b>{RHS_STRINGS.settingsInstances}</b>
-                                {settings.admin.instances.map((instance) => (
-                                    <span
-                                        key={instance.instance_id}
-                                        className='jira-rhs-small jira-rhs-muted'
-                                    >
-                                        {(instance.alias || instance.instance_id) + (instance.type === 'server' ? ' (' + RHS_STRINGS.instanceServer + ')' : ' (' + RHS_STRINGS.instanceCloud + ')') +
-                                            (instance.instance_id === props.defaultInstanceID ? ' · ' + RHS_STRINGS.settingsDefault : '')}
-                                    </span>
-                                ))}
-                            </div>
-                            <button
-                                type='button'
-                                className='btn btn-tertiary btn-sm'
-                                data-testid='rhs-settings-manage'
-                                onClick={() => navigateInApp(props.adminConsoleURL)}
-                            >
-                                {RHS_STRINGS.settingsManage}
-                            </button>
-                        </div>
-
-                        <div className='jira-rhs-settings-row jira-rhs-settings-row--top'>
-                            <div className='jira-rhs-settings-col'>
-                                <b>{RHS_STRINGS.settingsWebhook}</b>
-                                <code
-                                    className='jira-rhs-settings-code'
-                                    data-testid='rhs-settings-webhook'
-                                    title={RHS_STRINGS.settingsWebhookHint}
-                                >
-                                    {maskWebhookSecret(settings.admin.webhook_url)}
-                                </code>
-                            </div>
-                            <button
-                                type='button'
-                                className='btn btn-tertiary btn-sm'
-                                data-testid='rhs-settings-copy-webhook'
-                                onClick={() => copyWebhook(settings.admin?.webhook_url || '')}
-                            >
-                                {copied ? RHS_STRINGS.settingsCopied : RHS_STRINGS.settingsCopy}
-                            </button>
-                        </div>
-
-                        <div className='jira-rhs-settings-row jira-rhs-settings-row--top'>
-                            <div className='jira-rhs-settings-col'>
-                                <b>{RHS_STRINGS.settingsWizard}</b>
-                                <span className='jira-rhs-small jira-rhs-muted'>{RHS_STRINGS.settingsWizardHint}</span>
-                                {wizard === 'started' && <span className='jira-rhs-small'>{RHS_STRINGS.setupStarted}</span>}
-                                {wizard === 'failed' && <span className='jira-rhs-small jira-rhs-connect-hint--error'>{RHS_STRINGS.setupFailed}</span>}
-                            </div>
-                            <button
-                                type='button'
-                                className='btn btn-tertiary btn-sm'
-                                data-testid='rhs-settings-wizard'
-                                onClick={runWizard}
-                            >
-                                {RHS_STRINGS.settingsWizardRun}
-                            </button>
-                        </div>
-                    </section>
-                )}
 
                 <p className='jira-rhs-small jira-rhs-muted jira-rhs-settings-version'>
                     {RHS_STRINGS.settingsVersion.replace('{version}', settings.plugin_version)}

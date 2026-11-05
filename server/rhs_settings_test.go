@@ -74,20 +74,38 @@ func TestRHSSettingsForUser(t *testing.T) {
 	body := getRHSSettingsBody(t, w)
 	assert.Equal(t, "Иван Петров", body.Account.DisplayName)
 	assert.Equal(t, map[string]bool{"assignee": true, "mention": true, "reporter": true, "watching": true}, body.Notifications, "the old global switch applies to every role")
-	assert.Nil(t, body.Admin, "the webhook secret is never sent to regular users")
 	assert.NotEmpty(t, body.PluginVersion)
 }
 
-func TestRHSSettingsForAdmin(t *testing.T) {
+func TestRHSAdminForbiddenForUsers(t *testing.T) {
+	api := &plugintest.API{}
+	p, _ := setupRHSSettingsPlugin(t, api, false)
+
+	w := doRHSHTTPGet(t, p, makeAPIRoute(routeAPIRHSAdmin), "connected_user")
+	assert.Equal(t, http.StatusForbidden, w.Code)
+	assert.NotContains(t, w.Body.String(), "s3cr3t", "the webhook secret is never sent to regular users")
+}
+
+func TestRHSAdminForAdmin(t *testing.T) {
+	api := &plugintest.API{}
+	p, _ := setupRHSSettingsPlugin(t, api, true)
+
+	w := doRHSHTTPGet(t, p, makeAPIRoute(routeAPIRHSAdmin), "connected_user")
+	require.Equal(t, http.StatusOK, w.Code)
+	var body RHSAdminSettings
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
+	require.NotEmpty(t, body.Instances)
+	assert.NotEmpty(t, body.PluginVersion)
+	assert.Contains(t, body.Instances[0].WebhookURL, "secret=s3cr3t")
+	assert.Contains(t, body.Instances[0].WebhookURL, "/api/v2/webhook")
+}
+
+func TestRHSSettingsHaveNoAdminBlock(t *testing.T) {
 	api := &plugintest.API{}
 	p, _ := setupRHSSettingsPlugin(t, api, true)
 
 	w := doRHSHTTPGet(t, p, makeAPIRoute(routeAPIRHSSettings)+"?instance_id="+url.QueryEscape(mockInstance1URL), "connected_user")
-	body := getRHSSettingsBody(t, w)
-	require.NotNil(t, body.Admin)
-	assert.NotEmpty(t, body.Admin.Instances)
-	assert.Contains(t, body.Admin.WebhookURL, "secret=s3cr3t")
-	assert.Contains(t, body.Admin.WebhookURL, "/api/v2/webhook")
+	assert.NotContains(t, w.Body.String(), "s3cr3t")
 }
 
 func TestRHSSettingsNotificationToggle(t *testing.T) {

@@ -173,18 +173,6 @@ export const RHS_STRINGS = {
     settingsNotifyReporter: 'Изменения в задачах, где я автор',
     settingsNotifyWatching: 'Изменения в задачах, за которыми слежу',
     settingsNotifyFailed: 'Не удалось сохранить настройку',
-    settingsAdmin: 'Администрирование',
-    settingsAdminHint: 'Видно только системным администраторам',
-    settingsInstances: 'Инстансы Jira',
-    settingsDefault: 'по умолчанию',
-    settingsManage: 'Управлять',
-    settingsWebhook: 'Вебхук',
-    settingsWebhookHint: 'URL для вебхука в Jira, содержит секрет',
-    settingsCopy: 'Копировать',
-    settingsCopied: 'Скопировано',
-    settingsWizard: 'Мастер настройки',
-    settingsWizardHint: 'Подключение нового инстанса по шагам',
-    settingsWizardRun: 'Запустить',
     settingsVersion: 'Версия плагина {version}',
 
     // Channel section

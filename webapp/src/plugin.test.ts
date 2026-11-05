@@ -4,13 +4,13 @@
 import {applyMiddleware, createStore} from 'redux';
 import thunk from 'redux-thunk';
 
-import RHSStatusSetting from 'components/admin_console/rhs_status_setting';
 import ConnectModal from 'components/modals/connect_modal';
 import Rhs from 'components/rhs';
 import {Instance, InstanceType} from 'types/model';
 import {pluginStateKey} from 'types/store';
 import {JIRA_RHS_TITLE} from 'utils/rhs_register';
 
+import manifest from './manifest';
 import Plugin, {setupUILater} from './plugin';
 import reducer from './reducers';
 
@@ -117,7 +117,8 @@ async function runInitializeThenSetup(registry: ReturnType<typeof makeRegistry>,
 }
 
 function expectAdminSettingRegistered(registry: ReturnType<typeof makeRegistry>) {
-    expect(registry.registerAdminConsoleCustomSetting).toHaveBeenCalledWith('RHSStatusTabs', RHSStatusSetting, {showTitle: true});
+    expect(registry.registerAdminConsoleCustomSetting).toHaveBeenCalledWith('JiraAdminPanel', expect.anything(), {showTitle: false});
+    expect(registry.registerAdminConsoleCustomSetting).toHaveBeenCalledWith('EnableJiraRHS', expect.anything(), {showTitle: false});
 }
 
 describe('plugin initialize', () => {
@@ -131,7 +132,7 @@ describe('plugin initialize', () => {
         localStorage.clear();
     });
 
-    test('initialize registers RHSStatusTabs without setupUILater or getConnected', async () => {
+    test('initialize registers the settings without setupUILater or getConnected', async () => {
         const fetchMock = global.fetch as jest.Mock;
         const registry = makeRegistry();
         const store = makeRHSStore();
@@ -139,13 +140,13 @@ describe('plugin initialize', () => {
         await runInitialize(registry, store);
 
         expectAdminSettingRegistered(registry);
-        expect(registry.registerAdminConsoleCustomSetting).toHaveBeenCalledTimes(1);
+        expect(registry.registerAdminConsoleCustomSetting).toHaveBeenCalledTimes(manifest.settings_schema.settings.length);
         expect(registry.registerReducer).toHaveBeenCalled();
         expect(registry.registerAppBarComponent).not.toHaveBeenCalled();
         expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    test('initialize registers RHSStatusTabs on a System Console path that never mounts SetupUI', async () => {
+    test('initialize registers the settings on a System Console path that never mounts SetupUI', async () => {
         const registry = makeRegistry();
         const store = makeRHSStore();
 
