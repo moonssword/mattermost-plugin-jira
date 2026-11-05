@@ -43,6 +43,13 @@
                 "default": false
             },
             {
+                "key": "RHSAllowedUsers",
+                "display_name": "Show the right-hand sidebar only to these users:",
+                "type": "custom",
+                "help_text": "Mattermost logins separated by commas. When empty, the sidebar is available to everyone.",
+                "default": ""
+            },
+            {
                 "key": "RHSDefaultStyle",
                 "display_name": "Default style of the right-hand sidebar:",
                 "type": "custom",

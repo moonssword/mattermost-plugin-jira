@@ -81,6 +81,9 @@ type externalConfig struct {
 	// RHSDefaultStyle is the panel style for users who did not choose their own.
 	RHSDefaultStyle string
 
+	// RHSAllowedUsers limits the panel to these logins; empty means everyone.
+	RHSAllowedUsers string
+
 	// Hide issue descriptions and comments in Webhook and Subscription messages
 	HideDecriptionComment bool
 
@@ -628,7 +631,17 @@ func (p *Plugin) storeConfig(ec externalConfig) error {
 		return err
 	}
 
-	return p.client.Configuration.SavePluginConfig(out)
+	return p.client.Configuration.SavePluginConfig(lowercaseConfigKeys(out))
+}
+
+// lowercaseConfigKeys stores settings under the keys the System Console uses.
+// With both spellings of a key in the config, either value could win.
+func lowercaseConfigKeys(in map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(in))
+	for key, value := range in {
+		out[strings.ToLower(key)] = value
+	}
+	return out
 }
 
 func generateSecret() (string, error) {

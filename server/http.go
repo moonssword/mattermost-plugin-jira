@@ -106,6 +106,7 @@ func (p *Plugin) initializeRouter() {
 	autocompleteRouter.HandleFunc(routeAutocompleteInstalledInstanceWithAlias, p.checkAuth(p.handleResponse(p.httpAutocompleteInstalledInstanceWithAlias))).Methods(http.MethodGet)
 
 	apiRouter := p.router.PathPrefix(routeAPI).Subrouter()
+	apiRouter.Use(p.rhsAccessMiddleware)
 
 	// Issue APIs
 	apiRouter.HandleFunc(routeAPIGetSprints, p.checkAuth(p.handleResponse(p.httpGetSprints))).Methods(http.MethodGet)

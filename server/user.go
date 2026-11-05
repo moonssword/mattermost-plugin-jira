@@ -225,7 +225,7 @@ func (p *Plugin) httpGetSettingsInfo(w http.ResponseWriter, r *http.Request) (in
 		RHSDefaultStyle                        string `json:"rhs_default_style"`
 	}{
 		UIEnabled:                              conf.EnableJiraUI,
-		RHSEnabled:                             conf.EnableJiraRHS,
+		RHSEnabled:                             conf.EnableJiraRHS && p.isRHSAllowedForUser(r.Header.Get(HeaderMattermostUserID)),
 		SecurityLevelEmptyForJiraSubscriptions: conf.SecurityLevelEmptyForJiraSubscriptions,
 		RHSDefaultStyle:                        conf.RHSDefaultStyle,
 	})

@@ -105,6 +105,19 @@ export const LOCALIZED_SETTINGS: SettingDescriptor[] = [
         },
     },
     {
+        key: 'RHSAllowedUsers',
+        kind: 'text',
+        label: {
+            ru: 'Показывать панель только этим пользователям:',
+            en: 'Show the right-hand sidebar only to these users:',
+        },
+        help: {
+            ru: 'Логины Mattermost через запятую. Если пусто, панель доступна всем. Остальные не увидят значок панели, а её методы будут им закрыты. Команды `/jira`, подписки и уведомления работают для всех. После изменения пользователю нужно обновить страницу.',
+            en: 'Mattermost logins separated by commas. When empty, the sidebar is available to everyone. Others do not see its icon and its routes are closed to them. The `/jira` commands, subscriptions and notifications work for everyone. Users need to reload the page after a change.',
+        },
+        placeholder: 'ivan.petrov, anna.smirnova',
+    },
+    {
         key: 'RHSDefaultStyle',
         defaultValue: 'compact',
         kind: 'radio',
