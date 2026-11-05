@@ -165,7 +165,10 @@ export default function BoardView(props: Props): JSX.Element {
                                                 {formatRHSPoints(issue.estimate)}
                                             </span>
                                         )}
-                                        <RHSRowAvatar name={issue.assigneeName}/>
+                                        <RHSRowAvatar
+                                            name={issue.assigneeName}
+                                            url={issue.assigneeAvatarUrl}
+                                        />
                                     </span>
                                 </span>
                             </button>

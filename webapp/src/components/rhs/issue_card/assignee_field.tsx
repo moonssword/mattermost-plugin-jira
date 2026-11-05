@@ -23,7 +23,10 @@ export function RHSUserLabel(props: {user: RHSUser | null}): JSX.Element {
     }
     return (
         <span className='jira-rhs-user'>
-            <RHSAvatar name={props.user.displayName}/>
+            <RHSAvatar
+                name={props.user.displayName}
+                url={props.user.avatarUrl}
+            />
             <span>{props.user.displayName}</span>
         </span>
     );

@@ -10,6 +10,9 @@ export type RHSUser = {
     accountId?: string;
     name?: string;
     displayName: string;
+
+    // An uploaded picture served by the plugin; none means initials.
+    avatarUrl?: string;
 };
 
 export type RHSTransition = {

@@ -30,7 +30,10 @@ export function CommentList(props: {comments: RHSComment[]; total: number; nowMs
                         key={comment.id}
                         className='jira-rhs-comment'
                     >
-                        <RHSAvatar name={comment.author.displayName}/>
+                        <RHSAvatar
+                            name={comment.author.displayName}
+                            url={comment.author.avatarUrl}
+                        />
                         <div className='jira-rhs-comment-main'>
                             <div className='jira-rhs-comment-head'>
                                 <b>{comment.author.displayName}</b>

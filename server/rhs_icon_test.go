@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"testing"
 
+	jira "github.com/andygrunwald/go-jira"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -106,4 +107,30 @@ func TestServeRHSIconJiraError(t *testing.T) {
 	w := httptest.NewRecorder()
 	status, _ := serveRHSIcon(w, &testRHSIconFetcher{err: errors.New("jira is down")}, "/images/icons/a.svg")
 	assert.Equal(t, http.StatusInternalServerError, status)
+}
+
+func TestRHSUserAvatarURL(t *testing.T) {
+	instance := testRHSIconInstance("https://jira.example.com/jira")
+	user := func(avatar string) *jira.User {
+		return &jira.User{AvatarUrls: jira.AvatarUrls{Four8X48: avatar}}
+	}
+
+	uploaded := rhsUserAvatarURL(instance, user("https://jira.example.com/jira/secure/useravatar?ownerId=JIRAUSER1&avatarId=10600"))
+	parsed, err := url.Parse(uploaded)
+	require.NoError(t, err)
+	assert.Empty(t, parsed.Host)
+	assert.Equal(t, "/plugins/jira/api/v2/rhs/icon", parsed.Path)
+	assert.Equal(t, "/secure/useravatar?ownerId=JIRAUSER1&avatarId=10600", parsed.Query().Get(queryRHSIconPath))
+
+	for name, avatar := range map[string]string{
+		"system avatar":         "https://jira.example.com/jira/secure/useravatar?avatarId=10122",
+		"gravatar":              "https://www.gravatar.com/avatar/abc?d=mm&s=48",
+		"owner on another path": "https://jira.example.com/jira/secure/viewavatar?ownerId=JIRAUSER1",
+		"no avatar":             "",
+	} {
+		assert.Empty(t, rhsUserAvatarURL(instance, user(avatar)), name)
+	}
+
+	assert.Empty(t, rhsUserAvatarURL(testInstance1, user("https://x.atlassian.net/secure/useravatar?ownerId=1")), "not Server or Data Center")
+	assert.Empty(t, rhsUserAvatarURL(instance, nil))
 }

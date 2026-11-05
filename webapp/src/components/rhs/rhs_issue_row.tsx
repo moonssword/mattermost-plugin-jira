@@ -7,7 +7,7 @@ import {RHSIssue} from 'types/rhs';
 import {isRHSIssueOverdue} from 'utils/rhs_group';
 import {formatRHSRelativeTime, formatRHSShortDate} from 'utils/rhs_time';
 
-import {rhsInitials} from './rhs_avatar';
+import {AvatarContent} from './rhs_avatar';
 import RHSIssueTypeIcon from './rhs_issue_type_icon';
 import {RHS_STRINGS} from './rhs_strings';
 
@@ -82,7 +82,7 @@ export function RHSPriorityIcon(props: {issue: RHSIssue}): JSX.Element {
     );
 }
 
-export function RHSRowAvatar(props: {name?: string}): JSX.Element {
+export function RHSRowAvatar(props: {name?: string; url?: string}): JSX.Element {
     if (!props.name) {
         return (
             <span
@@ -96,7 +96,10 @@ export function RHSRowAvatar(props: {name?: string}): JSX.Element {
             className='jira-rhs-mini-avatar'
             title={props.name}
         >
-            {rhsInitials(props.name)}
+            <AvatarContent
+                name={props.name}
+                url={props.url}
+            />
         </span>
     );
 }
@@ -140,7 +143,10 @@ export default function RHSIssueRow(props: Props): JSX.Element {
                 </span>
             ) : <span/>}
             <RHSPriorityIcon issue={issue}/>
-            <RHSRowAvatar name={issue.assigneeName}/>
+            <RHSRowAvatar
+                name={issue.assigneeName}
+                url={issue.assigneeAvatarUrl}
+            />
         </a>
     );
 }

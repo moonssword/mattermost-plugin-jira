@@ -228,8 +228,10 @@ type RHSIssue struct {
 	Priority         string         `json:"priority,omitempty"`
 	PriorityIconURL  string         `json:"priorityIconUrl,omitempty"`
 
-	// Assignee is the display name; avatars need the user's Jira session.
 	AssigneeName string `json:"assigneeName,omitempty"`
+
+	// AssigneeAvatarURL is an uploaded picture served by the plugin; empty means initials.
+	AssigneeAvatarURL string `json:"assigneeAvatarUrl,omitempty"`
 
 	// Estimate is the board's estimation field (story points), when asked for.
 	Estimate *float64 `json:"estimate,omitempty"`

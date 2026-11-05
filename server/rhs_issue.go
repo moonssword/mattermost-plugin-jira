@@ -58,12 +58,14 @@ func (p *Plugin) registerRHSIssueRoutes(apiRouter *mux.Router) {
 	p.registerRHSTransitionRoutes(apiRouter)
 }
 
-// RHSUser is a Jira user as the panel shows it. Avatars are not passed on:
-// they are served by Jira and would need the user's Jira session.
+// RHSUser is a Jira user as the panel shows it.
 type RHSUser struct {
 	AccountID   string `json:"accountId,omitempty"`
 	Name        string `json:"name,omitempty"`
 	DisplayName string `json:"displayName"`
+
+	// AvatarURL is an uploaded picture served by the plugin; empty means initials.
+	AvatarURL string `json:"avatarUrl,omitempty"`
 }
 
 type RHSTransition struct {
@@ -96,11 +98,11 @@ type RHSIssueCard struct {
 	Me RHSUser `json:"me"`
 }
 
-func toRHSUser(u *jira.User) *RHSUser {
+func toRHSUser(instance Instance, u *jira.User) *RHSUser {
 	if u == nil || (u.AccountID == "" && u.Name == "" && u.DisplayName == "") {
 		return nil
 	}
-	return &RHSUser{AccountID: u.AccountID, Name: u.Name, DisplayName: u.DisplayName}
+	return &RHSUser{AccountID: u.AccountID, Name: u.Name, DisplayName: u.DisplayName, AvatarURL: rhsUserAvatarURL(instance, u)}
 }
 
 // jiraCommentTime converts Jira's "2006-01-02T15:04:05.000-0700" to RFC 3339.
@@ -126,7 +128,7 @@ func normalizeRHSIssueCard(instance Instance, issue *jira.Issue, me *jira.User) 
 		Comments:    []RHSComment{},
 	}
 	if me != nil {
-		card.Me = RHSUser{AccountID: me.AccountID, Name: me.Name, DisplayName: me.DisplayName}
+		card.Me = RHSUser{AccountID: me.AccountID, Name: me.Name, DisplayName: me.DisplayName, AvatarURL: rhsUserAvatarURL(instance, me)}
 	}
 
 	for _, t := range issue.Transitions {
@@ -142,8 +144,8 @@ func normalizeRHSIssueCard(instance Instance, issue *jira.Issue, me *jira.User) 
 		return card
 	}
 	card.ProjectName = f.Project.Name
-	card.Assignee = toRHSUser(f.Assignee)
-	card.Reporter = toRHSUser(f.Reporter)
+	card.Assignee = toRHSUser(instance, f.Assignee)
+	card.Reporter = toRHSUser(instance, f.Reporter)
 	if f.Labels != nil {
 		card.Labels = f.Labels
 	}
@@ -161,7 +163,7 @@ func normalizeRHSIssueCard(instance Instance, issue *jira.Issue, me *jira.User) 
 			}
 			card.Comments = append(card.Comments, RHSComment{
 				ID:      c.ID,
-				Author:  RHSUser{AccountID: c.Author.AccountID, Name: c.Author.Name, DisplayName: c.Author.DisplayName},
+				Author:  RHSUser{AccountID: c.Author.AccountID, Name: c.Author.Name, DisplayName: c.Author.DisplayName, AvatarURL: rhsUserAvatarURL(instance, &c.Author)},
 				Body:    jiraTextToMarkdown(c.Body),
 				Created: jiraCommentTime(c.Created),
 			})
@@ -401,7 +403,7 @@ func (p *Plugin) httpRHSAssignableUsers(w http.ResponseWriter, r *http.Request) 
 	}
 	out := make([]RHSUser, 0, len(users))
 	for i := range users {
-		if u := toRHSUser(&users[i]); u != nil {
+		if u := toRHSUser(ctx.instance, &users[i]); u != nil {
 			out = append(out, *u)
 		}
 	}

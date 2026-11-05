@@ -44,6 +44,7 @@ export type RHSIssue = {
 
     // Display name of the assignee; avatars need the user's Jira session.
     assigneeName?: string;
+    assigneeAvatarUrl?: string;
 
     // The selected board's estimation field (story points), when requested.
     estimate?: number;

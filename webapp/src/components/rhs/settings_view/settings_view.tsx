@@ -116,7 +116,10 @@ export default function SettingsView(props: Props): JSX.Element {
             >
                 <section className='jira-rhs-settings-block'>
                     <div className='jira-rhs-settings-account'>
-                        <RHSAvatar name={settings.account.displayName || settings.account.name || '?'}/>
+                        <RHSAvatar
+                            name={settings.account.displayName || settings.account.name || '?'}
+                            url={settings.account.avatarUrl}
+                        />
                         <div className='jira-rhs-settings-account-main'>
                             <b data-testid='rhs-settings-account'>{settings.account.displayName || settings.account.name}</b>
                             {active && (

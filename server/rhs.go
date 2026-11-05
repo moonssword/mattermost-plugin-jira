@@ -147,6 +147,7 @@ func normalizeRHSIssue(instance Instance, issue jira.Issue) RHSIssue {
 	}
 	if f.Assignee != nil {
 		out.AssigneeName = f.Assignee.DisplayName
+		out.AssigneeAvatarURL = rhsUserAvatarURL(instance, f.Assignee)
 	}
 	if f.Status != nil {
 		out.Status = RHSIssueStatus{

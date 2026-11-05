@@ -124,8 +124,26 @@ func (p *Plugin) httpRHSAdminSetup(w http.ResponseWriter, r *http.Request) (int,
 	return respondJSON(w, map[string]string{"status": "started"})
 }
 
+// rhsOwnAvatarURL reads the user's picture from Jira: the stored connection has
+// the one from the moment of connecting. Without an answer the panel shows initials.
+func (p *Plugin) rhsOwnAvatarURL(instance Instance, connection *Connection) string {
+	if instance.Common().Type != ServerInstanceType {
+		return ""
+	}
+	client, err := instance.GetClient(connection)
+	if err != nil || client == nil {
+		return rhsUserAvatarURL(instance, &connection.User)
+	}
+	self, err := client.GetSelf()
+	if err != nil || self == nil {
+		return rhsUserAvatarURL(instance, &connection.User)
+	}
+	return rhsUserAvatarURL(instance, self)
+}
+
 func (p *Plugin) getRHSSettings(instanceID types.ID, userID string) (*RHSSettings, error) {
-	if _, err := p.loadRHSInstance(instanceID); err != nil {
+	instance, err := p.loadRHSInstance(instanceID)
+	if err != nil {
 		return nil, err
 	}
 	connection, err := p.loadRHSConnection(instanceID, userID)
@@ -133,7 +151,7 @@ func (p *Plugin) getRHSSettings(instanceID types.ID, userID string) (*RHSSetting
 		return nil, err
 	}
 	settings := &RHSSettings{
-		Account:       RHSUser{AccountID: connection.AccountID, Name: connection.Name, DisplayName: connection.DisplayName},
+		Account:       RHSUser{AccountID: connection.AccountID, Name: connection.Name, DisplayName: connection.DisplayName, AvatarURL: p.rhsOwnAvatarURL(instance, connection)},
 		Notifications: notificationSettings(connection),
 		PluginVersion: manifest.Version,
 	}

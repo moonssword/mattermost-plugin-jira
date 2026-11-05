@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	jira "github.com/andygrunwald/go-jira"
 	"github.com/pkg/errors"
 )
 
@@ -20,6 +21,7 @@ const (
 	rhsIconMaxBytes     = 1 << 20
 	rhsIconCacheSeconds = 24 * 60 * 60
 	rhsImageTypePrefix  = "image/"
+	rhsUserAvatarPath   = "/secure/useravatar"
 )
 
 var (
@@ -28,7 +30,7 @@ var (
 	// The only Jira paths the icon route reads, so that it cannot be used to
 	// fetch anything else on behalf of the user.
 	rhsIconPathPrefixes = []string{"/images/icons/", "/rest/api/2/universal_avatar/"}
-	rhsIconPaths        = []string{"/secure/viewavatar", "/secure/projectavatar"}
+	rhsIconPaths        = []string{"/secure/viewavatar", "/secure/projectavatar", rhsUserAvatarPath}
 )
 
 // rhsIconFetcher is implemented by the clients of Jira instances the browser
@@ -96,6 +98,26 @@ func rhsIconURL(instance Instance, raw string) string {
 	query.Set(ParamInstanceID, instance.GetID().String())
 	query.Set(queryRHSIconPath, (&url.URL{Path: iconPath, RawQuery: parsed.RawQuery}).String())
 	return sitePath + common.Plugin.GetPluginURLPath() + routeAPI + routeAPIRHSIcon + "?" + query.Encode()
+}
+
+// rhsUserAvatarURL returns the picture a Jira Server / Data Center user uploaded,
+// or "" for the panel to show initials. Only uploaded pictures carry an owner:
+// system avatars have none, and Gravatar would send the browser to an outside
+// service, with a stock picture for most people.
+func rhsUserAvatarURL(instance Instance, user *jira.User) string {
+	if user == nil || instance.Common().Type != ServerInstanceType {
+		return ""
+	}
+	raw := user.AvatarUrls.Four8X48
+	parsed, err := url.Parse(raw)
+	if err != nil || parsed.Query().Get("ownerId") == "" || !strings.HasSuffix(parsed.Path, rhsUserAvatarPath) {
+		return ""
+	}
+	proxied := rhsIconURL(instance, raw)
+	if proxied == raw {
+		return ""
+	}
+	return proxied
 }
 
 func (p *Plugin) httpRHSGetIcon(w http.ResponseWriter, r *http.Request) (int, error) {
