@@ -20,7 +20,8 @@ import {formatRHSRelativeTime, formatRHSShortDate} from 'utils/rhs_time';
 
 import RHSIssueTypeIcon from '../rhs_issue_type_icon';
 import RHSMarkdown from '../rhs_markdown';
-import {RHSErrorState, RHSLoadingState} from '../rhs_states';
+import {RHSSkeletonCard} from '../rhs_skeleton';
+import {RHSErrorState} from '../rhs_states';
 import {RHS_STRINGS} from '../rhs_strings';
 
 import AssigneeField, {RHSUserLabel} from './assignee_field';
@@ -137,7 +138,7 @@ export default function IssueCard(props: Props): JSX.Element {
     if (data) {
         body = null;
     } else if (card.loading) {
-        body = <RHSLoadingState/>;
+        body = <RHSSkeletonCard/>;
     } else if (card.error === 'not_found' || card.error === 'forbidden') {
         body = (
             <div

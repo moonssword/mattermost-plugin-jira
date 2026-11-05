@@ -21,7 +21,7 @@ import {
 import {RHSCreatePrefill} from 'types/rhs_create';
 import {getFields, getIssueTypes} from 'utils/jira_issue_metadata';
 
-import {RHSLoadingState} from '../../rhs_states';
+import {RHSSkeletonFields, RHSSkeletonForm} from '../../rhs_skeleton';
 
 import {RHS_STRINGS} from '../../rhs_strings';
 
@@ -365,7 +365,7 @@ export default function CreateSection(props: Props): JSX.Element {
         return (
             <div className='jira-rhs-form'>
                 {header}
-                <RHSLoadingState/>
+                <RHSSkeletonForm/>
             </div>
         );
     }
@@ -443,7 +443,7 @@ export default function CreateSection(props: Props): JSX.Element {
                         )}
                     </div>
                 )}
-                {loadingMeta && <RHSLoadingState/>}
+                {loadingMeta && <RHSSkeletonFields/>}
                 {ready && !loadingMeta && (
                     <PanelFields
                         fields={fieldDefs}

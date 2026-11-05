@@ -15,10 +15,10 @@ import {RHSBoard, RHSBoardRef, RHSListView} from 'types/rhs_board';
 import {RHSTransition} from 'types/rhs_issue';
 
 import RHSIssueList from '../../rhs_issue_list';
+import {RHSSkeletonList} from '../../rhs_skeleton';
 import {
     RHSEmptyState,
     RHSErrorState,
-    RHSLoadingState,
     RHSQueryErrorState,
     RHSRateLimitedState,
 } from '../../rhs_states';
@@ -194,7 +194,7 @@ export default function MyIssues(props: Props): JSX.Element {
     let body: JSX.Element;
     switch (kind) {
     case 'loading':
-        body = <RHSLoadingState/>;
+        body = <RHSSkeletonList/>;
         break;
     case 'invalid_query':
         body = <RHSQueryErrorState message={errorMessage}/>;

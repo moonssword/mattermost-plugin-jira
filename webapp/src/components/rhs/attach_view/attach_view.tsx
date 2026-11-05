@@ -10,7 +10,8 @@ import {RHSIssue} from 'types/rhs';
 import {foundLabel} from '../sections/my_issues/my_issues';
 import {rhsStatusClass} from '../rhs_issue_row';
 import RHSIssueTypeIcon from '../rhs_issue_type_icon';
-import {RHSLoadingState, RHSQueryErrorState} from '../rhs_states';
+import {RHSSkeletonOptions} from '../rhs_skeleton';
+import {RHSQueryErrorState} from '../rhs_states';
 import {RHS_STRINGS} from '../rhs_strings';
 
 export const RHS_ATTACH_SEARCH_DEBOUNCE_MS = 400;
@@ -149,7 +150,7 @@ export default function AttachView(props: Props): JSX.Element {
 
     let list: React.ReactNode;
     if (searching && !results) {
-        list = <RHSLoadingState/>;
+        list = <RHSSkeletonOptions itemClassName='jira-rhs-attach-item'/>;
     } else if (searchError && searchError.errorCode === 'invalid_query') {
         list = <RHSQueryErrorState message={searchError.message || ''}/>;
     } else if (searchError) {

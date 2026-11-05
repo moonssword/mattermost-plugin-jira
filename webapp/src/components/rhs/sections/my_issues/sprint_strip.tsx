@@ -15,6 +15,7 @@ import {
 } from 'utils/rhs_board_lanes';
 import {formatRHSShortDate} from 'utils/rhs_time';
 
+import {RHSSkeletonSprint} from '../../rhs_skeleton';
 import {RHS_STRINGS} from '../../rhs_strings';
 
 export type Props = {
@@ -149,9 +150,9 @@ export default function SprintStrip(props: Props): JSX.Element {
                 data-testid='rhs-sprint-strip'
             >
                 <b>{title}</b>
-                <span className='jira-rhs-sstrip-note'>
-                    {props.loading || !board ? RHS_STRINGS.loadingMore : RHS_STRINGS.boardNoSprint}
-                </span>
+                {props.loading || !board ? <RHSSkeletonSprint/> : (
+                    <span className='jira-rhs-sstrip-note'>{RHS_STRINGS.boardNoSprint}</span>
+                )}
             </div>
         );
     }

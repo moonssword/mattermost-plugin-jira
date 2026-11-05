@@ -8,6 +8,7 @@ import {RHSErrorCode, RHSIssue} from 'types/rhs';
 import {RHSGroupKey, groupRHSIssues} from 'utils/rhs_group';
 
 import RHSIssueRow from './rhs_issue_row';
+import {RHSSkeletonRows} from './rhs_skeleton';
 import {RHS_STRINGS} from './rhs_strings';
 
 const groupTitles: Record<RHSGroupKey, string> = {
@@ -99,14 +100,11 @@ export default function RHSIssueList(props: Props): JSX.Element {
             })}
             {props.loading && (
                 <div
-                    className='jira-rhs-list-loading'
+                    role='status'
+                    aria-label={RHS_STRINGS.loading}
                     data-testid='rhs-list-loading'
                 >
-                    <span
-                        className='icon icon-refresh jira-rhs-spinner'
-                        aria-hidden={true}
-                    />
-                    <span>{RHS_STRINGS.loadingMore}</span>
+                    <RHSSkeletonRows count={2}/>
                 </div>
             )}
             {props.error !== null && !props.loading && (

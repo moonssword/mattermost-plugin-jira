@@ -8,7 +8,8 @@ import {SharedProps} from 'components/modals/channel_subscriptions/shared_props'
 import {APIResponse, ChannelSubscription} from 'types/model';
 import {RHSChannelSubscription, RHSChannelSubscriptions} from 'types/rhs_channel';
 
-import {RHSErrorState, RHSLoadingState} from '../../rhs_states';
+import {RHSSkeletonSubscriptions} from '../../rhs_skeleton';
+import {RHSErrorState} from '../../rhs_states';
 import {RHS_STRINGS} from '../../rhs_strings';
 
 import {subscriptionEvents, subscriptionPausedLine, subscriptionScope} from './subscription_summary';
@@ -33,7 +34,7 @@ type Editing = {mode: 'create'} | {mode: 'edit'; sub: ChannelSubscription} | nul
 export default function ChannelSection(props: Props): JSX.Element {
     const {channelId, instanceID} = props;
     const [data, setData] = useState<RHSChannelSubscriptions | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [failed, setFailed] = useState(false);
     const [editing, setEditing] = useState<Editing>(null);
     const [confirmDelete, setConfirmDelete] = useState('');
@@ -166,7 +167,7 @@ export default function ChannelSection(props: Props): JSX.Element {
     }
 
     if (!data && loading) {
-        return <RHSLoadingState/>;
+        return <RHSSkeletonSubscriptions/>;
     }
     if (!data || failed) {
         return <RHSErrorState onRetry={load}/>;

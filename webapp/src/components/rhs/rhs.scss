@@ -2353,3 +2353,67 @@
 .jira-rhs-avatar:has(.jira-rhs-avatar-img) {
     background: rgba(var(--center-channel-color-rgb), 0.08);
 }
+
+/* Skeletons. */
+.jira-rhs-skeleton-panel {
+    display: flex;
+    overflow: hidden;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.jira-rhs-row--skeleton,
+.jira-rhs-row--skeleton:hover {
+    transform: none;
+    background: transparent;
+    box-shadow: none;
+    cursor: default;
+}
+
+.jira-rhs-row--skeleton::before {
+    display: none;
+}
+
+.jira-rhs-row-summary--skeleton .jira-skel {
+    display: block;
+}
+
+.jira-rhs-mini-avatar--skeleton {
+    background: transparent;
+}
+
+.jira-rhs-sstrip--skeleton {
+    grid-template-columns: 1fr;
+}
+
+.jira-rhs-sstrip-skeleton {
+    display: block;
+    flex: 1;
+    min-width: 0;
+}
+
+.jira-skel-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.jira-skel-stack--tight {
+    gap: 6px;
+}
+
+.jira-skel-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.jira-skel-grow {
+    flex: 1;
+}
+
+/* The same inset as the title of a real group, which sits in its toggle button. */
+.jira-rhs .jira-rhs-group-header.jira-rhs-group-header--skeleton {
+    padding: 10px 12px 8px 12px;
+}

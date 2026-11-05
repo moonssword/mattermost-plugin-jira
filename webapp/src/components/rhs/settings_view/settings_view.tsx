@@ -8,7 +8,8 @@ import {RHSNotificationRole, RHSSettings, RHS_NOTIFICATION_ROLES} from 'types/rh
 
 import RHSAvatar from '../rhs_avatar';
 import {rhsInstanceKind, rhsInstanceName} from '../rhs_instance_label';
-import {RHSErrorState, RHSLoadingState} from '../rhs_states';
+import {RHSSkeletonSettings} from '../rhs_skeleton';
+import {RHSErrorState} from '../rhs_states';
 import {RHS_PREFERENCE_LANGUAGE, RHS_PREFERENCE_STYLE} from '../../../selectors';
 
 import {RHS_STRINGS} from '../rhs_strings';
@@ -106,7 +107,7 @@ export default function SettingsView(props: Props): JSX.Element {
     const connectedIDs = new Set(props.connectedInstances.map((i) => i.instance_id));
     const notConnected = props.installedInstances.filter((i) => !connectedIDs.has(i.instance_id));
 
-    let body: React.ReactNode = failed ? <RHSErrorState onRetry={load}/> : <RHSLoadingState/>;
+    let body: React.ReactNode = failed ? <RHSErrorState onRetry={load}/> : <RHSSkeletonSettings/>;
     if (settings) {
         const active = props.activeInstance;
         body = (

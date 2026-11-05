@@ -26,6 +26,7 @@ export const RHS_STRINGS_EN: {[key in RHSStringKey]: string} = {
     newTicket: 'New issue',
     loadMore: 'Show more',
     loadingMore: 'Loading…',
+    loading: 'Loading',
     sortLabel: 'Sort',
     sortUpdated: 'By update',
     sortCreated: 'By creation',

@@ -6,6 +6,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {RHSBoardRef} from 'types/rhs_board';
 
 import {RHS_STRINGS} from '../../rhs_strings';
+import {RHSSkeletonOptions} from '../../rhs_skeleton';
 
 export const RHS_BOARD_SEARCH_DEBOUNCE_MS = 300;
 
@@ -59,7 +60,7 @@ export default function BoardPicker(props: Props): JSX.Element {
     if (failed) {
         body = <p className='jira-rhs-muted'>{RHS_STRINGS.boardPickerFailed}</p>;
     } else if (boards === null) {
-        body = <p className='jira-rhs-muted'>{RHS_STRINGS.loadingMore}</p>;
+        body = <RHSSkeletonOptions itemClassName='jira-rhs-board-option'/>;
     } else if (boards.length === 0) {
         body = <p className='jira-rhs-muted'>{RHS_STRINGS.boardPickerEmpty}</p>;
     } else {

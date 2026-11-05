@@ -3,20 +3,7 @@
 
 import React from 'react';
 
-import Loading from 'components/loading';
-
 import {RHS_STRINGS} from './rhs_strings';
-
-export function RHSLoadingState(): JSX.Element {
-    return (
-        <div
-            className='jira-rhs-state'
-            data-testid='rhs-state-loading'
-        >
-            <Loading/>
-        </div>
-    );
-}
 
 export function RHSEmptyState(props: {message?: string}): JSX.Element {
     return (

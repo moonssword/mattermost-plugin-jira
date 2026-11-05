@@ -1,0 +1,50 @@
+// Skeletons: gray shapes in the place of the content that is loading. They take
+// their colors from the Mattermost theme, also outside the panel, in modals.
+.jira-skel {
+    display: block;
+    height: 12px;
+    border-radius: 6px;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(var(--center-channel-color-rgb), 0.07) 25%,
+            rgba(var(--center-channel-color-rgb), 0.14) 50%,
+            rgba(var(--center-channel-color-rgb), 0.07) 75%
+        );
+    background-size: 200% 100%;
+    animation: jira-skel-shimmer 1.4s ease-in-out infinite;
+}
+
+.jira-skel--round {
+    border-radius: 50%;
+}
+
+.jira-skel--control {
+    height: 34px;
+    border-radius: 8px;
+}
+
+.jira-skel-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    padding: 16px;
+}
+
+@keyframes jira-skel-shimmer {
+    from {
+        background-position: 100% 0;
+    }
+
+    to {
+        background-position: -100% 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jira-skel {
+        background: rgba(var(--center-channel-color-rgb), 0.1);
+        animation: none;
+    }
+}

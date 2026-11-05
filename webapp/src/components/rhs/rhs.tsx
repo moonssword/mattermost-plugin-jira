@@ -14,7 +14,7 @@ import {RHSConnectScreen, RHSNoInstanceScreen} from './rhs_connect_screen';
 import RHSPanelHeader from './rhs_panel_header';
 import RHSSectionTabs, {RHS_SECTION_PANEL_ID, rhsSectionDomId} from './rhs_section_tabs';
 import {RHS_TAB_SECTIONS, findRHSSection} from './rhs_sections';
-import {RHSLoadingState} from './rhs_states';
+import {RHSSkeletonPanel} from './rhs_skeleton';
 import {RHS_STRINGS} from './rhs_strings';
 import {RHS_SEARCH_EVENT} from './sections/my_issues/my_issues';
 import SettingsView from './settings_view';
@@ -154,7 +154,7 @@ export default function Rhs(props: Props): JSX.Element {
     let content: React.ReactNode;
     switch (screen) {
     case 'loading':
-        content = <RHSLoadingState/>;
+        content = <RHSSkeletonPanel/>;
         break;
     case 'no_instance':
         content = (

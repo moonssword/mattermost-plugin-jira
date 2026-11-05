@@ -32,6 +32,7 @@ const RHS_STRINGS_RU = {
     newTicket: 'Новая задача',
     loadMore: 'Показать ещё',
     loadingMore: 'Загрузка…',
+    loading: 'Загрузка',
     sortLabel: 'Сортировка',
     sortUpdated: 'По обновлению',
     sortCreated: 'По созданию',

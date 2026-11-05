@@ -3,18 +3,30 @@
 
 import React from 'react';
 
+import {tr} from 'utils/i18n';
+
+import './loading.scss';
+
+const BLOCKS = ['35%', '100%', '35%', '100%', '35%', '100%'];
+
+// Loading is a skeleton of a form: the modals load their fields with it.
 const Loading = () => {
     return (
         <div
-            className='loading-screen'
-            style={{position: 'relative'}}
+            className='jira-skel-group'
+            role='status'
+            aria-busy={true}
+            aria-label={tr('Загрузка')}
+            data-testid='jira-skeleton'
         >
-            <div className='loading__content'>
-                <h3 style={{margin: '20px 0'}}>{'Loading'}</h3>
-                <div className='round round-1'/>
-                <div className='round round-2'/>
-                <div className='round round-3'/>
-            </div>
+            {BLOCKS.map((width, index) => (
+                <span
+                    key={String(index)}
+                    className={index % 2 ? 'jira-skel jira-skel--control' : 'jira-skel'}
+                    style={{width}}
+                    aria-hidden={true}
+                />
+            ))}
         </div>
     );
 };
