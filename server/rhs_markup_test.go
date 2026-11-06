@@ -6,6 +6,7 @@ package main
 import (
 	"testing"
 
+	jira "github.com/andygrunwald/go-jira"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -139,4 +140,20 @@ func TestBuildBoardFilterJQL(t *testing.T) {
 
 	_, err = buildFilterJQL(RHSFilterBoard, rhsDefaultSort, categories)
 	assert.ErrorIs(t, err, ErrInvalidRHSFilter)
+}
+
+func TestRHSNewestAttachments(t *testing.T) {
+	sorted := rhsNewestAttachments([]*jira.Attachment{
+		{ID: "1", Filename: "old.png", Created: "2026-01-01T10:00:00.000+0300"},
+		nil,
+		{ID: "3", Filename: "same.png", Created: "2026-03-01T10:00:00.000+0300"},
+		{ID: "4", Filename: "same.png", Created: "2026-03-01T10:00:00.000+0300"},
+		{ID: "2", Filename: "utc.png", Created: "2026-02-01T10:00:00.000+0000"},
+		{ID: ""},
+	})
+	ids := []string{}
+	for _, a := range sorted {
+		ids = append(ids, a.ID)
+	}
+	assert.Equal(t, []string{"4", "3", "2", "1"}, ids)
 }

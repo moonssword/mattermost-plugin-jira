@@ -8,7 +8,6 @@ import {Theme} from 'mattermost-redux/selectors/entities/preferences';
 import {RHSErrorCode} from 'types/rhs';
 import {
     RHSAssignTarget,
-    RHSAttachment,
     RHSCardState,
     RHSTransition,
     RHSTransitionScreen,
@@ -21,12 +20,12 @@ import {formatRHSRelativeTime, formatRHSShortDate} from 'utils/rhs_time';
 
 import RHSIssueTypeIcon from '../rhs_issue_type_icon';
 import RHSMarkdown from '../rhs_markdown';
-import {RHSViewerProbe, isRHSViewable, openRHSViewer} from '../rhs_viewer';
 import {RHSSkeletonCard} from '../rhs_skeleton';
 import {RHSErrorState} from '../rhs_states';
 import {RHS_STRINGS} from '../rhs_strings';
 
 import AssigneeField, {RHSUserLabel} from './assignee_field';
+import AttachmentTiles from './attachments';
 import {CommentComposer, CommentList} from './comments';
 import StatusMenu from './status_menu';
 import TransitionForm from './transition_form';
@@ -78,16 +77,6 @@ const SHARED_NOTE_MS = 4000;
 
 // IssueCard replaces /jira view, transition, assign and unassign: it shows
 // one issue over the section list with a "back" button.
-// Files the viewer can show go there, with arrows between them; the rest, or
-// anything if the viewer is unavailable, follows the link.
-function openAttachment(event: React.MouseEvent, id: string, attachments: RHSAttachment[]) {
-    const viewable = attachments.filter((file) => isRHSViewable(file.name));
-    const index = viewable.findIndex((file) => file.id === id);
-    if (index >= 0 && openRHSViewer(viewable, index)) {
-        event.preventDefault();
-    }
-}
-
 export default function IssueCard(props: Props): JSX.Element {
     const {card} = props;
     const data = card.data;
@@ -301,44 +290,10 @@ export default function IssueCard(props: Props): JSX.Element {
                     )}
                 </section>
 
-                {data.attachments && data.attachments.length > 0 && (
-                    <section
-                        className='jira-rhs-card-section'
-                        data-testid='rhs-card-attachments'
-                    >
-                        <h4>{RHS_STRINGS.attachments + ' · ' + data.attachments.length}</h4>
-                        <RHSViewerProbe pictureUrl={data.attachments[0].url.split('/api/v2/')[0] + '/public/rhs-viewer-probe.png'}/>
-                        <div className='jira-rhs-attachments'>
-                            {data.attachments.map((file) => (
-                                <a
-                                    key={file.id}
-                                    className={file.image ? 'jira-rhs-attachment jira-rhs-attachment--image' : 'jira-rhs-attachment'}
-                                    href={file.url}
-                                    target='_blank'
-                                    rel='noopener noreferrer'
-                                    title={file.name}
-                                    onClick={(event) => openAttachment(event, file.id, data.attachments || [])}
-                                >
-                                    {file.image ? (
-                                        <img
-                                            src={file.url}
-                                            alt={file.name}
-                                            loading='lazy'
-                                        />
-                                    ) : (
-                                        <>
-                                            <i
-                                                className='icon icon-paperclip'
-                                                aria-hidden={true}
-                                            />
-                                            <span>{file.name}</span>
-                                        </>
-                                    )}
-                                </a>
-                            ))}
-                        </div>
-                    </section>
-                )}
+                <AttachmentTiles
+                    attachments={data.attachments || []}
+                    nowMs={nowMs}
+                />
 
                 <section className='jira-rhs-card-section'>
                     <h4>{RHS_STRINGS.comments + (data.commentsTotal ? ' · ' + data.commentsTotal : '')}</h4>

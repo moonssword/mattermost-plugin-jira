@@ -35,6 +35,8 @@ export type RHSAttachment = {
     name: string;
     url: string;
     image: boolean;
+    size?: number;
+    created?: string;
 };
 
 export type RHSIssueCard = RHSIssue & {

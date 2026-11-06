@@ -575,6 +575,22 @@
         background: rgba(var(--jc-accent-rgb), 0.1);
     }
 
+    .jira-rhs-tile {
+        border-color: var(--jc-line);
+        border-radius: 12px;
+        background: var(--jc-card);
+    }
+
+    .jira-rhs-tile:hover,
+    .jira-rhs-tile:focus {
+        border-color: rgba(var(--jc-accent-rgb), 0.35);
+        background: var(--jc-card);
+    }
+
+    .jira-rhs-tile-preview {
+        border-radius: 8px;
+    }
+
     .jira-rhs-link-button--danger:hover {
         background: rgba(var(--error-text-color-rgb), 0.1);
     }

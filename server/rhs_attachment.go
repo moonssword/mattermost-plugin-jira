@@ -9,8 +9,10 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	jira "github.com/andygrunwald/go-jira"
 	"github.com/gorilla/mux"
@@ -32,6 +34,7 @@ const (
 	rhsAttachmentCacheSecs = 60 * 60
 
 	rhsErrFileTooLarge = "file_too_large"
+	rhsJiraTimeLayout  = "2006-01-02T15:04:05.000-0700"
 
 	// Room for the multipart boundary and the other form values.
 	rhsAttachmentFormOverhead = 1 << 16
@@ -53,6 +56,9 @@ type RHSAttachment struct {
 	Name  string `json:"name"`
 	URL   string `json:"url"`
 	Image bool   `json:"image"`
+
+	Size    int    `json:"size,omitempty"`
+	Created string `json:"created,omitempty"`
 }
 
 // rhsAttachmentFetcher is implemented by the clients of Jira instances the
@@ -70,8 +76,38 @@ func rhsAttachmentIsImage(a *jira.Attachment) bool {
 	return rhsInlineImageTypes[strings.ToLower(a.MimeType)]
 }
 
+// rhsNewestAttachments sorts files newest first. Files added within the same
+// millisecond keep the order of their ids, which Jira hands out in sequence.
+func rhsNewestAttachments(attachments []*jira.Attachment) []*jira.Attachment {
+	type dated struct {
+		file *jira.Attachment
+		at   time.Time
+		id   int
+	}
+	sorted := make([]dated, 0, len(attachments))
+	for _, a := range attachments {
+		if a == nil || a.ID == "" {
+			continue
+		}
+		at, _ := time.Parse(rhsJiraTimeLayout, a.Created)
+		id, _ := strconv.Atoi(a.ID)
+		sorted = append(sorted, dated{a, at, id})
+	}
+	sort.SliceStable(sorted, func(i, j int) bool {
+		if !sorted[i].at.Equal(sorted[j].at) {
+			return sorted[i].at.After(sorted[j].at)
+		}
+		return sorted[i].id > sorted[j].id
+	})
+	out := make([]*jira.Attachment, 0, len(sorted))
+	for _, d := range sorted {
+		out = append(out, d.file)
+	}
+	return out
+}
+
 // rhsAttachments lists the issue's files with addresses on the plugin server,
-// and indexes them by name for the markup. A later file wins, as in Jira.
+// and indexes them by name for the markup. The newest file wins, as in Jira.
 func rhsAttachments(instance Instance, issueKey string, attachments []*jira.Attachment) ([]RHSAttachment, map[string]rhsMarkupFile) {
 	list := []RHSAttachment{}
 	files := map[string]rhsMarkupFile{}
@@ -84,10 +120,7 @@ func rhsAttachments(instance Instance, issueKey string, attachments []*jira.Atta
 	if site, err := url.Parse(common.Plugin.GetSiteURL()); err == nil {
 		sitePath = strings.TrimRight(site.Path, "/")
 	}
-	for _, a := range attachments {
-		if a == nil || a.ID == "" {
-			continue
-		}
+	for _, a := range rhsNewestAttachments(attachments) {
 		query := url.Values{}
 		query.Set(ParamInstanceID, instance.GetID().String())
 		query.Set(queryRHSIssueKey, issueKey)
@@ -96,11 +129,20 @@ func rhsAttachments(instance Instance, issueKey string, attachments []*jira.Atta
 		route := routeAPI + routeAPIRHSAttachment + "?" + query.Encode()
 
 		relative := sitePath + common.Plugin.GetPluginURLPath() + route
-		list = append(list, RHSAttachment{ID: a.ID, Name: a.Filename, URL: relative, Image: rhsAttachmentIsImage(a)})
-		files[a.Filename] = rhsMarkupFile{
-			URL:         relative,
-			AbsoluteURL: common.Plugin.GetPluginURL() + route,
-			Image:       rhsAttachmentIsImage(a),
+		list = append(list, RHSAttachment{
+			ID:      a.ID,
+			Name:    a.Filename,
+			URL:     relative,
+			Image:   rhsAttachmentIsImage(a),
+			Size:    a.Size,
+			Created: jiraCommentTime(a.Created),
+		})
+		if _, taken := files[a.Filename]; !taken {
+			files[a.Filename] = rhsMarkupFile{
+				URL:         relative,
+				AbsoluteURL: common.Plugin.GetPluginURL() + route,
+				Image:       rhsAttachmentIsImage(a),
+			}
 		}
 	}
 	return list, files
