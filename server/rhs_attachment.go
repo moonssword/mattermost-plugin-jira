@@ -23,6 +23,12 @@ const (
 	routeAPIRHSAttachment  = "/rhs/attachment"
 	queryRHSAttachmentID   = "id"
 	queryRHSAttachmentFile = "file"
+
+	// queryRHSAttachmentName is not read back: Mattermost's viewer and message
+	// renderer take a file's type from the end of its address. Values.Encode
+	// sorts the keys, so this one stays last.
+	queryRHSAttachmentName = "name"
+
 	rhsAttachmentCacheSecs = 60 * 60
 
 	rhsErrFileTooLarge = "file_too_large"
@@ -86,6 +92,7 @@ func rhsAttachments(instance Instance, issueKey string, attachments []*jira.Atta
 		query.Set(ParamInstanceID, instance.GetID().String())
 		query.Set(queryRHSIssueKey, issueKey)
 		query.Set(queryRHSAttachmentID, a.ID)
+		query.Set(queryRHSAttachmentName, a.Filename)
 		route := routeAPI + routeAPIRHSAttachment + "?" + query.Encode()
 
 		relative := sitePath + common.Plugin.GetPluginURLPath() + route

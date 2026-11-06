@@ -8,6 +8,7 @@ import {Theme} from 'mattermost-redux/selectors/entities/preferences';
 import {RHSErrorCode} from 'types/rhs';
 import {
     RHSAssignTarget,
+    RHSAttachment,
     RHSCardState,
     RHSTransition,
     RHSTransitionScreen,
@@ -20,6 +21,7 @@ import {formatRHSRelativeTime, formatRHSShortDate} from 'utils/rhs_time';
 
 import RHSIssueTypeIcon from '../rhs_issue_type_icon';
 import RHSMarkdown from '../rhs_markdown';
+import {RHSViewerProbe, isRHSViewable, openRHSViewer} from '../rhs_viewer';
 import {RHSSkeletonCard} from '../rhs_skeleton';
 import {RHSErrorState} from '../rhs_states';
 import {RHS_STRINGS} from '../rhs_strings';
@@ -76,6 +78,16 @@ const SHARED_NOTE_MS = 4000;
 
 // IssueCard replaces /jira view, transition, assign and unassign: it shows
 // one issue over the section list with a "back" button.
+// Files the viewer can show go there, with arrows between them; the rest, or
+// anything if the viewer is unavailable, follows the link.
+function openAttachment(event: React.MouseEvent, id: string, attachments: RHSAttachment[]) {
+    const viewable = attachments.filter((file) => isRHSViewable(file.name));
+    const index = viewable.findIndex((file) => file.id === id);
+    if (index >= 0 && openRHSViewer(viewable, index)) {
+        event.preventDefault();
+    }
+}
+
 export default function IssueCard(props: Props): JSX.Element {
     const {card} = props;
     const data = card.data;
@@ -295,6 +307,7 @@ export default function IssueCard(props: Props): JSX.Element {
                         data-testid='rhs-card-attachments'
                     >
                         <h4>{RHS_STRINGS.attachments + ' · ' + data.attachments.length}</h4>
+                        <RHSViewerProbe pictureUrl={data.attachments[0].url.split('/api/v2/')[0] + '/public/rhs-viewer-probe.png'}/>
                         <div className='jira-rhs-attachments'>
                             {data.attachments.map((file) => (
                                 <a
@@ -304,6 +317,7 @@ export default function IssueCard(props: Props): JSX.Element {
                                     target='_blank'
                                     rel='noopener noreferrer'
                                     title={file.name}
+                                    onClick={(event) => openAttachment(event, file.id, data.attachments || [])}
                                 >
                                     {file.image ? (
                                         <img

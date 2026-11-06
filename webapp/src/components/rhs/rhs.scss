@@ -800,17 +800,29 @@
     max-width: 100%;
 }
 
-.jira-rhs-md-image-link {
-    display: block;
-    margin: 6px 0;
-}
-
-.jira-rhs-md-image {
-    display: block;
+.jira-rhs-markdown .markdown-inline-img {
     max-width: 100%;
     max-height: 280px;
-    border: 1px solid rgba(var(--center-channel-color-rgb), 0.12);
-    border-radius: 4px;
+}
+
+/* The buttons are for posts; the viewer has its own. */
+.jira-rhs-markdown .image-preview-utility-buttons-container {
+    display: none;
+}
+
+/* The picture that gives access to Mattermost's file viewer. */
+.jira-rhs-viewer-probe {
+    position: absolute;
+    overflow: hidden;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* A Jira file has no Mattermost post, so the viewer would say "Someone". */
+.jira-rhs-viewer-open .file-preview-modal__info {
+    visibility: hidden;
 }
 
 .jira-rhs-attachments {
