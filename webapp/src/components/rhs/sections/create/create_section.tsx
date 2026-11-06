@@ -344,7 +344,7 @@ export default function CreateSection(props: Props): JSX.Element {
                 >
                     <i
                         className='icon icon-arrow-left'
-                        aria-style={{display: 'none'}}
+                        aria-hidden={true}
                     />
                 </button>
             )}
@@ -543,7 +543,7 @@ export default function CreateSection(props: Props): JSX.Element {
                             ref={picker}
                             type='file'
                             multiple={true}
-                            hidden={true}
+                            style={{display: 'none'}}
                             data-testid='rhs-create-file-input'
                             onChange={(event) => {
                                 addFiles(Array.from(event.target.files || []));
