@@ -119,9 +119,15 @@ type jiraAgileBoardList struct {
 }
 
 type jiraAgileBoardConfig struct {
-	ID           int    `json:"id"`
-	Name         string `json:"name"`
-	Type         string `json:"type"`
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Type   string `json:"type"`
+	Filter struct {
+		ID string `json:"id"`
+	} `json:"filter"`
+	SubQuery struct {
+		Query string `json:"query"`
+	} `json:"subQuery"`
 	ColumnConfig struct {
 		Columns []struct {
 			Name     string `json:"name"`

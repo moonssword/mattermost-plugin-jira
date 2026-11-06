@@ -51,14 +51,25 @@ export type RHSIssue = {
 };
 
 // Quick filters of the "Мои задачи" section; the server builds their JQL.
-export type RHSFilter = 'assigned' | 'reported' | 'watching' | 'sprint';
+export type RHSFilter = 'board' | 'assigned' | 'reported' | 'watching' | 'sprint';
 
 export const RHS_FILTERS: RHSFilter[] = ['assigned', 'reported', 'watching', 'sprint'];
+
+// With a board chosen the list stays inside it. "board" is what the board
+// shows; a sprint filter has no sense there, as "board" is the sprint already.
+export const RHS_BOARD_FILTERS: RHSFilter[] = ['board', 'assigned', 'reported', 'watching'];
+
+export function rhsFilterForBoard(filter: RHSFilter, boardId: number): RHSFilter {
+    if (boardId > 0) {
+        return filter === 'sprint' ? 'board' : filter;
+    }
+    return filter === 'board' ? RHS_DEFAULT_FILTER : filter;
+}
 
 export const RHS_DEFAULT_FILTER: RHSFilter = 'assigned';
 
 export function isRHSFilter(value: unknown): value is RHSFilter {
-    return typeof value === 'string' && (RHS_FILTERS as string[]).includes(value);
+    return typeof value === 'string' && (RHS_BOARD_FILTERS.concat(RHS_FILTERS) as string[]).includes(value);
 }
 
 export type RHSIssuesResponse = {
@@ -123,6 +134,9 @@ export type GetRHSIssuesParams = FetchRHSIssuesArgs & {
 
     // Story points field of the selected board; the server adds it to rows.
     estimateField?: string;
+
+    // The list stays inside this board.
+    boardId?: number;
 };
 
 export function rhsTabIdentity(tab: RHSTab): string {

@@ -34,7 +34,7 @@ const (
 	rhsCardComments        = 20
 	rhsAssignableUsersMax  = 20
 	rhsMaxCommentLength    = 32000
-	rhsIssueCardFieldNames = "summary,status,issuetype,updated,created,project,duedate,priority,assignee,reporter,labels,description,comment"
+	rhsIssueCardFieldNames = "summary,status,issuetype,updated,created,project,duedate,priority,assignee,reporter,labels,description,comment,attachment"
 )
 
 var (
@@ -56,6 +56,7 @@ func (p *Plugin) registerRHSIssueRoutes(apiRouter *mux.Router) {
 	apiRouter.HandleFunc(routeAPIRHSIssueShare, p.checkAuth(p.handleResponse(p.httpRHSShareIssue))).Methods(http.MethodPost)
 	apiRouter.HandleFunc(routeAPIRHSAssignableUsers, p.checkAuth(p.handleResponse(p.httpRHSAssignableUsers))).Methods(http.MethodGet)
 	p.registerRHSTransitionRoutes(apiRouter)
+	p.registerRHSAttachmentRoutes(apiRouter)
 }
 
 // RHSUser is a Jira user as the panel shows it.
@@ -93,6 +94,7 @@ type RHSIssueCard struct {
 	Transitions   []RHSTransition `json:"transitions"`
 	Comments      []RHSComment    `json:"comments"`
 	CommentsTotal int             `json:"commentsTotal"`
+	Attachments   []RHSAttachment `json:"attachments"`
 
 	// Me is the connected Jira user, so the card can offer "Назначить на меня".
 	Me RHSUser `json:"me"`
@@ -114,18 +116,13 @@ func jiraCommentTime(s string) string {
 	return t.UTC().Format(time.RFC3339)
 }
 
-// jiraTextToMarkdown converts Jira wiki markup to Mattermost markdown, the
-// same way notifications do.
-func jiraTextToMarkdown(s string) string {
-	return parseJiraLinksToMarkdown(preProcessText(s))
-}
-
 func normalizeRHSIssueCard(instance Instance, issue *jira.Issue, me *jira.User) *RHSIssueCard {
 	card := &RHSIssueCard{
 		RHSIssue:    normalizeRHSIssue(instance, *issue),
 		Labels:      []string{},
 		Transitions: []RHSTransition{},
 		Comments:    []RHSComment{},
+		Attachments: []RHSAttachment{},
 	}
 	if me != nil {
 		card.Me = RHSUser{AccountID: me.AccountID, Name: me.Name, DisplayName: me.DisplayName, AvatarURL: rhsUserAvatarURL(instance, me)}
@@ -143,13 +140,15 @@ func normalizeRHSIssueCard(instance Instance, issue *jira.Issue, me *jira.User) 
 	if f == nil {
 		return card
 	}
+	var files map[string]rhsMarkupFile
+	card.Attachments, files = rhsAttachments(instance, issue.Key, f.Attachments)
 	card.ProjectName = f.Project.Name
 	card.Assignee = toRHSUser(instance, f.Assignee)
 	card.Reporter = toRHSUser(instance, f.Reporter)
 	if f.Labels != nil {
 		card.Labels = f.Labels
 	}
-	card.Description = jiraTextToMarkdown(f.Description)
+	card.Description = jiraTextToMarkdown(f.Description, files)
 
 	if f.Comments != nil {
 		all := f.Comments.Comments
@@ -164,7 +163,7 @@ func normalizeRHSIssueCard(instance Instance, issue *jira.Issue, me *jira.User) 
 			card.Comments = append(card.Comments, RHSComment{
 				ID:      c.ID,
 				Author:  RHSUser{AccountID: c.Author.AccountID, Name: c.Author.Name, DisplayName: c.Author.DisplayName, AvatarURL: rhsUserAvatarURL(instance, &c.Author)},
-				Body:    jiraTextToMarkdown(c.Body),
+				Body:    jiraTextToMarkdown(c.Body, files),
 				Created: jiraCommentTime(c.Created),
 			})
 		}

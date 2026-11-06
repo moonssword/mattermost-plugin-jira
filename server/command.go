@@ -131,6 +131,7 @@ func (p *Plugin) createJiraCommand(enableAutocomplete, enableOptInstance bool) (
 	if enableAutocomplete {
 		addSubCommands(jira, enableOptInstance)
 	}
+	p.localizeRHSAutocomplete(jira)
 
 	iconData, err := command.GetIconData(p.API, "assets/icon.svg")
 	if err != nil {
@@ -1253,7 +1254,7 @@ func (p *Plugin) postCommandResponse(args *model.CommandArgs, text string) {
 		UserId:    p.getUserID(),
 		ChannelId: args.ChannelId,
 		RootId:    args.RootId,
-		Message:   text,
+		Message:   p.localizeForUser(args.UserId, text),
 	}
 	p.client.Post.SendEphemeralPost(args.UserId, post)
 }

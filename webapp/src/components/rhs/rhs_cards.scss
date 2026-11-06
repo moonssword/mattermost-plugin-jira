@@ -719,7 +719,7 @@
     }
 
     [class*='-singleValue'],
-    [class*='-placeholder'] {
+    [class*='-placeholder']:not([class*='jira-rhs-placeholder']) {
         margin-left: 0;
     }
 

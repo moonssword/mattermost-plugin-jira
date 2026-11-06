@@ -5,7 +5,6 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 
 	jira "github.com/andygrunwald/go-jira"
 
@@ -14,13 +13,7 @@ import (
 	"github.com/mattermost/mattermost-plugin-jira/server/utils/types"
 )
 
-var jiraLinkWithTextRegex = regexp.MustCompile(`\[([^\[]+)\|([^\]]+)\]`)
-
 const maxIssueSummaryLength = 80
-
-func parseJiraLinksToMarkdown(text string) string {
-	return jiraLinkWithTextRegex.ReplaceAllString(text, "[${1}](${2})")
-}
 
 func mdKeySummaryLink(issue *jira.Issue, instance Instance) string {
 	return fmt.Sprintf("[%s: %s (%s)](%s%s)", issue.Key, truncate(issue.Fields.Summary, maxIssueSummaryLength), issue.Fields.Status.Name, instance.GetJiraBaseURL(), "/browse/"+issue.Key)
@@ -69,14 +62,14 @@ func getActions(p *Plugin, instanceID types.ID, client Client, issue *jira.Issue
 	}
 
 	actions = append(actions, &model.PostAction{
-		Name:        "Transition issue",
+		Name:        p.localizeForChannel("Transition issue"),
 		Type:        "select",
 		Options:     options,
 		Integration: integration,
 	})
 
 	actions = append(actions, &model.PostAction{
-		Name: "Share publicly",
+		Name: p.localizeForChannel("Share publicly"),
 		Type: "button",
 		Integration: &model.PostActionIntegration{
 			URL:     fmt.Sprintf("/plugins/%s%s%s", manifest.Id, routeAPI, routeSharePublicly),
@@ -90,7 +83,7 @@ func getActions(p *Plugin, instanceID types.ID, client Client, issue *jira.Issue
 func asSlackAttachment(instance Instance, client Client, issue *jira.Issue, showActions bool) ([]*model.SlackAttachment, error) {
 	text := mdKeySummaryLink(issue, instance)
 	desc := truncate(issue.Fields.Description, 3000)
-	desc = parseJiraLinksToMarkdown(desc)
+	desc = preProcessText(desc)
 	if desc != "" {
 		text += "\n\n" + desc + "\n"
 	}
@@ -118,6 +111,8 @@ func asSlackAttachment(instance Instance, client Client, issue *jira.Issue, show
 			Short: true,
 		})
 	}
+
+	fields = instance.Common().Plugin.localizeRHSFields(fields)
 
 	var actions []*model.PostAction
 	var err error

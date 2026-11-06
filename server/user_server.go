@@ -119,10 +119,18 @@ func (p *Plugin) httpOAuth1aComplete(w http.ResponseWriter, r *http.Request, ins
 		MattermostDisplayName string
 		JiraDisplayName       string
 		RevokeURL             string
+		Title                 string
+		MattermostAccount     string
+		JiraAccount           string
+		DisconnectLabel       string
 	}{
 		JiraDisplayName:       juser.DisplayName + " (" + juser.Name + ")",
 		MattermostDisplayName: mmuser.GetDisplayName(model.ShowNicknameFullName),
 		RevokeURL:             p.CreateFullURLPath(instancePath(routeUserDisconnect, instance.GetID())),
+		Title:                 p.localizeForUser(mattermostUserID, "Mattermost user is now connected to Jira"),
+		MattermostAccount:     p.localizeForUser(mattermostUserID, "Mattermost account: "+mmuser.GetDisplayName(model.ShowNicknameFullName)),
+		JiraAccount:           p.localizeForUser(mattermostUserID, "Jira account: "+juser.DisplayName+" ("+juser.Name+")"),
+		DisconnectLabel:       p.localizeForUser(mattermostUserID, "Disconnect"),
 	})
 }
 
@@ -141,8 +149,8 @@ func (p *Plugin) httpOAuth1aDisconnect(w http.ResponseWriter, r *http.Request, i
 			Header  string
 			Message string
 		}{
-			Header:  "Disconnected from Jira.",
-			Message: "It is now safe to close this browser window.",
+			Header:  p.localizeForUser(mattermostUserID, "Disconnected from Jira."),
+			Message: p.localizeForUser(mattermostUserID, "It is now safe to close this browser window."),
 		})
 }
 

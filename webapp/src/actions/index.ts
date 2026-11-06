@@ -721,6 +721,8 @@ export {
     searchRHSCardAssignees,
     shareRHSCard,
     transitionRHSCard,
+    uploadRHSCardFile,
+    uploadRHSIssueFile,
 } from './rhs_card';
 
 export {

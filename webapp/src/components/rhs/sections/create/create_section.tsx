@@ -20,6 +20,13 @@ import {
 } from 'types/model';
 import {RHSCreatePrefill} from 'types/rhs_create';
 import {getFields, getIssueTypes} from 'utils/jira_issue_metadata';
+import {
+    rhsClipboardFiles,
+    rhsFileReference,
+    rhsInsertAtCursor,
+    rhsNamedFile,
+    rhsPastedFileName,
+} from 'utils/rhs_files';
 
 import {RHSSkeletonFields, RHSSkeletonForm} from '../../rhs_skeleton';
 
@@ -40,6 +47,7 @@ export type Props = {
     fetchJiraProjectMetadata: (instanceID: string) => Result<ProjectMetadata>;
     fetchJiraIssueMetadataForProjects: (projectKeys: string[], instanceID: string) => Promise<APIResponse<IssueMetadata>>;
     createIssue: (issue: CreateIssueRequest) => Result<{key?: string}>;
+    uploadRHSIssueFile: (instanceID: string, key: string, file: File) => Promise<{error?: unknown}>;
     openRHSIssue: (key: string) => unknown;
     clearRHSCreate: () => unknown;
     openCreateModal: (postId: string) => unknown;
@@ -130,7 +138,11 @@ export default function CreateSection(props: Props): JSX.Element {
     const [fields, setFields] = useState<CreateIssueFields>(() => initialFields(prefill));
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
-    const [created, setCreated] = useState<{key: string; posted?: boolean} | null>(null);
+    const [created, setCreated] = useState<{key: string; posted?: boolean; failedFiles?: string[]} | null>(null);
+
+    // Files wait for the issue: Jira attaches them to an existing one.
+    const [files, setFiles] = useState<File[]>([]);
+    const picker = useRef<HTMLInputElement>(null);
     const [replyInThread, setReplyInThread] = useState(true);
     const savedIssueType = useRef('');
 
@@ -252,6 +264,28 @@ export default function CreateSection(props: Props): JSX.Element {
     const fieldDefs = panelFieldDefs(getFields(metadata, projectKey, issueTypeID));
     const unsupported = unsupportedRequiredFields(fieldDefs);
 
+    const addFiles = (added: File[]) => {
+        if (added.length === 0) {
+            return;
+        }
+        const now = new Date();
+        const named = added.map((file, index) => rhsNamedFile(file, rhsPastedFileName(file, now, files.length + index)));
+        setFiles((current) => current.concat(named));
+        setFields((current) => {
+            const description = String(current.description || '');
+            const references = named.map((file) => rhsFileReference(file.name)).join('\n');
+            return {...current, description: rhsInsertAtCursor(description, description.length, description.length, references).text} as CreateIssueFields;
+        });
+    };
+
+    const removeFile = (file: File) => {
+        setFiles((current) => current.filter((f) => f !== file));
+        setFields((current) => {
+            const description = String(current.description || '').split(rhsFileReference(file.name) + '\n').join('');
+            return {...current, description} as CreateIssueFields;
+        });
+    };
+
     const onSubmit = async (event?: React.FormEvent) => {
         event?.preventDefault();
         if (submitting || !validator.current.validate()) {
@@ -278,8 +312,17 @@ export default function CreateSection(props: Props): JSX.Element {
             setError(errorText(createError));
             return;
         }
+        const failedFiles: string[] = [];
+        for (const file of files) {
+            // eslint-disable-next-line no-await-in-loop
+            const uploaded = await props.uploadRHSIssueFile(instanceID, data.key, file);
+            if (uploaded.error) {
+                failedFiles.push(file.name);
+            }
+        }
+        setFiles([]);
         setSubmitting(false);
-        setCreated({key: data.key, posted: replyInThread});
+        setCreated({key: data.key, posted: replyInThread, failedFiles});
         props.clearRHSCreate();
     };
 
@@ -301,7 +344,7 @@ export default function CreateSection(props: Props): JSX.Element {
                 >
                     <i
                         className='icon icon-arrow-left'
-                        aria-hidden={true}
+                        aria-style={{display: 'none'}}
                     />
                 </button>
             )}
@@ -338,6 +381,14 @@ export default function CreateSection(props: Props): JSX.Element {
                     />
                     <h4 className='jira-rhs-placeholder-title'>{RHS_STRINGS.createDone.replace('{key}', created.key)}</h4>
                     {created.posted && <p className='jira-rhs-placeholder-text'>{RHS_STRINGS.createDoneHint}</p>}
+                    {created.failedFiles && created.failedFiles.length > 0 && (
+                        <p
+                            className='jira-rhs-placeholder-text jira-rhs-composer-error'
+                            role='alert'
+                        >
+                            {RHS_STRINGS.filesCreateFailed.replace('{files}', created.failedFiles.join(', '))}
+                        </p>
+                    )}
                     <div className='jira-rhs-form-buttons'>
                         <button
                             type='button'
@@ -391,7 +442,16 @@ export default function CreateSection(props: Props): JSX.Element {
             }}
         >
             {header}
-            <div className='jira-rhs-form-body'>
+            <div
+                className='jira-rhs-form-body'
+                onPaste={(event) => {
+                    const pasted = rhsClipboardFiles(event.clipboardData);
+                    if (pasted.length > 0) {
+                        event.preventDefault();
+                        addFiles(pasted);
+                    }
+                }}
+            >
                 {props.post && (
                     <div
                         className='jira-rhs-srcq'
@@ -455,6 +515,54 @@ export default function CreateSection(props: Props): JSX.Element {
                         addValidate={validator.current.addComponent}
                         removeValidate={validator.current.removeComponent}
                     />
+                )}
+                {ready && !loadingMeta && (
+                    <div className='jira-rhs-files'>
+                        {files.map((file) => (
+                            <span
+                                key={file.name}
+                                className='jira-rhs-file'
+                                data-testid='rhs-create-file'
+                            >
+                                <span className='jira-rhs-file-name'>{file.name}</span>
+                                <button
+                                    type='button'
+                                    className='jira-rhs-icon-button'
+                                    aria-label={RHS_STRINGS.filesRemove}
+                                    title={RHS_STRINGS.filesRemove}
+                                    onClick={() => removeFile(file)}
+                                >
+                                    <i
+                                        className='icon icon-close'
+                                        aria-hidden={true}
+                                    />
+                                </button>
+                            </span>
+                        ))}
+                        <input
+                            ref={picker}
+                            type='file'
+                            multiple={true}
+                            hidden={true}
+                            data-testid='rhs-create-file-input'
+                            onChange={(event) => {
+                                addFiles(Array.from(event.target.files || []));
+                                event.target.value = '';
+                            }}
+                        />
+                        <button
+                            type='button'
+                            className='jira-rhs-link-button'
+                            data-testid='rhs-create-attach'
+                            onClick={() => picker.current?.click()}
+                        >
+                            <i
+                                className='icon icon-paperclip'
+                                aria-hidden={true}
+                            />
+                            {RHS_STRINGS.filesAttach}
+                        </button>
+                    </div>
                 )}
             </div>
             <div className='jira-rhs-form-footer'>

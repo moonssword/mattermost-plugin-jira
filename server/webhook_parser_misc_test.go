@@ -167,20 +167,16 @@ func TestPreProcessText(t *testing.T) {
 # NUMBERED LIST ROW 2
 non-numbered list text
 # NUMBERED LIST ROW 1`,
-			expectedOutput: `1. NUMBERED LIST ROW 1
-2. NUMBERED LIST ROW 2
-non-numbered list text
-1. NUMBERED LIST ROW 1`,
+			expectedOutput: "1. NUMBERED LIST ROW 1\n1. NUMBERED LIST ROW 2\nnon-numbered list text\n# NUMBERED LIST ROW 1",
 		},
 		"Code block formatting": {
 			input:          "{code:go}fruit := \"APPLE\"{code}",
-			expectedOutput: "`fruit := \"APPLE\"`",
+			expectedOutput: "```go\nfruit := \"APPLE\"\n```",
 		},
 		"Bullet list formatting": {
 			input: `* BULLET LIST ROW 1
 * BULLET LIST ROW 2`,
-			expectedOutput: `* BULLET LIST ROW 1
-* BULLET LIST ROW 2`,
+			expectedOutput: "- BULLET LIST ROW 1\n- BULLET LIST ROW 2",
 		},
 		"Heading formatting": {
 			input: `h1. HEADING 1
@@ -214,7 +210,7 @@ h6. HEADING 6`,
 		},
 		"No-format block": {
 			input:          "{noformat}This is not formatted{noformat}",
-			expectedOutput: "`This is not formatted`",
+			expectedOutput: "```\nThis is not formatted\n```",
 		},
 		"Double curly block": {
 			input:          "{{This is a code block}}",
@@ -224,12 +220,12 @@ h6. HEADING 6`,
 			input: `{code:go}func main() {
     fmt.Println("Hello, World!")
 }{code}`,
-			expectedOutput: "\n`func main() {`\n`    fmt.Println(\"Hello, World!\")`\n`}`\n",
+			expectedOutput: "```go\nfunc main() {\n    fmt.Println(\"Hello, World!\")\n}\n```",
 		},
 		"Multi-line noformat code block": {
 			input: `{noformat}text data in code block.
 more text data in code block.{noformat}`,
-			expectedOutput: "\n`text data in code block.`\n`more text data in code block.`\n",
+			expectedOutput: "```\ntext data in code block.\nmore text data in code block.\n```",
 		},
 		"User mentioned with account ID": {
 			input:          "[~accountid:712020:46403440-d0cf-4f7f-993f-1035facb10a2]",

@@ -89,6 +89,7 @@ function makeProps(overrides: Partial<Props> = {}): Props {
         fetchJiraIssueMetadataForProjects: jest.fn(async () => ({data: metadata})),
         createIssue: jest.fn(async () => ({data: {key: 'BACK-500'}})),
         openRHSIssue: jest.fn(),
+        uploadRHSIssueFile: jest.fn(),
         clearRHSCreate: jest.fn(),
         openCreateModal: jest.fn(),
         openCreateModalWithoutPost: jest.fn(),

@@ -9,7 +9,7 @@ import {
     RHSUser,
 } from 'types/rhs_issue';
 
-import {rhsRequest} from './rhs';
+import {rhsRequest, rhsUpload} from './rhs';
 
 import {buildQueryString} from './index';
 
@@ -41,6 +41,10 @@ export function assignRHSIssue(baseUrl: string, instanceID: string, key: string,
 
 export function commentRHSIssue(baseUrl: string, instanceID: string, key: string, text: string): Promise<RHSIssueCard> {
     return post(`${baseUrl}/api/v2/rhs/issue/comment`, {instance_id: instanceID, key, body: text});
+}
+
+export function uploadRHSAttachment(baseUrl: string, instanceID: string, key: string, file: File): Promise<RHSIssueCard> {
+    return rhsUpload(`${baseUrl}/api/v2/rhs/attachment${buildQueryString({instance_id: instanceID, key})}`, file);
 }
 
 export function shareRHSIssue(baseUrl: string, instanceID: string, key: string, channelID: string): Promise<{post_id: string}> {

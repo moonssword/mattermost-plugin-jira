@@ -43,6 +43,7 @@ export type Props = {
     clearRHSCardTransitionRequest: () => unknown;
     assignRHSCard: (target: RHSAssignTarget) => Result;
     commentRHSCard: (text: string) => Result;
+    uploadRHSCardFile?: (file: File) => Result;
     shareRHSCard: (channelId: string) => Result;
     searchRHSCardAssignees: (query: string) => Promise<{data?: RHSUser[]; error?: unknown}>;
 };
@@ -288,6 +289,43 @@ export default function IssueCard(props: Props): JSX.Element {
                     )}
                 </section>
 
+                {data.attachments && data.attachments.length > 0 && (
+                    <section
+                        className='jira-rhs-card-section'
+                        data-testid='rhs-card-attachments'
+                    >
+                        <h4>{RHS_STRINGS.attachments + ' · ' + data.attachments.length}</h4>
+                        <div className='jira-rhs-attachments'>
+                            {data.attachments.map((file) => (
+                                <a
+                                    key={file.id}
+                                    className={file.image ? 'jira-rhs-attachment jira-rhs-attachment--image' : 'jira-rhs-attachment'}
+                                    href={file.url}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    title={file.name}
+                                >
+                                    {file.image ? (
+                                        <img
+                                            src={file.url}
+                                            alt={file.name}
+                                            loading='lazy'
+                                        />
+                                    ) : (
+                                        <>
+                                            <i
+                                                className='icon icon-paperclip'
+                                                aria-hidden={true}
+                                            />
+                                            <span>{file.name}</span>
+                                        </>
+                                    )}
+                                </a>
+                            ))}
+                        </div>
+                    </section>
+                )}
+
                 <section className='jira-rhs-card-section'>
                     <h4>{RHS_STRINGS.comments + (data.commentsTotal ? ' · ' + data.commentsTotal : '')}</h4>
                     <CommentList
@@ -369,6 +407,7 @@ export default function IssueCard(props: Props): JSX.Element {
                 <CommentComposer
                     busy={card.pending !== null}
                     onSend={props.commentRHSCard}
+                    onUpload={props.uploadRHSCardFile}
                 />
             )}
         </div>

@@ -13,6 +13,7 @@ import {
     searchRHSAssignableUsers,
     shareRHSIssue,
     transitionRHSIssue,
+    uploadRHSAttachment,
 } from '../client/rhs_issue';
 import {getPluginServerRoute, getRHSActiveInstanceID} from '../selectors';
 
@@ -113,6 +114,33 @@ export const clearRHSCardTransitionRequest = () => ({type: ActionTypes.RHS_CARD_
 
 export const assignRHSCard = (target: RHSAssignTarget) =>
     runCardAction('assign', (baseUrl, instanceID, key) => assignRHSIssue(baseUrl, instanceID, key, target));
+
+// uploadRHSCardFile attaches a file to the open card and keeps typing possible:
+// the comment box reports failures itself and the card stays as it was.
+export const uploadRHSCardFile = (file: File) => {
+    return async (dispatch: Dispatch, getState: () => GlobalState) => {
+        const {baseUrl, instanceID, key} = cardContext(getState());
+        try {
+            const data = await uploadRHSAttachment(baseUrl, instanceID, key, file);
+            dispatch({type: ActionTypes.RECEIVED_RHS_CARD, data});
+            return {data};
+        } catch (error) {
+            return {error: asRHSError(error)};
+        }
+    };
+};
+
+// uploadRHSIssueFile adds a file to an issue no card is open for: the one just
+// created.
+export const uploadRHSIssueFile = (instanceID: string, key: string, file: File) => {
+    return async (_: Dispatch, getState: () => GlobalState) => {
+        try {
+            return {data: await uploadRHSAttachment(getPluginServerRoute(getState()), instanceID, key, file)};
+        } catch (error) {
+            return {error: asRHSError(error)};
+        }
+    };
+};
 
 export const commentRHSCard = (text: string) =>
     runCardAction('comment', (baseUrl, instanceID, key) => commentRHSIssue(baseUrl, instanceID, key, text));

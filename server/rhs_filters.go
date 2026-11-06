@@ -22,6 +22,10 @@ const (
 	RHSFilterReported RHSFilter = "reported"
 	RHSFilterWatching RHSFilter = "watching"
 	RHSFilterSprint   RHSFilter = "sprint"
+
+	// RHSFilterBoard is what the board shows now: its active sprint, or on
+	// Kanban its open and recently finished issues.
+	RHSFilterBoard RHSFilter = "board"
 )
 
 const (
@@ -65,7 +69,7 @@ func parseRHSFilter(s string) (RHSFilter, error) {
 	switch RHSFilter(s) {
 	case "", RHSFilterAssigned:
 		return RHSFilterAssigned, nil
-	case RHSFilterReported, RHSFilterWatching, RHSFilterSprint:
+	case RHSFilterReported, RHSFilterWatching, RHSFilterSprint, RHSFilterBoard:
 		return RHSFilter(s), nil
 	default:
 		return "", fmt.Errorf("%w: %q", ErrInvalidRHSFilter, s)
@@ -98,6 +102,52 @@ func buildFilterJQL(filter RHSFilter, sortField string, validCategoryKeys map[st
 		return "", err
 	}
 	return base + " AND statusCategory != " + statusCategoryKeyDone + order, nil
+}
+
+// rhsBoardScope is the JQL of a board's own filter.
+type rhsBoardScope struct {
+	jql   string
+	scrum bool
+}
+
+type rhsBoardConfigClient interface {
+	RESTGetRaw(endpoint string, params map[string]string, dest interface{}) error
+}
+
+var rhsNumericID = regexp.MustCompile(`^[0-9]+$`)
+
+func loadRHSBoardScope(client rhsBoardConfigClient, boardID int) (*rhsBoardScope, error) {
+	var cfg jiraAgileBoardConfig
+	if err := client.RESTGetRaw(fmt.Sprintf("rest/agile/1.0/board/%d/configuration", boardID), nil, &cfg); err != nil {
+		return nil, rhsJiraError(err)
+	}
+	if !rhsNumericID.MatchString(cfg.Filter.ID) {
+		return nil, errors.Wrap(ErrInvalidRHSBoard, "the board has no filter")
+	}
+	scope := &rhsBoardScope{jql: "filter = " + cfg.Filter.ID, scrum: cfg.Type != "kanban"}
+	if sub := strings.TrimSpace(cfg.SubQuery.Query); sub != "" {
+		scope.jql += " AND (" + sub + ")"
+	}
+	return scope, nil
+}
+
+// buildBoardFilterJQL applies a quick filter inside the board.
+func buildBoardFilterJQL(scope *rhsBoardScope, filter RHSFilter, sortField string, validCategoryKeys map[string]bool) (string, error) {
+	if filter != RHSFilterBoard {
+		jql, err := buildFilterJQL(filter, sortField, validCategoryKeys)
+		if err != nil {
+			return "", err
+		}
+		return scope.jql + " AND " + jql, nil
+	}
+	order, err := rhsOrderBy(sortField)
+	if err != nil {
+		return "", err
+	}
+	if scope.scrum {
+		return scope.jql + " AND sprint in openSprints()" + order, nil
+	}
+	return scope.jql + " AND (statusCategory != " + statusCategoryKeyDone + " OR (" + rhsKanbanDoneJQL + "))" + order, nil
 }
 
 // classifyRHSQuery decides whether the search box holds an issue key, a JQL
@@ -163,6 +213,10 @@ type rhsIssueQuery struct {
 
 	// estimateField is the selected board's story points field, if any.
 	estimateField string
+
+	// boardID limits the list to the selected board. A search by text stays
+	// inside it; a key or JQL is an explicit request and goes everywhere.
+	boardID string
 }
 
 func isJiraBadRequest(err error) (RESTError, bool) {
@@ -189,19 +243,42 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 		return nil, err
 	}
 
+	var scope *rhsBoardScope
+	if params.boardID != "" {
+		boardID, boardErr := parseRHSBoardID(params.boardID)
+		if boardErr != nil {
+			return nil, boardErr
+		}
+		boardClient, ok := client.(rhsBoardConfigClient)
+		if !ok {
+			return nil, errors.Wrap(ErrInvalidRHSBoard, "boards are not available for this instance")
+		}
+		if scope, err = loadRHSBoardScope(boardClient, boardID); err != nil {
+			return nil, err
+		}
+	}
+
 	jql, kind, err := buildSearchJQL(params.query, sort)
 	if err != nil {
 		return nil, err
 	}
-	if kind == rhsSearchNone {
+	switch {
+	case kind == rhsSearchNone:
 		entry, statusErr := p.getInstanceStatuses(instance.GetID(), params.mattermostUserID, client)
 		if statusErr != nil {
 			return nil, statusErr
 		}
-		jql, err = buildFilterJQL(filter, sort, validCategoryKeysFrom(entry.categories))
+		categories := validCategoryKeysFrom(entry.categories)
+		if scope != nil {
+			jql, err = buildBoardFilterJQL(scope, filter, sort, categories)
+		} else {
+			jql, err = buildFilterJQL(filter, sort, categories)
+		}
 		if err != nil {
 			return nil, err
 		}
+	case kind == rhsSearchText && scope != nil && jql != "":
+		jql = scope.jql + " AND " + jql
 	}
 
 	empty := &rhsIssuesResult{Issues: []RHSIssue{}, Tabs: []RHSTabEntry{}, IsLast: true}

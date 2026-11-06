@@ -275,7 +275,7 @@ func (p *Plugin) httpTransitionIssuePostAction(w http.ResponseWriter, r *http.Re
 		ToState:          toState,
 	})
 	if err != nil {
-		p.client.Post.SendEphemeralPost(ctx.authenticatedUserID, makePost(jiraBotID, ctx.channelID, "Failed to transition this issue."))
+		p.client.Post.SendEphemeralPost(ctx.authenticatedUserID, makePost(jiraBotID, ctx.channelID, p.localizeForUser(ctx.authenticatedUserID, "Failed to transition this issue.")))
 		return respondErr(w, http.StatusInternalServerError, err)
 	}
 
@@ -285,6 +285,7 @@ func (p *Plugin) httpTransitionIssuePostAction(w http.ResponseWriter, r *http.Re
 }
 
 func (p *Plugin) respondErrWithFeedback(mattermostUserID string, post *model.Post, w http.ResponseWriter, status int) (int, error) {
+	post.Message = p.localizeForUser(mattermostUserID, post.Message)
 	p.client.Post.SendEphemeralPost(mattermostUserID, post)
 	return respondErr(w, status, errors.New(post.Message))
 }
@@ -460,7 +461,7 @@ func (p *Plugin) CreateIssue(in *InCreateIssue) (*jira.Issue, int, error) {
 
 func (p *Plugin) notifyCreatedIssue(instance Instance, connection *Connection, client Client, created *jira.Issue, in *InCreateIssue, channelID, rootID string) (*jira.Issue, error) {
 	ref := createdIssueRef(created)
-	msg := fmt.Sprintf("Created Jira issue [%s](%s/browse/%s)", ref, instance.GetJiraBaseURL(), ref)
+	msg := p.localizeForUser(in.mattermostUserID.String(), fmt.Sprintf("Created Jira issue [%s](%s/browse/%s)", ref, instance.GetJiraBaseURL(), ref))
 
 	reply := &model.Post{
 		Message:   msg,
@@ -502,6 +503,7 @@ func (p *Plugin) notifyCreatedIssue(instance Instance, connection *Connection, c
 		RootId:    rootID,
 		UserId:    in.mattermostUserID.String(),
 	}
+	publicReply.Message = p.localizeForUser(in.mattermostUserID.String(), publicReply.Message)
 	if postErr := p.client.Post.CreatePost(publicReply); postErr != nil {
 		p.errorf("CreateIssue: failed to create notification post %s: %v", in.PostID, postErr)
 		return createdIssue, postErr
@@ -1210,7 +1212,7 @@ func (p *Plugin) AttachCommentToIssue(in *InAttachCommentToIssue) (*jira.Comment
 
 	p.UpdateUserDefaults(in.mattermostUserID, in.InstanceID, nil)
 
-	msg := fmt.Sprintf("Message attached to [%s](%s/browse/%s)", in.IssueKey, instance.GetJiraBaseURL(), in.IssueKey)
+	msg := p.localizeForUser(in.mattermostUserID.String(), fmt.Sprintf("Message attached to [%s](%s/browse/%s)", in.IssueKey, instance.GetJiraBaseURL(), in.IssueKey))
 
 	// Reply to the post with the issue link that was created
 	reply := &model.Post{

@@ -139,6 +139,9 @@ type Plugin struct {
 	plugin.MattermostPlugin
 	client *pluginapi.Client
 
+	// localizeMessages turns on rhs_i18n.go; it needs the Mattermost API.
+	localizeMessages bool
+
 	// configuration and a muttex to control concurrent access
 	conf     config
 	confLock sync.RWMutex
@@ -361,6 +364,7 @@ func (p *Plugin) OnActivate() error {
 	p.secretsStore = store
 	p.otsStore = store
 	p.client = pluginapi.NewClient(p.API, p.Driver)
+	p.localizeMessages = true
 	p.teamFieldCache = make(map[types.ID]map[string]struct{})
 	p.rhsStatusCache = make(map[rhsStatusCacheKey]*rhsStatusCacheEntry)
 

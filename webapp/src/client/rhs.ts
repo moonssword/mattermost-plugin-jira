@@ -72,6 +72,17 @@ export const rhsRequest = async <T>(url: string, options: {method: string; body?
     throw parseRHSErrorBody(text, response.status);
 };
 
+// rhsUpload sends a file; the browser sets the multipart headers itself.
+export const rhsUpload = async <T>(url: string, file: File): Promise<T> => {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    const response = await fetch(url, Client4.getOptions({method: 'post', body: body as unknown as string}));
+    if (response.ok) {
+        return response.json();
+    }
+    throw parseRHSErrorBody(await response.text(), response.status);
+};
+
 const doFetchJSON = <T>(url: string): Promise<T> => rhsRequest<T>(url);
 
 export function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
@@ -89,6 +100,9 @@ export function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
     }
     if (params.estimateField) {
         query.estimate_field = params.estimateField;
+    }
+    if (params.boardId) {
+        query.board_id = String(params.boardId);
     }
 
     return query;

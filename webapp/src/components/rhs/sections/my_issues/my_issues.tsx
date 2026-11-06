@@ -274,6 +274,7 @@ export default function MyIssues(props: Props): JSX.Element {
                 />
                 {(searchOpen || searching) && (
                     <SearchBox
+                        placeholder={props.boardId > 0 ? RHS_STRINGS.searchPlaceholderBoard : RHS_STRINGS.searchPlaceholder}
                         value={query}
                         onSearch={onSearch}
                         onRefresh={onRetry}

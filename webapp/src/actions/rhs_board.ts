@@ -15,7 +15,7 @@ import {loadRHSBoardPrefs, saveRHSBoardPrefs} from 'utils/rhs_board_prefs';
 
 import {openRHSIssue} from './rhs_card';
 
-import {refreshRHSIssuesInPlace} from './rhs';
+import {refreshRHSIssuesInPlace, resolveAndFetchRHSIssues} from './rhs';
 
 type Thunk<T> = (dispatch: Dispatch, getState: () => GlobalState) => T;
 
@@ -88,6 +88,10 @@ export const selectRHSBoard = (board: RHSBoardRef | null): Thunk<unknown> => {
             boardId: board ? board.id : 0,
             boardName: board ? board.name : '',
         });
+
+        // The list follows the board: choosing one shows it, removing it
+        // returns to the personal filter.
+        dispatch(resolveAndFetchRHSIssues(board ? {filter: 'board', query: ''} : {}) as never);
         if (!board) {
             return null;
         }

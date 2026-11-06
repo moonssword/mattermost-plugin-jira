@@ -18,6 +18,7 @@ import {
     openCreateModal,
     openCreateModalWithoutPost,
     openRHSIssue,
+    uploadRHSIssueFile,
 } from 'actions';
 import {getRHSCreatePrefill} from 'selectors';
 
@@ -50,6 +51,7 @@ const actionCreators = {
     openCreateModal,
     openCreateModalWithoutPost,
     openRHSIssue,
+    uploadRHSIssueFile,
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => bindActionCreators(actionCreators, dispatch) as unknown as DispatchProps;

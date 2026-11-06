@@ -48,7 +48,7 @@ func (p *Plugin) CreateBotDMPost(instanceID, mattermostUserID types.ID, message,
 	post = &model.Post{
 		UserId:    conf.botUserID,
 		ChannelId: channel.Id,
-		Message:   message,
+		Message:   p.localizeForUser(mattermostUserID.String(), message),
 		Type:      postType,
 	}
 
@@ -77,7 +77,7 @@ func (p *Plugin) CreateBotDMtoMMUserID(mattermostUserID, format string, args ...
 	post = &model.Post{
 		UserId:    conf.botUserID,
 		ChannelId: channel.Id,
-		Message:   fmt.Sprintf(format, args...),
+		Message:   p.localizeForUser(mattermostUserID, fmt.Sprintf(format, args...)),
 	}
 
 	err = p.client.Post.CreatePost(post)

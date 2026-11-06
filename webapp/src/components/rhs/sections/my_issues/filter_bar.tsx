@@ -3,13 +3,21 @@
 
 import React from 'react';
 
-import {RHSFilter, RHSSort, RHS_FILTERS} from 'types/rhs';
+import {
+    RHSFilter,
+    RHSSort,
+    RHS_BOARD_FILTERS,
+    RHS_FILTERS,
+} from 'types/rhs';
 import {RHSListView} from 'types/rhs_board';
 
 import RHSMenu, {RHSMenuItem} from '../../rhs_menu';
 import {RHS_STRINGS} from '../../rhs_strings';
 
 export const RHS_FILTER_LABELS: Record<RHSFilter, string> = {
+    get board() {
+        return RHS_STRINGS.filterBoard;
+    },
     get assigned() {
         return RHS_STRINGS.filterAssigned;
     },
@@ -44,7 +52,7 @@ export type Props = {
 // FilterBar is the single row under the tabs: the quick filter as a menu,
 // the chosen board, and search, sort and list/board switches.
 export default function FilterBar(props: Props): JSX.Element {
-    const filterItems: RHSMenuItem[] = RHS_FILTERS.map((filter) => ({
+    const filterItems: RHSMenuItem[] = (props.boardName ? RHS_BOARD_FILTERS : RHS_FILTERS).map((filter) => ({
         id: filter,
         label: RHS_FILTER_LABELS[filter],
         checked: filter === props.active,

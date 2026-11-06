@@ -1221,7 +1221,7 @@ func (p *Plugin) httpChannelCreateSubscription(w http.ResponseWriter, r *http.Re
 	err = p.client.Post.CreatePost(&model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscription.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription, \"%v\", was added to this channel by %v", subscription.Name, connection.DisplayName),
+		Message:   p.localizeForChannel(fmt.Sprintf("Jira subscription, \"%v\", was added to this channel by %v", subscription.Name, connection.DisplayName)),
 	})
 	if err != nil {
 		return respondErr(w, http.StatusInternalServerError,
@@ -1293,7 +1293,7 @@ func (p *Plugin) httpChannelEditSubscription(w http.ResponseWriter, r *http.Requ
 	err = p.client.Post.CreatePost(&model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscription.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription, \"%v\", was updated by %v", subscription.Name, connection.DisplayName),
+		Message:   p.localizeForChannel(fmt.Sprintf("Jira subscription, \"%v\", was updated by %v", subscription.Name, connection.DisplayName)),
 	})
 	if err != nil {
 		return respondErr(w, http.StatusInternalServerError,
@@ -1349,7 +1349,7 @@ func (p *Plugin) httpChannelDeleteSubscription(w http.ResponseWriter, r *http.Re
 	err = p.client.Post.CreatePost(&model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscription.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription, \"%v\", was removed from this channel by %v", subscription.Name, connection.DisplayName),
+		Message:   p.localizeForChannel(fmt.Sprintf("Jira subscription, \"%v\", was removed from this channel by %v", subscription.Name, connection.DisplayName)),
 	})
 	if err != nil {
 		return respondErr(w, http.StatusInternalServerError,
@@ -1448,7 +1448,7 @@ func (p *Plugin) httpEditSubscriptionTemplates(w http.ResponseWriter, r *http.Re
 	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription template, %q, was updated by %s", subscriptionTemplate.Name, connection.DisplayName),
+		Message:   p.localizeForChannel(fmt.Sprintf("Jira subscription template, %q, was updated by %s", subscriptionTemplate.Name, connection.DisplayName)),
 	})
 
 	code, err := respondJSON(w, &subscriptionTemplate)
@@ -1478,7 +1478,7 @@ func (p *Plugin) httpCreateSubscriptionTemplate(w http.ResponseWriter, r *http.R
 	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription template, %q, was added by %s", subscriptionTemplate.Name, connection.DisplayName),
+		Message:   p.localizeForChannel(fmt.Sprintf("Jira subscription template, %q, was added by %s", subscriptionTemplate.Name, connection.DisplayName)),
 	})
 
 	code, err := respondJSON(w, &subscriptionTemplate)
@@ -1525,7 +1525,7 @@ func (p *Plugin) httpDeleteSubscriptionTemplate(w http.ResponseWriter, r *http.R
 	_ = p.API.SendEphemeralPost(mattermostUserID, &model.Post{
 		UserId:    p.getConfig().botUserID,
 		ChannelId: subscriptionTemplate.ChannelID,
-		Message:   fmt.Sprintf("Jira subscription template, %q, was removed by %s", subscriptionTemplate.Name, connection.DisplayName),
+		Message:   p.localizeForChannel(fmt.Sprintf("Jira subscription template, %q, was removed by %s", subscriptionTemplate.Name, connection.DisplayName)),
 	})
 
 	code, err := respondJSON(w, map[string]interface{}{model.STATUS: model.StatusOk})

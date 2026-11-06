@@ -95,6 +95,7 @@ func (p *Plugin) httpRHSGetIssues(w http.ResponseWriter, r *http.Request) (int, 
 			query:            r.FormValue(queryRHSQuery),
 			sort:             r.FormValue(queryRHSSort),
 			nextPageToken:    r.FormValue(queryRHSNextPageToken),
+			boardID:          r.FormValue(queryRHSBoardID),
 			estimateField:    r.FormValue(queryRHSEstimateField),
 		})
 		if err != nil {

@@ -30,6 +30,13 @@ export type RHSComment = {
     created: string;
 };
 
+export type RHSAttachment = {
+    id: string;
+    name: string;
+    url: string;
+    image: boolean;
+};
+
 export type RHSIssueCard = RHSIssue & {
     projectName?: string;
     assignee: RHSUser | null;
@@ -38,6 +45,7 @@ export type RHSIssueCard = RHSIssue & {
     description: string;
     transitions: RHSTransition[];
     comments: RHSComment[];
+    attachments?: RHSAttachment[];
     commentsTotal: number;
     me: RHSUser;
 };

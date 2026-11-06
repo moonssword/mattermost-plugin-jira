@@ -158,6 +158,12 @@ export const isRHSSettingsOpen = (state: GlobalState): boolean => Boolean(getPlu
 
 export const getRHSBoardState = (state: GlobalState) => getPluginState(state).rhsBoard;
 
+// The board the list of this instance is limited to, 0 for none.
+export const getRHSListBoardId = (state: GlobalState, instanceID: string): number => {
+    const board = getPluginState(state).rhsBoard;
+    return board && board.instanceID === instanceID ? board.boardId : 0;
+};
+
 // Story points field of the loaded board, sent along with list requests.
 export const getRHSEstimateField = (state: GlobalState): string => {
     const board = getPluginState(state).rhsBoard;

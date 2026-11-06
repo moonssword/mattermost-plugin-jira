@@ -8,6 +8,7 @@ import {RHS_STRINGS} from '../../rhs_strings';
 export const RHS_SEARCH_DEBOUNCE_MS = 500;
 
 export type Props = {
+    placeholder?: string;
     value: string;
     onSearch: (query: string) => void;
     onRefresh: () => void;
@@ -102,7 +103,7 @@ export default function SearchBox(props: Props): JSX.Element {
                     ref={input}
                     type='search'
                     className='jira-rhs-search-input'
-                    placeholder={RHS_STRINGS.searchPlaceholder}
+                    placeholder={props.placeholder || RHS_STRINGS.searchPlaceholder}
                     aria-label={RHS_STRINGS.searchLabel}
                     data-testid='rhs-search'
                     value={text}

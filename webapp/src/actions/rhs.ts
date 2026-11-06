@@ -9,12 +9,18 @@ import {
     getDefaultUserInstanceID,
     getPluginServerRoute,
     getRHSEstimateField,
+    getRHSListBoardId,
     getUserConnectedInstances,
 } from '../selectors';
 import {resolveRHSInstanceID} from 'utils/rhs_resolve';
 import {loadRHSViewState, saveRHSViewState} from 'utils/rhs_view_state';
 
-import {FetchRHSIssuesArgs, RHSFilter, RHSSort} from 'types/rhs';
+import {
+    FetchRHSIssuesArgs,
+    RHSFilter,
+    RHSSort,
+    rhsFilterForBoard,
+} from 'types/rhs';
 import {GlobalState, pluginStateKey} from 'types/store';
 
 // The search text is not persisted: reopening the panel starts from a filter.
@@ -59,11 +65,13 @@ export const restoreRHSViewState = () => {
 
 export const fetchRHSIssues = (args: FetchRHSIssuesArgs) => {
     return async (dispatch: Dispatch, getState: () => GlobalState) => {
+        const boardId = getRHSListBoardId(getState(), args.instanceID);
+        const filter = rhsFilterForBoard(args.filter, boardId);
         dispatch({
             type: ActionTypes.SET_RHS_VIEW,
             data: {
                 instanceID: args.instanceID,
-                filter: args.filter,
+                filter,
                 query: args.query,
                 sort: args.sort,
             },
@@ -76,7 +84,7 @@ export const fetchRHSIssues = (args: FetchRHSIssuesArgs) => {
         const requestId = getState()[pluginStateKey].rhs.requestId;
 
         try {
-            const data = await getRHSIssues(getPluginServerRoute(getState()), {...args, estimateField: getRHSEstimateField(getState())});
+            const data = await getRHSIssues(getPluginServerRoute(getState()), {...args, filter, boardId, estimateField: getRHSEstimateField(getState())});
             dispatch({
                 type: ActionTypes.RECEIVED_RHS_ISSUES,
                 data,
@@ -110,6 +118,7 @@ export const loadMoreRHSIssues = () => {
                 sort: rhs.sort,
                 nextPageToken: rhs.nextPageToken,
                 estimateField: getRHSEstimateField(getState()),
+                boardId: getRHSListBoardId(getState(), rhs.instanceID),
             });
             dispatch({
                 type: ActionTypes.RECEIVED_RHS_ISSUES_APPEND,
@@ -183,6 +192,7 @@ export const refreshRHSIssuesInPlace = () => {
                 query: rhs.query,
                 sort: rhs.sort,
                 estimateField: getRHSEstimateField(getState()),
+                boardId: getRHSListBoardId(getState(), rhs.instanceID),
             });
             dispatch({type: ActionTypes.RECEIVED_RHS_ISSUES, data, requestId});
             return {data};

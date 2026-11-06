@@ -17,6 +17,7 @@ import {
     searchRHSCardAssignees,
     shareRHSCard,
     transitionRHSCard,
+    uploadRHSCardFile,
 } from 'actions';
 import {getRHSActiveInstanceID, getRHSCard} from 'selectors';
 
@@ -38,6 +39,7 @@ const actionCreators = {
     clearRHSCardTransitionRequest,
     closeRHSIssue,
     commentRHSCard,
+    uploadRHSCardFile,
     fetchRHSIssueCard,
     loadRHSCardTransitionScreen,
     searchRHSCardAssignees,

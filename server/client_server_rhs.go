@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -132,6 +133,22 @@ func normalizeServerSearchResult(requestedStartAt int, result serverSearchResult
 		out.NextPageToken = strconv.Itoa(next)
 	}
 	return out
+}
+
+// OpenRHSAttachment implements rhsAttachmentFetcher. The caller closes the body.
+func (client jiraServerClient) OpenRHSAttachment(id, filename string) (io.ReadCloser, error) {
+	req, err := client.Jira.NewRequest(http.MethodGet, "/secure/attachment/"+url.PathEscape(id)+"/"+url.PathEscape(filename), nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := client.Jira.Do(req, nil)
+	if err != nil {
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+		return nil, userFriendlyJiraError(resp, err)
+	}
+	return resp.Body, nil
 }
 
 // GetRHSIcon implements rhsIconFetcher. The body is an image, not JSON, so it
