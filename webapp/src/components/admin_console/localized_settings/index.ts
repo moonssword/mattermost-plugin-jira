@@ -34,7 +34,10 @@ function settingComponent(descriptor: SettingDescriptor) {
 }
 
 // registerLocalizedSettings replaces every setting of the plugin page with a
-// component that follows the language of the user.
+// component that follows the language of the user. Mattermost lets a
+// registered component replace a setting of any type, so the manifest keeps
+// its own types: while the plugin is disabled and this code is not loaded,
+// Mattermost still shows those settings, in the manifest's English.
 export function registerLocalizedSettings(registry: Registry): void {
     registry.registerAdminConsoleCustomSetting('JiraAdminPanel', connect(mapAdmin)(JiraAdminPanel as ComponentType<any>), {showTitle: false}); // eslint-disable-line @typescript-eslint/no-explicit-any
     LOCALIZED_SETTINGS.forEach((descriptor) => {
