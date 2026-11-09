@@ -24,11 +24,12 @@ func TestParseRHSAllowedUsers(t *testing.T) {
 	}
 }
 
-func setupRHSAccessPlugin(t *testing.T, allowed string) *Plugin {
+func setupRHSAccessPlugin(t *testing.T, devMode bool, allowed string) *Plugin {
 	t.Helper()
 	api := &plugintest.API{}
 	p := setupRHSHTTPPlugin(t, api)
 	p.updateConfig(func(conf *config) {
+		conf.RHSDevMode = devMode
 		conf.RHSAllowedUsers = allowed
 	})
 	api.On("GetUser", "u1").Return(&model.User{Id: "u1", Username: "Ivan"}, nil)
@@ -39,17 +40,21 @@ func setupRHSAccessPlugin(t *testing.T, allowed string) *Plugin {
 }
 
 func TestIsRHSAllowedForUser(t *testing.T) {
-	everyone := setupRHSAccessPlugin(t, "")
-	assert.True(t, everyone.isRHSAllowedForUser("u1"), "an empty list means everyone")
+	off := setupRHSAccessPlugin(t, false, "ivan")
+	assert.True(t, off.isRHSAllowedForUser("u2"), "without development mode the list does nothing")
 
-	listed := setupRHSAccessPlugin(t, "ivan, anna")
+	nobody := setupRHSAccessPlugin(t, true, "")
+	assert.False(t, nobody.isRHSAllowedForUser("u1"), "an empty list in development mode means nobody")
+
+	listed := setupRHSAccessPlugin(t, true, "ivan, anna")
 	assert.True(t, listed.isRHSAllowedForUser("u1"), "logins are not case sensitive")
 	assert.False(t, listed.isRHSAllowedForUser("u2"))
 	assert.False(t, listed.isRHSAllowedForUser("gone"), "an unknown user gets no access")
+	assert.False(t, listed.isRHSAllowedForUser(""))
 }
 
 func TestRHSAccessMiddleware(t *testing.T) {
-	p := setupRHSAccessPlugin(t, "ivan")
+	p := setupRHSAccessPlugin(t, true, "ivan")
 	reached := false
 	handler := p.rhsAccessMiddleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		reached = true
@@ -57,28 +62,41 @@ func TestRHSAccessMiddleware(t *testing.T) {
 	serve := func(path, userID string) *httptest.ResponseRecorder {
 		reached = false
 		r := httptest.NewRequest(http.MethodGet, path, nil)
-		r.Header.Set(HeaderMattermostUserID, userID)
+		if userID != "" {
+			r.Header.Set(HeaderMattermostUserID, userID)
+		}
 		w := httptest.NewRecorder()
 		handler.ServeHTTP(w, r)
 		return w
 	}
 
-	w := serve("/api/v2/rhs/issues", "u2")
-	assert.Equal(t, http.StatusForbidden, w.Code)
-	assert.Contains(t, w.Body.String(), rhsErrUserNotAllowed)
-	assert.False(t, reached)
+	for _, path := range []string{"/api/v2/rhs/issues", "/api/v2/create-issue", "/instance/aHR0cA/user/connect", "/autocomplete/connect"} {
+		w := serve(path, "u2")
+		assert.Equal(t, http.StatusForbidden, w.Code, path)
+		assert.Contains(t, w.Body.String(), rhsErrUserNotAllowed)
+		assert.False(t, reached, path)
+	}
 
 	serve("/api/v2/rhs/issues", "u1")
-	assert.True(t, reached, "a listed user reaches the panel routes")
+	assert.True(t, reached, "a listed user reaches the plugin")
 
-	serve("/api/v2/rhs/admin", "u2")
-	assert.True(t, reached, "the System Console checks the permission itself")
+	for _, path := range []string{"/api/v2/rhs/admin", "/api/v2/rhs/admin/setup", "/api/v2/settingsinfo", "/api/v2/userinfo"} {
+		serve(path, "u2")
+		assert.True(t, reached, path+" stays open")
+	}
 
-	serve("/api/v2/rhs/admin/setup", "u2")
-	assert.True(t, reached)
+	serve("/webhook", "")
+	assert.True(t, reached, "Jira webhooks carry no Mattermost user")
 
-	serve("/api/v2/settingsinfo", "u2")
-	assert.True(t, reached, "other routes are not affected")
+	off := setupRHSAccessPlugin(t, false, "")
+	offHandler := off.rhsAccessMiddleware(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		reached = true
+	}))
+	reached = false
+	r := httptest.NewRequest(http.MethodGet, "/api/v2/rhs/issues", nil)
+	r.Header.Set(HeaderMattermostUserID, "u2")
+	offHandler.ServeHTTP(httptest.NewRecorder(), r)
+	assert.True(t, reached, "without development mode everyone reaches the plugin")
 }
 
 func TestLowercaseConfigKeys(t *testing.T) {

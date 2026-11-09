@@ -218,16 +218,21 @@ func (p *Plugin) UpdateUserDefaults(mattermostUserID, instanceID types.ID, saved
 
 func (p *Plugin) httpGetSettingsInfo(w http.ResponseWriter, r *http.Request) (int, error) {
 	conf := p.getConfig()
+	available := p.isRHSAllowedForUser(r.Header.Get(HeaderMattermostUserID))
 	return respondJSON(w, struct {
 		UIEnabled                              bool   `json:"ui_enabled"`
 		RHSEnabled                             bool   `json:"rhs_enabled"`
 		SecurityLevelEmptyForJiraSubscriptions bool   `json:"security_level_empty_for_jira_subscriptions"`
 		RHSDefaultStyle                        string `json:"rhs_default_style"`
+
+		// Available is false for users outside the development mode list.
+		Available bool `json:"available"`
 	}{
-		UIEnabled:                              conf.EnableJiraUI,
-		RHSEnabled:                             conf.EnableJiraRHS && p.isRHSAllowedForUser(r.Header.Get(HeaderMattermostUserID)),
+		UIEnabled:                              conf.EnableJiraUI && available,
+		RHSEnabled:                             conf.EnableJiraRHS && available,
 		SecurityLevelEmptyForJiraSubscriptions: conf.SecurityLevelEmptyForJiraSubscriptions,
 		RHSDefaultStyle:                        conf.RHSDefaultStyle,
+		Available:                              available,
 	})
 }
 

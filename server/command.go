@@ -433,6 +433,9 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, commandArgs *model.CommandArg
 	if err != nil {
 		return p.response(commandArgs, err.Error()), nil
 	}
+	if !p.isRHSAllowedForUser(commandArgs.UserId) {
+		return p.response(commandArgs, rhsDevModeCommandText), nil
+	}
 	args := strings.Fields(commandArgs.Command)
 	if len(args) == 0 || args[0] != "/jira" {
 		return p.help(commandArgs), nil

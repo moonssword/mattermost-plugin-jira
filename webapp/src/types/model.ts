@@ -207,6 +207,7 @@ export function isCloudInstance(instance: Instance): boolean {
 }
 
 export type PluginSettings = {
+    available?: boolean;
     ui_enabled: boolean;
     rhs_enabled: boolean;
     security_level_empty_for_jira_subscriptions: boolean;

@@ -218,6 +218,9 @@ func (p *Plugin) localizeRHSAutocomplete(data *model.AutocompleteData) {
 	}
 }
 
+// rhsDevModeCommandText answers /jira for users outside the development mode list.
+const rhsDevModeCommandText = "The Jira plugin is in development mode and is not available to you yet."
+
 // Order matters: a rule with more text goes before a shorter one that would
 // also match it.
 var rhsRussianMessages = [][2]string{
@@ -287,6 +290,7 @@ var rhsRussianMessages = [][2]string{
 	{"`%s` matches %d or more users.  Please specify a unique assignee.\n", "Под `{1}` подходят {2} или более пользователей. Укажите исполнителя точнее.\n"},
 
 	// Slash command replies.
+	{rhsDevModeCommandText, "Плагин Jira в режиме разработки и пока вам недоступен."},
 	{"Failed to load instances. Error: %v.", "Не удалось загрузить инстансы Jira. Ошибка: {1}."},
 	{"Your account is not connected to Jira. Please use `/jira connect` to connect your account.", "Ваш аккаунт не подключён к Jira. Подключите его командой `/jira connect`."},
 	{"You do not currently have a Jira account at %s linked to your Mattermost account. Please use `/jira connect` to connect your account.", "К вашему аккаунту Mattermost не привязан аккаунт Jira на {1}. Подключите его командой `/jira connect`."},

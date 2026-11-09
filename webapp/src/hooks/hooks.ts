@@ -48,6 +48,11 @@ export default class Hooks {
 
         const pluginSettings = getPluginSettings(this.store.getState());
 
+        // In development mode the server answers users outside the list.
+        if ((pluginSettings || this.settings)?.available === false) {
+            return Promise.resolve({message, args: contextArgs});
+        }
+
         let shouldEnableCreate = false;
         if (pluginSettings) {
             shouldEnableCreate = pluginSettings.ui_enabled;

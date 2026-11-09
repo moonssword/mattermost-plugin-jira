@@ -94,6 +94,7 @@ func makeAPIRoute(path string) string {
 func (p *Plugin) initializeRouter() {
 	p.router = mux.NewRouter()
 	p.router.Use(p.withRecovery)
+	p.router.Use(p.rhsAccessMiddleware)
 
 	instanceRouter := p.router.PathPrefix(routeInstancePath).Subrouter()
 	p.router.HandleFunc(routeIncomingWebhook, p.handleResponseWithCallbackInstance(p.httpWebhook)).Methods(http.MethodPost)
@@ -106,7 +107,6 @@ func (p *Plugin) initializeRouter() {
 	autocompleteRouter.HandleFunc(routeAutocompleteInstalledInstanceWithAlias, p.checkAuth(p.handleResponse(p.httpAutocompleteInstalledInstanceWithAlias))).Methods(http.MethodGet)
 
 	apiRouter := p.router.PathPrefix(routeAPI).Subrouter()
-	apiRouter.Use(p.rhsAccessMiddleware)
 
 	// Issue APIs
 	apiRouter.HandleFunc(routeAPIGetSprints, p.checkAuth(p.handleResponse(p.httpGetSprints))).Methods(http.MethodGet)

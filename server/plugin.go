@@ -81,7 +81,10 @@ type externalConfig struct {
 	// RHSDefaultStyle is the panel style for users who did not choose their own.
 	RHSDefaultStyle string
 
-	// RHSAllowedUsers limits the panel to these logins; empty means everyone.
+	// RHSDevMode limits the whole plugin to the RHSAllowedUsers logins.
+	RHSDevMode bool
+
+	// RHSAllowedUsers are the development mode users.
 	RHSAllowedUsers string
 
 	// Hide issue descriptions and comments in Webhook and Subscription messages

@@ -35,7 +35,7 @@ func (p *Plugin) CreateBotDMPost(instanceID, mattermostUserID types.ID, message,
 		// not connected to Jira, so no need to send a DM, and no need to report an error
 		return nil, nil
 	}
-	if c.Settings == nil || !c.Settings.Notifications {
+	if c.Settings == nil || !c.Settings.Notifications || !p.isRHSAllowedForUser(mattermostUserID.String()) {
 		return nil, nil
 	}
 
@@ -67,6 +67,11 @@ func (p *Plugin) CreateBotDMtoMMUserID(mattermostUserID, format string, args ...
 				fmt.Sprintf("failed to create DMError to user %v: ", mattermostUserID))
 		}
 	}()
+
+	// In development mode the bot writes only to its users.
+	if !p.isRHSAllowedForUser(mattermostUserID) {
+		return nil, nil
+	}
 
 	conf := p.getConfig()
 	channel, err := p.client.Channel.GetDirect(mattermostUserID, conf.botUserID)

@@ -43,10 +43,17 @@
                 "default": false
             },
             {
-                "key": "RHSAllowedUsers",
-                "display_name": "Show the right-hand sidebar only to these users:",
+                "key": "RHSDevMode",
+                "display_name": "Development mode:",
                 "type": "custom",
-                "help_text": "Mattermost logins separated by commas. When empty, the sidebar is available to everyone.",
+                "help_text": "When true, the plugin is available only to the users listed below.",
+                "default": false
+            },
+            {
+                "key": "RHSAllowedUsers",
+                "display_name": "Development mode users:",
+                "type": "custom",
+                "help_text": "Mattermost logins separated by commas or lines. An empty list in development mode means nobody.",
                 "default": ""
             },
             {

@@ -183,6 +183,19 @@ export default function LocalizedSetting(props: Props): JSX.Element {
             />
         );
         break;
+    case 'longtext':
+        control = (
+            <textarea
+                className='form-control'
+                rows={5}
+                data-testid={props.id + '-input'}
+                placeholder={descriptor.placeholder}
+                value={textValue}
+                disabled={disabled}
+                onChange={(event) => change(event.target.value)}
+            />
+        );
+        break;
     default:
         control = (
             <input

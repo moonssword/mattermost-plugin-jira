@@ -6,7 +6,7 @@
 // language of the user. Everything but Russian falls back to English.
 export type SettingLanguage = 'ru' | 'en';
 
-export type SettingKind = 'bool' | 'text' | 'number' | 'radio' | 'generated' | 'secret';
+export type SettingKind = 'bool' | 'text' | 'longtext' | 'number' | 'radio' | 'generated' | 'secret';
 
 export type LocalizedText = {[language in SettingLanguage]: string};
 
@@ -105,17 +105,30 @@ export const LOCALIZED_SETTINGS: SettingDescriptor[] = [
         },
     },
     {
-        key: 'RHSAllowedUsers',
-        kind: 'text',
+        key: 'RHSDevMode',
+        defaultValue: false,
+        kind: 'bool',
         label: {
-            ru: 'Показывать панель только этим пользователям:',
-            en: 'Show the right-hand sidebar only to these users:',
+            ru: 'Режим разработки:',
+            en: 'Development mode:',
         },
         help: {
-            ru: 'Логины Mattermost через запятую. Если пусто, панель доступна всем. Остальные не увидят значок панели, а её методы будут им закрыты. Команды `/jira`, подписки и уведомления работают для всех. После изменения пользователю нужно обновить страницу.',
-            en: 'Mattermost logins separated by commas. When empty, the sidebar is available to everyone. Others do not see its icon and its routes are closed to them. The `/jira` commands, subscriptions and notifications work for everyone. Users need to reload the page after a change.',
+            ru: 'Плагин доступен только пользователям из списка ниже: остальные не видят кнопок и панели, а команды `/jira` и методы плагина им отказывают. Личные сообщения бота приходят только пользователям из списка. Посты подписок видны всем участникам канала, поэтому проверяйте в отдельном канале. После изменения пользователям нужно обновить страницу.',
+            en: 'The plugin is available only to the users listed below: others do not see its buttons and panel, and the `/jira` commands and the plugin routes refuse them. Bot direct messages go only to the listed users. Subscription posts are seen by everyone in the channel, so test in a separate channel. Users need to reload the page after a change.',
         },
-        placeholder: 'ivan.petrov, anna.smirnova',
+    },
+    {
+        key: 'RHSAllowedUsers',
+        kind: 'longtext',
+        label: {
+            ru: 'Пользователи режима разработки:',
+            en: 'Development mode users:',
+        },
+        help: {
+            ru: 'Логины Mattermost через запятую или с новой строки. Пустой список: в режиме разработки плагин недоступен никому. Системные администраторы в список автоматически не входят, но настройки плагина в Системной консоли им доступны всегда.',
+            en: 'Mattermost logins separated by commas or lines. An empty list means that in development mode the plugin is available to nobody. System administrators are not included automatically, but the plugin settings in the System Console always stay available to them.',
+        },
+        placeholder: 'anna, boris',
     },
     {
         key: 'RHSDefaultStyle',
