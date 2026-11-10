@@ -12,6 +12,7 @@ import {isTeamField} from 'utils/jira_issue_metadata';
 
 import {JiraFieldCustomTypeEnums} from 'types/model';
 import {jqlFieldName} from 'utils/jql_field_name';
+import {jiraImageURL} from 'utils/jira_image_url';
 
 import JiraEpicSelector from './data_selectors/jira_epic_selector';
 import JiraAutoCompleteSelector from './data_selectors/jira_autocomplete_selector';
@@ -45,7 +46,7 @@ export default class JiraField extends React.Component {
             img = (
                 <img
                     style={getStyle().jiraIcon}
-                    src={props.data.allowedValue.iconUrl}
+                    src={props.data.iconUrl || props.data.allowedValue.iconUrl}
                 />
             );
         }
@@ -252,7 +253,7 @@ export default class JiraField extends React.Component {
             const options = field.allowedValues.map((allowedValue) => {
                 const label = allowedValue.name ? allowedValue.name : allowedValue.value;
                 return (
-                    {value: allowedValue.id, label, allowedValue}
+                    {value: allowedValue.id, label, allowedValue, iconUrl: jiraImageURL(allowedValue.iconUrl, this.props.instanceID)}
                 );
             });
 

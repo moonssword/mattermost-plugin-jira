@@ -4,6 +4,7 @@
 import React from 'react';
 
 import {AvatarSize, JiraUser, ReactSelectOption} from 'types/model';
+import {jiraImageURL} from 'utils/jira_image_url';
 
 import BackendSelector, {Props as BackendSelectorProps} from '../backend_selector';
 
@@ -35,7 +36,7 @@ export default class JiraUserSelector extends React.PureComponent<Props> {
 
             return data.map((user) => {
                 let label: string | React.ReactElement = user.displayName;
-                const avatarURL = user.avatarUrls[AvatarSize.SMALL];
+                const avatarURL = jiraImageURL(user.avatarUrls[AvatarSize.SMALL], this.props.instanceID);
                 if (avatarURL) {
                     label = (
                         <span>

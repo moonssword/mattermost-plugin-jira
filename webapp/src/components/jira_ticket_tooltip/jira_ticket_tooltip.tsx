@@ -13,6 +13,7 @@ import DefaultAvatar from 'components/default_avatar/default_avatar';
 import './ticketStyle.scss';
 import {getJiraTicketDetails} from 'utils/jira_issue_metadata';
 import {tr} from 'utils/i18n';
+import {jiraImageURL} from 'utils/jira_image_url';
 
 export type Props = {
     href: string;
@@ -103,6 +104,11 @@ export default class TicketPopover extends React.PureComponent<Props, State> {
                 }
 
                 const updatedTicketDetails = getJiraTicketDetails(res.data);
+                if (updatedTicketDetails) {
+                    updatedTicketDetails.assigneeAvatar = jiraImageURL(updatedTicketDetails.assigneeAvatar, issueKey.instanceID);
+                    updatedTicketDetails.issueIcon = jiraImageURL(updatedTicketDetails.issueIcon, issueKey.instanceID);
+                    updatedTicketDetails.jiraIcon = jiraImageURL(updatedTicketDetails.jiraIcon, issueKey.instanceID);
+                }
                 if (connected && updatedTicketDetails && updatedTicketDetails.ticketId === ticketId) {
                     this.setState({
                         ticketDetails: updatedTicketDetails,

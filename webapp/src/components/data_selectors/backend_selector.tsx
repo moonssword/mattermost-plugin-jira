@@ -16,6 +16,7 @@ import {Props as ReactSelectSettingProps} from 'components/react_select_setting'
 import Setting from 'components/setting';
 import {TEAM_FIELD} from '../../constant';
 import {tr} from 'utils/i18n';
+import {jiraImageURL} from 'utils/jira_image_url';
 
 const searchDebounceDelay = 400;
 
@@ -202,7 +203,7 @@ export default class BackendSelector extends React.PureComponent<Props, State> {
 
                 label = user.displayName;
                 if (user.avatarUrls && user.avatarUrls[AvatarSize.SMALL]) {
-                    const avatarURL = user.avatarUrls[AvatarSize.SMALL];
+                    const avatarURL = jiraImageURL(user.avatarUrls[AvatarSize.SMALL], this.props.instanceID);
                     label = (
                         <span>
                             <img
