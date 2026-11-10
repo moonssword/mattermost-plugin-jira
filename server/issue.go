@@ -346,9 +346,9 @@ func (p *Plugin) CreateIssue(in *InCreateIssue) (*jira.Issue, int, error) {
 		}
 
 		if len(in.Fields.Description) > 0 {
-			in.Fields.Description += fmt.Sprintf("\n\n_Issue created from a [message in Mattermost|%v]_.", permalink)
+			in.Fields.Description += fmt.Sprintf(p.jiraFormat("\n\n_Issue created from a [message in Mattermost|%v]_."), permalink)
 		} else {
-			in.Fields.Description = fmt.Sprintf("_Issue created from a [message in Mattermost|%v]_.", permalink)
+			in.Fields.Description = fmt.Sprintf(p.jiraFormat("_Issue created from a [message in Mattermost|%v]_."), permalink)
 		}
 	}
 
@@ -1161,7 +1161,7 @@ func (p *Plugin) AttachCommentToIssue(in *InAttachCommentToIssue) (*jira.Comment
 
 	permalink := getPermaLink(instance, in.PostID, in.CurrentTeam)
 
-	permalinkMessage := fmt.Sprintf("*@%s attached a* [message|%s] *from @%s*\n", connection.DisplayName, permalink, commentUser.Username)
+	permalinkMessage := fmt.Sprintf(p.jiraFormat("*@%s attached a* [message|%s] *from @%s*\n"), connection.DisplayName, permalink, commentUser.Username)
 
 	jiraComment := jira.Comment{
 		Body: permalinkMessage + post.Message,
