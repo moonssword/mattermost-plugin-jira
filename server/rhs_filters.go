@@ -262,6 +262,7 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 	if err != nil {
 		return nil, err
 	}
+	openFirst := kind == rhsSearchNone && rhsOpenFirstFilter(filter)
 	switch {
 	case kind == rhsSearchNone:
 		entry, statusErr := p.getInstanceStatuses(instance.GetID(), params.mattermostUserID, client)
@@ -295,12 +296,18 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 		fields = append(append([]string{}, rhsSearchFields...), estimateField)
 	}
 
-	search, err := client.SearchJQL(CloudSearchParams{
+	searchParams := CloudSearchParams{
 		JQL:           jql,
 		Fields:        fields,
 		MaxResults:    rhsIssuesPageSize,
 		NextPageToken: params.nextPageToken,
-	})
+	}
+	var search *CloudSearchResult
+	if openFirst {
+		search, err = searchRHSOpenFirstPage(client, searchParams, sort)
+	} else {
+		search, err = client.SearchJQL(searchParams)
+	}
 	if err != nil {
 		restErr, badRequest := isJiraBadRequest(err)
 		switch {
