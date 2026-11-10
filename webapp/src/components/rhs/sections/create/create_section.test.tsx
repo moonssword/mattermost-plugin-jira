@@ -189,10 +189,25 @@ describe('components/rhs/sections/create', () => {
         await screen.findByTestId('jira-fields');
         expect(screen.queryByTestId('rhs-create-quote')).toBeNull();
         expect(screen.getByText(RHS_STRINGS.createPostShort)).toBeInTheDocument();
+
+        // Telling the channel is off unless the user turns it on.
+        expect(screen.getByTestId('rhs-create-reply')).not.toBeChecked();
+        fireEvent.click(screen.getByTestId('rhs-create-reply'));
         fireEvent.change(screen.getByTestId('field-summary'), {target: {value: 'Новая'}});
         fireEvent.click(screen.getByTestId('rhs-create-submit'));
         await screen.findByTestId('rhs-create-done');
         expect(props.createIssue).toHaveBeenCalledWith(expect.objectContaining({post_id: '', channel_id: 'channel-1', skip_public_reply: false}));
+    });
+
+    test('in a direct message the chat is told, not a channel, and not by default', async () => {
+        const props = makeProps({channelIsDirect: true});
+        render(<CreateSection {...props}/>);
+        await screen.findByTestId('jira-fields');
+        expect(screen.getByText(RHS_STRINGS.createPostShortDirect)).toBeInTheDocument();
+        fireEvent.change(screen.getByTestId('field-summary'), {target: {value: 'Новая'}});
+        fireEvent.click(screen.getByTestId('rhs-create-submit'));
+        await screen.findByTestId('rhs-create-done');
+        expect(props.createIssue).toHaveBeenCalledWith(expect.objectContaining({skip_public_reply: true}));
     });
 
     test('changing the issue type keeps summary and description', async () => {

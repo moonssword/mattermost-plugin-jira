@@ -73,6 +73,12 @@ export const ADMIN_TEXT = {
     wizardFailed: {ru: 'Не удалось запустить мастер.', en: 'Failed to start the wizard.'},
     loadFailed: {ru: 'Не удалось загрузить данные плагина.', en: 'Failed to load the plugin data.'},
     version: {ru: 'Версия плагина', en: 'Plugin version'},
+    connectedUsers: {ru: 'Подключённые пользователи', en: 'Connected users'},
+    connectedUsersHelp: {
+        ru: 'Пользователи Mattermost, подключившие свой аккаунт Jira хотя бы к одному инстансу. Отключившиеся не считаются.',
+        en: 'Mattermost users who connected their Jira account to at least one instance. Those who disconnected are not counted.',
+    },
+    connectedShort: {ru: 'подключено:', en: 'connected:'},
     dataCenter: {ru: 'Data Center', en: 'Data Center'},
     cloud: {ru: 'Cloud', en: 'Cloud'},
 };

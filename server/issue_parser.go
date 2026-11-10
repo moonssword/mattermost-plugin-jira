@@ -19,10 +19,11 @@ func mdKeySummaryLink(issue *jira.Issue, instance Instance) string {
 	return fmt.Sprintf("[%s: %s (%s)](%s%s)", issue.Key, truncate(issue.Fields.Summary, maxIssueSummaryLength), issue.Fields.Status.Name, instance.GetJiraBaseURL(), "/browse/"+issue.Key)
 }
 
+// reporterSummary names the reporter. The avatar is left out: loaded straight
+// from Jira by every reader's browser, it reached into the company network
+// from the Mattermost page and Chrome asked for local network access.
 func reporterSummary(reporter *jira.User) string {
-	avatarLink := fmt.Sprintf("![avatar](%s =30x30)", reporter.AvatarUrls.One6X16)
-	reporterSummary := avatarLink + " " + reporter.Name
-	return reporterSummary
+	return reporter.Name
 }
 
 func getActions(p *Plugin, instanceID types.ID, client Client, issue *jira.Issue) ([]*model.PostAction, error) {

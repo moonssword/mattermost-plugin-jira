@@ -260,6 +260,8 @@ const RHS_STRINGS_RU = {
     createShortcut: '⌘↵ — создать',
     createReplyShort: 'Ссылка в тред',
     createPostShort: 'Сообщить в канал',
+    createPostShortDirect: 'Сообщить в чат',
+    createPostToDirect: 'Написать в этот чат о новой задаче',
     createRequired: 'Обязательное поле',
 
     // Attach a message to an issue

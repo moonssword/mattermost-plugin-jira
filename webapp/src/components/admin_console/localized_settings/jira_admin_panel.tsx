@@ -11,12 +11,30 @@ export type RHSAdminInstance = {
     alias?: string;
     type: string;
     webhook_url: string;
+    connected_users?: number;
 };
 
 export type RHSAdminSettings = {
     instances: RHSAdminInstance[];
     plugin_version: string;
+    connected_users?: number;
 };
+
+// usersCount reads "12 пользователей" or "12 users".
+export function usersCount(n: number, language: SettingLanguage): string {
+    if (language === 'en') {
+        return n + (n === 1 ? ' user' : ' users');
+    }
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    let word = 'пользователей';
+    if (mod10 === 1 && mod100 !== 11) {
+        word = 'пользователь';
+    } else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+        word = 'пользователя';
+    }
+    return n + ' ' + word;
+}
 
 export type Props = {
     language: SettingLanguage;
@@ -111,6 +129,9 @@ export default function JiraAdminPanel(props: Props): JSX.Element {
                         data-testid='jira-admin-instance'
                     >
                         {(instance.alias || instance.instance_id) + ' (' + (instance.type === 'server' ? ADMIN_TEXT.dataCenter[language] : ADMIN_TEXT.cloud[language]) + ')'}
+                        {typeof instance.connected_users === 'number' && (
+                            <span className='jira-admin-instance-users'>{' · ' + ADMIN_TEXT.connectedShort[language] + ' ' + usersCount(instance.connected_users, language)}</span>
+                        )}
                     </div>
                 ))}
                 <HelpText text={ADMIN_TEXT.instancesHelp[language]}/>
@@ -148,6 +169,12 @@ export default function JiraAdminPanel(props: Props): JSX.Element {
                 {wizard === 'failed' && <HelpText text={ADMIN_TEXT.wizardFailed[language]}/>}
                 <HelpText text={ADMIN_TEXT.wizardHelp[language]}/>
             </Row>
+            {settings && typeof settings.connected_users === 'number' && (
+                <Row label={ADMIN_TEXT.connectedUsers[language]}>
+                    <div data-testid='jira-admin-connected-users'>{settings.connected_users}</div>
+                    <HelpText text={ADMIN_TEXT.connectedUsersHelp[language]}/>
+                </Row>
+            )}
             {settings && (
                 <Row label={ADMIN_TEXT.version[language]}>
                     <div data-testid='jira-admin-version'>{settings.plugin_version}</div>

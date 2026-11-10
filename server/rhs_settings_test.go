@@ -90,12 +90,32 @@ func TestRHSAdminForAdmin(t *testing.T) {
 	api := &plugintest.API{}
 	p, _ := setupRHSSettingsPlugin(t, api, true)
 
+	// Two users connected, one who disconnected from everything.
+	connected := NewUser("u1")
+	connected.ConnectedInstances = NewInstances(&InstanceCommon{InstanceID: types.ID(mockInstance1URL)})
+	other := NewUser("u2")
+	other.ConnectedInstances = NewInstances(&InstanceCommon{InstanceID: types.ID(mockInstance1URL)}, &InstanceCommon{InstanceID: "http://other"})
+	gone := NewUser("u3")
+	userJSON := func(u *User) []byte {
+		data, err := json.Marshal(u)
+		require.NoError(t, err)
+		return data
+	}
+	api.On("KVList", 0, listPerPage).Return([]string{"user_a", "user_b", "user_c", "instances"}, nil)
+	api.On("KVGet", "user_a").Return(userJSON(connected), nil)
+	api.On("KVGet", "user_b").Return(userJSON(other), nil)
+	api.On("KVGet", "user_c").Return(userJSON(gone), nil)
+
 	w := doRHSHTTPGet(t, p, makeAPIRoute(routeAPIRHSAdmin), "connected_user")
 	require.Equal(t, http.StatusOK, w.Code)
 	var body RHSAdminSettings
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
 	require.NotEmpty(t, body.Instances)
 	assert.NotEmpty(t, body.PluginVersion)
+	require.NotNil(t, body.ConnectedUsers)
+	assert.Equal(t, 2, *body.ConnectedUsers)
+	require.NotNil(t, body.Instances[0].ConnectedUsers)
+	assert.Equal(t, 2, *body.Instances[0].ConnectedUsers)
 	assert.Contains(t, body.Instances[0].WebhookURL, "secret=s3cr3t")
 	assert.Contains(t, body.Instances[0].WebhookURL, "/api/v2/webhook")
 }

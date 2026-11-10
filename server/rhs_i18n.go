@@ -132,14 +132,21 @@ func (p *Plugin) rhsUserLanguage(mattermostUserID string) string {
 		return preference.Value
 	}
 	user, appErr := p.API.GetUser(mattermostUserID)
-	if appErr != nil {
+	if appErr != nil || user.Locale == "" {
 		return p.rhsServerLanguage()
 	}
 	return rhsLanguageOfLocale(user.Locale)
 }
 
+// rhsServerLanguage is the language of posts everyone reads: the default
+// language of the Mattermost interface (DefaultClientLocale), which is what
+// people see; DefaultServerLocale, the language of server messages, often
+// stays English while the interface is Russian.
 func (p *Plugin) rhsServerLanguage() string {
 	settings := p.API.GetConfig().LocalizationSettings
+	if settings.DefaultClientLocale != nil && *settings.DefaultClientLocale != "" {
+		return rhsLanguageOfLocale(*settings.DefaultClientLocale)
+	}
 	if settings.DefaultServerLocale != nil {
 		return rhsLanguageOfLocale(*settings.DefaultServerLocale)
 	}

@@ -243,6 +243,8 @@ export const RHS_STRINGS_EN: {[key in RHSStringKey]: string} = {
     createShortcut: '⌘↵ to create',
     createReplyShort: 'Link in thread',
     createPostShort: 'Tell the channel',
+    createPostShortDirect: 'Tell the chat',
+    createPostToDirect: 'Tell this chat about the new issue',
     createRequired: 'Required field',
 
     attachTitle: 'Attach to an issue',

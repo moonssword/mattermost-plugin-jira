@@ -26,6 +26,17 @@ func TestJiraFormatFollowsServerLanguage(t *testing.T) {
 		assert.Equal(t, want, got, locale)
 	}
 
+	// The interface language wins over the server messages language.
+	api := &plugintest.API{}
+	pc := setupTestPlugin(api)
+	pc.localizeMessages = true
+	api.On("GetConfig").Return(&model.Config{LocalizationSettings: model.LocalizationSettings{
+		DefaultServerLocale: model.NewPointer("en"),
+		DefaultClientLocale: model.NewPointer("ru"),
+	}})
+	assert.Equal(t, "_Задача создана из [сообщения в Mattermost|%v]_.", pc.jiraFormat("_Issue created from a [message in Mattermost|%v]_."))
+	assert.Equal(t, "Admin **прокомментировал(а)**: задача [K-1](u)", pc.localizeForChannel("Admin **commented** on задача [K-1](u)"))
+
 	p := &Plugin{}
 	assert.Equal(t, "_Issue created from a [message in Mattermost|%v]_.", p.jiraFormat("_Issue created from a [message in Mattermost|%v]_."))
 	for format, translated := range rhsRussianJiraFormats {

@@ -41,11 +41,17 @@ type RHSAdminInstance struct {
 	Type       string `json:"type"`
 	// The webhook URL carries the plugin secret: system admins only.
 	WebhookURL string `json:"webhook_url"`
+
+	// ConnectedUsers is nil when the users could not be counted.
+	ConnectedUsers *int `json:"connected_users,omitempty"`
 }
 
 type RHSAdminSettings struct {
 	Instances     []RHSAdminInstance `json:"instances"`
 	PluginVersion string             `json:"plugin_version"`
+
+	// ConnectedUsers counts users connected to at least one instance.
+	ConnectedUsers *int `json:"connected_users,omitempty"`
 }
 
 type RHSSettings struct {
@@ -82,6 +88,12 @@ func (p *Plugin) rhsAdminSettings() (*RHSAdminSettings, error) {
 		return nil, err
 	}
 	out := &RHSAdminSettings{Instances: []RHSAdminInstance{}, PluginVersion: manifest.Version}
+	perInstance, total, countErr := p.rhsConnectedUsers()
+	if countErr != nil {
+		p.client.Log.Warn("Failed to count the users connected to Jira", "error", countErr.Error())
+	} else {
+		out.ConnectedUsers = &total
+	}
 	for _, id := range instances.IDs() {
 		ic := instances.Get(id)
 		if ic == nil {
@@ -93,6 +105,10 @@ func (p *Plugin) rhsAdminSettings() (*RHSAdminSettings, error) {
 			Type:       string(ic.Type),
 			WebhookURL: p.getSubscriptionsWebhookURL(id),
 		})
+		if countErr == nil {
+			n := perInstance[id]
+			out.Instances[len(out.Instances)-1].ConnectedUsers = &n
+		}
 	}
 	return out, nil
 }

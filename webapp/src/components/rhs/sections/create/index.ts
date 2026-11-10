@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import {Dispatch, bindActionCreators} from 'redux';
 
 import {getCurrentChannelId} from 'mattermost-redux/selectors/entities/common';
+import {getCurrentChannel} from 'mattermost-redux/selectors/entities/channels';
 import {getPost} from 'mattermost-redux/selectors/entities/posts';
 import {getTheme} from 'mattermost-redux/selectors/entities/preferences';
 import {getCurrentTeam} from 'mattermost-redux/selectors/entities/teams';
@@ -38,6 +39,7 @@ const mapStateToProps = (state: GlobalState) => {
         post,
         postAuthor: author ? '@' + author.username : '',
         channelId: getCurrentChannelId(state) || '',
+        channelIsDirect: ['D', 'G'].includes(getCurrentChannel(state)?.type || ''),
         teamName: getCurrentTeam(state)?.name || '',
         theme: getTheme(state),
     };

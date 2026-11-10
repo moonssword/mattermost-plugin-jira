@@ -99,7 +99,7 @@ func TestAsSlackAttachment(t *testing.T) {
 					},
 					{
 						Title: "Reporter",
-						Value: "![avatar](https://example.org/icon =30x30) The Reporter",
+						Value: "The Reporter",
 						Short: true,
 					},
 				},

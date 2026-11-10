@@ -41,6 +41,9 @@ type Result<T> = Promise<{data?: T; error?: {message?: string} | Error}>;
 export type Props = {
     instanceID: string;
     channelId: string;
+
+    // A direct or group message is a chat, not a channel.
+    channelIsDirect?: boolean;
     teamName: string;
     theme: Theme;
     prefill: RHSCreatePrefill;
@@ -144,7 +147,10 @@ export default function CreateSection(props: Props): JSX.Element {
     // Files wait for the issue: Jira attaches them to an existing one.
     const [files, setFiles] = useState<File[]>([]);
     const picker = useRef<HTMLInputElement>(null);
-    const [replyInThread, setReplyInThread] = useState(true);
+
+    // A link in the thread of the message the issue comes from is on by
+    // default; a post to the channel is not.
+    const [replyInThread, setReplyInThread] = useState(Boolean(props.post));
     const savedIssueType = useRef('');
 
     // A new prefill (another message) restarts the form with its text.
@@ -152,7 +158,7 @@ export default function CreateSection(props: Props): JSX.Element {
         setFields((current) => ({...current, summary: prefill.summary, description: prefill.description} as CreateIssueFields));
         setCreated(null);
         setError('');
-        setReplyInThread(true);
+        setReplyInThread(Boolean(props.post));
     }, [prefill.nonce]);
 
     const loadIssueMetadata = async (key: string, preferredType: string) => {
@@ -246,7 +252,7 @@ export default function CreateSection(props: Props): JSX.Element {
     const reset = () => {
         setCreated(null);
         setError('');
-        setReplyInThread(true);
+        setReplyInThread(Boolean(props.post));
         setFields({
             ...initialFields({...prefill, summary: '', description: ''}),
             project: {key: projectKey},
@@ -431,6 +437,8 @@ export default function CreateSection(props: Props): JSX.Element {
     const projectOptions = projects;
     const typeOptions = getIssueTypes(metadata, projectKey, {includeSubtasks: false}).map((t) => ({label: t.name, value: t.id}));
     const ready = Boolean(projectKey && metadata && issueTypeID);
+    const postLabel = props.channelIsDirect ? RHS_STRINGS.createPostShortDirect : RHS_STRINGS.createPostShort;
+    const postTitle = props.channelIsDirect ? RHS_STRINGS.createPostToDirect : RHS_STRINGS.createPostToChannel;
 
     return (
         <form
@@ -589,7 +597,7 @@ export default function CreateSection(props: Props): JSX.Element {
                 {ready && (
                     <label
                         className='jira-rhs-checkbox'
-                        title={props.post ? RHS_STRINGS.createReplyInThread : RHS_STRINGS.createPostToChannel}
+                        title={props.post ? RHS_STRINGS.createReplyInThread : postTitle}
                     >
                         <input
                             type='checkbox'
@@ -597,7 +605,7 @@ export default function CreateSection(props: Props): JSX.Element {
                             checked={replyInThread}
                             onChange={(event) => setReplyInThread(event.target.checked)}
                         />
-                        {props.post ? RHS_STRINGS.createReplyShort : RHS_STRINGS.createPostShort}
+                        {props.post ? RHS_STRINGS.createReplyShort : postLabel}
                     </label>
                 )}
                 <button

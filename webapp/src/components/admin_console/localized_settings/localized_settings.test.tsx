@@ -11,7 +11,7 @@ import {
 
 import manifest from '../../../manifest';
 
-import JiraAdminPanel, {maskWebhookSecret} from './jira_admin_panel';
+import JiraAdminPanel, {maskWebhookSecret, usersCount} from './jira_admin_panel';
 import LocalizedSetting, {generateSecret, renderInlineText, settingValue} from './localized_setting';
 import {LOCALIZED_SETTINGS, settingLanguage} from './settings_text';
 
@@ -197,6 +197,28 @@ describe('JiraAdminPanel', () => {
         fireEvent.click(screen.getByTestId('jira-admin-copy-webhook'));
         await waitFor(() => expect(writeText).toHaveBeenCalledWith('http://mm/webhook?secret=abc'));
         expect(screen.getByTestId('jira-admin-version').textContent).toBe('4.6.0');
+        expect(screen.queryByTestId('jira-admin-connected-users')).toBeNull();
+    });
+
+    test('counts the connected users, in all and per instance', async () => {
+        render(
+            <JiraAdminPanel
+                language='ru'
+                loadAdmin={async () => ({...settings, connected_users: 22, instances: [{...settings.instances[0], connected_users: 21}]})}
+                startSetup={async () => ({})}
+            />,
+        );
+        expect((await screen.findByTestId('jira-admin-instance')).textContent).toBe('http://jira (Data Center) · подключено: 21 пользователь');
+        expect(screen.getByTestId('jira-admin-connected-users').textContent).toBe('22');
+    });
+
+    test('users count reads well', () => {
+        expect([1, 2, 5, 11, 12, 21, 22, 25, 111].map((n) => usersCount(n, 'ru'))).toEqual([
+            '1 пользователь', '2 пользователя', '5 пользователей', '11 пользователей', '12 пользователей',
+            '21 пользователь', '22 пользователя', '25 пользователей', '111 пользователей',
+        ]);
+        expect(usersCount(1, 'en')).toBe('1 user');
+        expect(usersCount(3, 'en')).toBe('3 users');
     });
 
     test('starts the wizard and reports a failure', async () => {
