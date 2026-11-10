@@ -104,6 +104,9 @@ export function buildRHSIssuesQuery(params: GetRHSIssuesParams) {
     if (params.boardId) {
         query.board_id = String(params.boardId);
     }
+    if (params.lane) {
+        query.lane = params.lane;
+    }
 
     return query;
 }

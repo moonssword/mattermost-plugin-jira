@@ -15,9 +15,15 @@ import {
     pickRHSTransition,
 } from 'utils/rhs_board_lanes';
 
+import {mergeRHSLanes, rhsLaneCount} from 'utils/rhs_board_lanes_lazy';
+
 import RHSIssueTypeIcon from '../../rhs_issue_type_icon';
+import RHSLoadMore from '../../rhs_load_more';
 import {RHSPriorityIcon, RHSRowAvatar, rhsRowTitle} from '../../rhs_issue_row';
 import {RHS_STRINGS} from '../../rhs_strings';
+import {RHSSkeletonRows} from '../../rhs_skeleton';
+
+import {LoadRHSLaneCounts, LoadRHSLanePage, useRHSLanes} from './use_rhs_lanes';
 
 // Transitions load when the pointer rests on a card or it gets focus.
 export const RHS_TRANSITIONS_DELAY_MS = 150;
@@ -34,7 +40,18 @@ export type Props = {
     onOpenIssue: (key: string) => void;
     loadTransitions: (key: string) => Promise<{data?: RHSTransition[]; error?: unknown}>;
     moveIssue: (key: string, transitionID: string) => Promise<{data?: unknown; error?: unknown}>;
+
+    // Columns load one at a time, with their counters first. Without these
+    // the view places the loaded list in columns, as before.
+    lanesEnabled?: boolean;
+    lanesResetKey?: string;
+    lanesRefreshKey?: string | number;
+    loadLaneCounts?: LoadRHSLaneCounts;
+    loadLanePage?: LoadRHSLanePage;
 };
+
+const noCounts: LoadRHSLaneCounts = () => Promise.resolve({data: {supported: false, lanes: []}});
+const noPage: LoadRHSLanePage = () => Promise.resolve({error: true});
 
 function cacheKey(issue: RHSIssue): string {
     return issue.key + '@' + (issue.status?.id || issue.status?.name || '');
@@ -44,8 +61,35 @@ function cacheKey(issue: RHSIssue): string {
 // at a time, switched by chips with counts, and a button that moves the
 // active card to the next column.
 export default function BoardView(props: Props): JSX.Element {
-    const lanes = buildRHSLanes(props.issues, props.board, RHS_STRINGS.boardOutside);
-    const [laneId, setLaneId] = useState(() => defaultRHSLane(lanes));
+    const listLanes = buildRHSLanes(props.issues, props.board, RHS_STRINGS.boardOutside);
+    const [laneId, setLaneId] = useState(() => defaultRHSLane(listLanes));
+
+    // Set once the user opens a column: the counters no longer choose it.
+    const picked = useRef(false);
+    const lazyWanted = Boolean(props.loadLaneCounts && props.loadLanePage);
+    const lanesData = useRHSLanes({
+        enabled: lazyWanted && props.lanesEnabled !== false,
+        resetKey: props.lanesResetKey || '',
+        refreshKey: props.lanesRefreshKey ?? '',
+        activeLane: laneId,
+        loadCounts: props.loadLaneCounts || noCounts,
+        loadPage: props.loadLanePage || noPage,
+    });
+    const lazy = lazyWanted && props.lanesEnabled !== false && lanesData.supported !== false;
+    const lanes = lazy ? mergeRHSLanes(listLanes, lanesData.counts, lanesData.pages, RHS_STRINGS.boardOutside, lanesData.categories) : listLanes;
+
+    // The counters may point to a busier column than the first page did.
+    useEffect(() => {
+        if (!picked.current && lanesData.counts.size > 0) {
+            const best = defaultRHSLane(lanes);
+            if (best && best !== laneId) {
+                setLaneId(best);
+            }
+        }
+
+    // Only new counters choose again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lanesData.counts]);
     const [activeKey, setActiveKey] = useState('');
     const [transitions, setTransitions] = useState<Map<string, TransitionsEntry>>(() => new Map());
     const [moving, setMoving] = useState('');
@@ -66,6 +110,7 @@ export default function BoardView(props: Props): JSX.Element {
         }
     }, []);
 
+    const lanePage = lane && lazy ? lanesData.pages.get(lane.id) || null : null;
     const next = lane ? nextRHSLane(lanes, lane.id) : null;
 
     const activate = (issue: RHSIssue) => {
@@ -115,10 +160,13 @@ export default function BoardView(props: Props): JSX.Element {
                         aria-selected={l.id === lane?.id}
                         className={'jira-rhs-lane' + (l.id === lane?.id ? ' jira-rhs-lane--on' : '')}
                         data-testid={'rhs-lane-' + l.id}
-                        onClick={() => setLaneId(l.id)}
+                        onClick={() => {
+                            picked.current = true;
+                            setLaneId(l.id);
+                        }}
                     >
                         {l.name}
-                        {l.issues.length > 0 && <span className='jira-rhs-lane-count'>{l.issues.length}</span>}
+                        {rhsLaneCount(l) > 0 && <span className='jira-rhs-lane-count'>{rhsLaneCount(l)}</span>}
                     </button>
                 ))}
             </div>
@@ -126,7 +174,15 @@ export default function BoardView(props: Props): JSX.Element {
                 className='jira-rhs-lanebg'
                 role='tabpanel'
             >
-                {lane && lane.issues.length === 0 && (
+                {lane && lane.issues.length === 0 && lazy && lanePage?.loading && (
+                    <div
+                        role='status'
+                        aria-label={RHS_STRINGS.loading}
+                    >
+                        <RHSSkeletonRows count={3}/>
+                    </div>
+                )}
+                {lane && lane.issues.length === 0 && !(lazy && (lanePage?.loading || lanePage?.error)) && (
                     <p className='jira-rhs-muted jira-rhs-lane-empty'>{RHS_STRINGS.boardEmptyLane}</p>
                 )}
                 {lane?.issues.map((issue) => {
@@ -195,15 +251,32 @@ export default function BoardView(props: Props): JSX.Element {
                         </div>
                     );
                 })}
-                {!props.isLast && !props.loading && (
-                    <button
-                        type='button'
-                        className='jira-rhs-load-more'
-                        data-testid='rhs-load-more'
-                        onClick={props.onLoadMore}
+                {lazy && lane && lanePage?.error && (
+                    <div
+                        className='jira-rhs-list-error'
+                        data-testid='rhs-lane-error'
                     >
-                        {RHS_STRINGS.loadMore}
-                    </button>
+                        <span>{RHS_STRINGS.error}</span>
+                        <button
+                            type='button'
+                            className='btn btn-secondary btn-sm'
+                            onClick={() => lanesData.retry(lane.id)}
+                        >
+                            {RHS_STRINGS.retry}
+                        </button>
+                    </div>
+                )}
+                {lazy && lane && lanePage && !lanePage.error && !lanePage.isLast && lanePage.issues.length > 0 && (
+                    <RHSLoadMore
+                        loading={lanePage.loading}
+                        onLoadMore={() => lanesData.loadMore(lane.id)}
+                    />
+                )}
+                {!lazy && !props.isLast && (
+                    <RHSLoadMore
+                        loading={props.loading}
+                        onLoadMore={props.onLoadMore}
+                    />
                 )}
             </div>
         </div>

@@ -175,6 +175,9 @@ export const getRHSEstimateField = (state: GlobalState): string => {
 
 export const isRHSListStale = (state: GlobalState): boolean => Boolean(getPluginState(state).rhs?.stale);
 
+// Grows with every load of the list; the board view reloads its columns.
+export const getRHSRequestId = (state: GlobalState): number => getPluginState(state).rhs?.requestId || 0;
+
 export const RHS_PREFERENCE_CATEGORY = 'pp_' + manifest.id;
 export const RHS_PREFERENCE_LANGUAGE = 'language';
 export const RHS_PREFERENCE_STYLE = 'style';

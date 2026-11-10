@@ -8,6 +8,7 @@ import {RHSErrorCode, RHSIssue} from 'types/rhs';
 import {RHSGroupKey, groupRHSIssues} from 'utils/rhs_group';
 
 import RHSIssueRow from './rhs_issue_row';
+import RHSLoadMore from './rhs_load_more';
 import {RHSSkeletonRows} from './rhs_skeleton';
 import {RHS_STRINGS} from './rhs_strings';
 
@@ -98,7 +99,7 @@ export default function RHSIssueList(props: Props): JSX.Element {
                     </section>
                 );
             })}
-            {props.loading && (
+            {props.loading && props.isLast && (
                 <div
                     role='status'
                     aria-label={RHS_STRINGS.loading}
@@ -122,15 +123,11 @@ export default function RHSIssueList(props: Props): JSX.Element {
                     </button>
                 </div>
             )}
-            {!props.isLast && !props.loading && (
-                <button
-                    type='button'
-                    className='jira-rhs-load-more'
-                    data-testid='rhs-load-more'
-                    onClick={props.onLoadMore}
-                >
-                    {RHS_STRINGS.loadMore}
-                </button>
+            {!props.isLast && props.error === null && (
+                <RHSLoadMore
+                    loading={props.loading}
+                    onLoadMore={props.onLoadMore}
+                />
             )}
         </div>
     );

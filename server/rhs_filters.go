@@ -108,6 +108,9 @@ func buildFilterJQL(filter RHSFilter, sortField string, validCategoryKeys map[st
 type rhsBoardScope struct {
 	jql   string
 	scrum bool
+
+	// columns of the board view, as the board endpoint lists them.
+	columns []RHSBoardColumn
 }
 
 type rhsBoardConfigClient interface {
@@ -124,7 +127,7 @@ func loadRHSBoardScope(client rhsBoardConfigClient, boardID int) (*rhsBoardScope
 	if !rhsNumericID.MatchString(cfg.Filter.ID) {
 		return nil, errors.Wrap(ErrInvalidRHSBoard, "the board has no filter")
 	}
-	scope := &rhsBoardScope{jql: "filter = " + cfg.Filter.ID, scrum: cfg.Type != "kanban"}
+	scope := &rhsBoardScope{jql: "filter = " + cfg.Filter.ID, scrum: cfg.Type != "kanban", columns: rhsBoardColumns(&cfg)}
 	if sub := strings.TrimSpace(cfg.SubQuery.Query); sub != "" {
 		scope.jql += " AND (" + sub + ")"
 	}
@@ -217,6 +220,9 @@ type rhsIssueQuery struct {
 	// boardID limits the list to the selected board. A search by text stays
 	// inside it; a key or JQL is an explicit request and goes everywhere.
 	boardID string
+
+	// lane limits the list to one column of the board view.
+	lane string
 }
 
 func isJiraBadRequest(err error) (RESTError, bool) {
@@ -227,8 +233,22 @@ func isJiraBadRequest(err error) (RESTError, bool) {
 	return RESTError{}, false
 }
 
-// getRHSFilteredIssues serves the quick filters and the search box.
-func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, error) {
+// rhsFilteredQuery is the JQL of a quick filter or a search, with what was
+// needed to build it.
+type rhsFilteredQuery struct {
+	instance Instance
+	client   rhsClient
+	filter   RHSFilter
+	sort     string
+	kind     rhsSearchKind
+	scope    *rhsBoardScope
+
+	// jql is empty when nothing can match.
+	jql string
+}
+
+// buildRHSFilteredQuery builds the JQL of the quick filters and the search box.
+func (p *Plugin) buildRHSFilteredQuery(params rhsIssueQuery) (*rhsFilteredQuery, error) {
 	filter, err := parseRHSFilter(params.filter)
 	if err != nil {
 		return nil, err
@@ -262,7 +282,6 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 	if err != nil {
 		return nil, err
 	}
-	openFirst := kind == rhsSearchNone && rhsOpenFirstFilter(filter)
 	switch {
 	case kind == rhsSearchNone:
 		entry, statusErr := p.getInstanceStatuses(instance.GetID(), params.mattermostUserID, client)
@@ -280,6 +299,24 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 		}
 	case kind == rhsSearchText && scope != nil && jql != "":
 		jql = scope.jql + " AND " + jql
+	}
+	return &rhsFilteredQuery{instance: instance, client: client, filter: filter, sort: sort, kind: kind, scope: scope, jql: jql}, nil
+}
+
+// getRHSFilteredIssues serves the quick filters and the search box.
+func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, error) {
+	q, err := p.buildRHSFilteredQuery(params)
+	if err != nil {
+		return nil, err
+	}
+	instance, client, kind, jql := q.instance, q.client, q.kind, q.jql
+	openFirst := kind == rhsSearchNone && rhsOpenFirstFilter(q.filter)
+	if params.lane != "" && jql != "" {
+		// One column of the board view: its own order is enough.
+		openFirst = false
+		if jql, err = rhsLaneJQL(q, params.lane); err != nil {
+			return nil, err
+		}
 	}
 
 	empty := &rhsIssuesResult{Issues: []RHSIssue{}, Tabs: []RHSTabEntry{}, IsLast: true}
@@ -304,7 +341,7 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 	}
 	var search *CloudSearchResult
 	if openFirst {
-		search, err = searchRHSOpenFirstPage(client, searchParams, sort)
+		search, err = searchRHSOpenFirstPage(client, searchParams, q.sort)
 	} else {
 		search, err = client.SearchJQL(searchParams)
 	}

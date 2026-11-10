@@ -16,6 +16,7 @@ import {
     selectRHSBoard,
     setRHSListView,
 } from 'actions';
+import {loadRHSLaneCounts, loadRHSLanePage} from '../../../../actions/rhs_lanes';
 import {
     getRHSBoardState,
     getRHSError,
@@ -26,6 +27,7 @@ import {
     getRHSIssues,
     getRHSLoading,
     getRHSQuery,
+    getRHSRequestId,
     getRHSSort,
     getRHSTotal,
     isRHSListStale,
@@ -36,7 +38,7 @@ import {GlobalState} from 'types/store';
 import MyIssues, {Props} from './my_issues';
 
 type OwnProps = Pick<Props, 'instanceID'>;
-type DispatchProps = Pick<Props, 'fetchRHSBoard' | 'initRHSBoard' | 'listRHSBoards' | 'loadMoreRHSIssues' | 'loadRHSIssueTransitions' | 'moveRHSIssue' | 'openRHSIssue' | 'resolveAndFetchRHSIssues' | 'selectRHSBoard' | 'setRHSListView'>;
+type DispatchProps = Pick<Props, 'fetchRHSBoard' | 'initRHSBoard' | 'listRHSBoards' | 'loadMoreRHSIssues' | 'loadRHSIssueTransitions' | 'loadRHSLaneCounts' | 'loadRHSLanePage' | 'moveRHSIssue' | 'openRHSIssue' | 'resolveAndFetchRHSIssues' | 'selectRHSBoard' | 'setRHSListView'>;
 
 const mapStateToProps = (state: GlobalState) => {
     const board = getRHSBoardState(state);
@@ -48,6 +50,7 @@ const mapStateToProps = (state: GlobalState) => {
         isLast: getRHSIsLast(state),
         total: getRHSTotal(state),
         loading: getRHSLoading(state),
+        requestId: getRHSRequestId(state),
         error: getRHSError(state),
         errorMessage: getRHSErrorMessage(state),
         loadedInstanceID: getRHSInstanceID(state),
@@ -67,6 +70,8 @@ const actionCreators = {
     listRHSBoards,
     loadMoreRHSIssues,
     loadRHSIssueTransitions,
+    loadRHSLaneCounts,
+    loadRHSLanePage,
     moveRHSIssue,
     openRHSIssue,
     resolveAndFetchRHSIssues,

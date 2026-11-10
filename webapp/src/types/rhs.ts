@@ -137,6 +137,9 @@ export type GetRHSIssuesParams = FetchRHSIssuesArgs & {
 
     // The list stays inside this board.
     boardId?: number;
+
+    // One column of the board view, as /rhs/lanes names it.
+    lane?: string;
 };
 
 export function rhsTabIdentity(tab: RHSTab): string {

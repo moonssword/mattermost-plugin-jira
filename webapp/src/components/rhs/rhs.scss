@@ -576,6 +576,11 @@
     box-shadow: none;
 }
 
+// Watched by RHSLoadMore: the next page loads when it scrolls into view.
+.jira-rhs-load-marker {
+    height: 1px;
+}
+
 .jira-rhs-load-more:focus-visible {
     box-shadow: 0 0 0 2px var(--sidebar-text-active-border);
 }

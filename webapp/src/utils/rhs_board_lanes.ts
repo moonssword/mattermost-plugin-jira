@@ -15,6 +15,9 @@ export type RHSLane = {
     statusIds: string[];
     categoryKey?: string;
     issues: RHSIssue[];
+
+    // All issues of the column, when the server counted them.
+    count?: number | null;
 };
 
 const CATEGORY_LANES: {key: string; name: string}[] = [
@@ -62,7 +65,7 @@ export function buildRHSLanes(issues: RHSIssue[], board: RHSBoard | null, outsid
 // defaultRHSLane opens the first lane with work in progress, else the first
 // non-empty one.
 export function defaultRHSLane(lanes: RHSLane[]): string {
-    const busy = lanes.filter((l) => l.issues.length > 0 && l.id !== RHS_OUTSIDE_LANE_ID);
+    const busy = lanes.filter((l) => (typeof l.count === 'number' ? l.count : l.issues.length) > 0 && l.id !== RHS_OUTSIDE_LANE_ID);
     const inProgress = busy.find((l) => l.categoryKey === 'indeterminate' || l.issues.some((i) => i.status?.categoryKey === 'indeterminate'));
     return (inProgress || busy[0] || lanes[0])?.id || '';
 }

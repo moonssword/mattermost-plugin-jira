@@ -26,6 +26,7 @@ import {RHS_STRINGS} from '../../rhs_strings';
 
 import BoardPicker from './board_picker';
 import BoardView from './board_view';
+import {LoadRHSLaneCounts, LoadRHSLanePage} from './use_rhs_lanes';
 import FilterBar from './filter_bar';
 import SearchBox from './search_box';
 import SprintStrip from './sprint_strip';
@@ -44,6 +45,9 @@ export type Props = {
     loading: boolean;
     error: RHSErrorCode | null;
     errorMessage: string;
+
+    // Grows with every load of the list.
+    requestId?: number;
 
     // Instance whose issues are in the store; differs right after a switch.
     loadedInstanceID: string;
@@ -69,6 +73,8 @@ export type Props = {
     listRHSBoards: (name: string) => Promise<{data?: RHSBoardRef[]; error?: unknown}>;
     loadRHSIssueTransitions: (key: string) => Promise<{data?: RHSTransition[]; error?: unknown}>;
     moveRHSIssue: (key: string, transitionID: string) => Promise<{data?: unknown; error?: unknown}>;
+    loadRHSLaneCounts?: LoadRHSLaneCounts;
+    loadRHSLanePage?: LoadRHSLanePage;
 };
 
 type BodyKind = 'loading' | 'rate_limited' | 'invalid_query' | 'error' | 'empty' | 'list';
@@ -122,6 +128,13 @@ export default function MyIssues(props: Props): JSX.Element {
     const [focusSignal, setFocusSignal] = useState(0);
     const [stripOpen, setStripOpen] = useState(false);
     const [pickerOpen, setPickerOpen] = useState(false);
+
+    // The board view reloads its columns once a load of the list is over.
+    const settledRequest = useRef(props.requestId ?? 0);
+    if (!loading) {
+        settledRequest.current = props.requestId ?? 0;
+    }
+    const currentBoard = props.board && props.board.id === props.boardId ? props.board : null;
 
     // Fetch on first mount unless this instance's list is already in the
     // store, and again whenever the active instance changes.
@@ -212,7 +225,7 @@ export default function MyIssues(props: Props): JSX.Element {
         body = props.view === 'board' ? (
             <BoardView
                 issues={issues}
-                board={props.board && props.board.id === props.boardId ? props.board : null}
+                board={currentBoard}
                 nowMs={nowMs}
                 isLast={isLast}
                 loading={loading}
@@ -220,6 +233,11 @@ export default function MyIssues(props: Props): JSX.Element {
                 onOpenIssue={props.openRHSIssue}
                 loadTransitions={props.loadRHSIssueTransitions}
                 moveIssue={props.moveRHSIssue}
+                lanesEnabled={!props.boardId || currentBoard !== null}
+                lanesResetKey={[instanceID, filter, query, props.sort, props.boardId, currentBoard?.estimateField || ''].join('|')}
+                lanesRefreshKey={settledRequest.current}
+                loadLaneCounts={props.loadRHSLaneCounts}
+                loadLanePage={props.loadRHSLanePage}
             />
         ) : (
             <RHSIssueList

@@ -62,3 +62,16 @@ export type RHSBoardState = RHSBoardPrefs & {
     loading: boolean;
     error: RHSErrorCode | null;
 };
+
+// Size of one column of the board view; null when Jira does not count.
+export type RHSLaneCount = {
+    id: string;
+    count: number | null;
+    categoryKey?: string;
+};
+
+// Without supported the board view places the loaded list in columns itself.
+export type RHSLanesResponse = {
+    supported: boolean;
+    lanes: RHSLaneCount[];
+};
