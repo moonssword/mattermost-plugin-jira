@@ -3,6 +3,7 @@
 
 // English for the Russian source strings of the plugin's forms and modals.
 export const TR_EN: {[source: string]: string} = {
+    'Загрузка…': 'Loading...',
     Загрузка: 'Loading',
     ' фильтр по уровню безопасности не выбран, поэтому подписка будет срабатывать только для задач без уровня безопасности.': ' that since you have not selected a security level filter, the subscription will only allow issues that have no security level assigned.',
     '{n} дн назад': '{n} d ago',
@@ -73,6 +74,7 @@ export const TR_EN: {[source: string]: string} = {
     'Не удалось загрузить данные по этой ссылке Jira': 'There was a problem loading the details for this Jira link',
     'Не удалось получить данные проектов.': 'Failed to fetch project metadata for any projects.',
     'Ни одного из значений': 'Excludes all of the values',
+    'Ничего не найдено': 'No options',
     'Новая задача Jira': 'Create Jira Issue',
     'Новая подписка Jira в канале ': 'Add Jira Subscription in ',
     'Новый комментарий': 'Comment Created',

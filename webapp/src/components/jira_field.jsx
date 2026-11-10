@@ -11,6 +11,7 @@ import Input from 'components/input';
 import {isTeamField} from 'utils/jira_issue_metadata';
 
 import {JiraFieldCustomTypeEnums} from 'types/model';
+import {jqlFieldName} from 'utils/jql_field_name';
 
 import JiraEpicSelector from './data_selectors/jira_epic_selector';
 import JiraAutoCompleteSelector from './data_selectors/jira_autocomplete_selector';
@@ -143,7 +144,7 @@ export default class JiraField extends React.Component {
             return (
                 <JiraAutoCompleteSelector
                     {...selectProps}
-                    fieldName={field.name}
+                    fieldName={jqlFieldName(this.props.id, field.schema, field.name)}
                     onChange={(value) => {
                         this.props.onChange(this.props.id, value);
                     }}

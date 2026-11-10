@@ -11,6 +11,7 @@ import {CreateIssueFields, JiraField} from 'types/model';
 import {RHSTransition, RHSTransitionValues} from 'types/rhs_issue';
 
 import PanelFields from '../sections/create/panel_fields';
+import {preventImplicitSubmit} from '../rhs_form_keys';
 import {RHS_STRINGS} from '../rhs_strings';
 
 const EPIC_LINK = 'com.pyxis.greenhopper.jira:gh-epic-link';
@@ -93,6 +94,7 @@ export default function TransitionForm(props: Props): JSX.Element {
             style={{'--jira-rhs-required-text': JSON.stringify(RHS_STRINGS.createRequired)} as React.CSSProperties}
             onSubmit={submit}
             onKeyDown={(event) => {
+                preventImplicitSubmit(event);
                 if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
                     event.preventDefault();
                     submit();

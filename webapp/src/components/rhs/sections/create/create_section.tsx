@@ -30,6 +30,8 @@ import {
 
 import {RHSSkeletonFields, RHSSkeletonForm} from '../../rhs_skeleton';
 
+import {rhsReadableError} from '../../rhs_errors';
+import {preventImplicitSubmit} from '../../rhs_form_keys';
 import {RHS_STRINGS} from '../../rhs_strings';
 
 import PanelFields from './panel_fields';
@@ -109,10 +111,7 @@ export function panelFieldDefs(fields: {[key: string]: JiraField}): {[key: strin
 }
 
 function errorText(error: unknown): string {
-    if (error && typeof error === 'object' && 'message' in error && typeof (error as {message: unknown}).message === 'string') {
-        return (error as {message: string}).message;
-    }
-    return RHS_STRINGS.cardActionFailed;
+    return rhsReadableError(error, RHS_STRINGS.cardActionFailed);
 }
 
 function initialFields(prefill: RHSCreatePrefill): CreateIssueFields {
@@ -131,6 +130,8 @@ export default function CreateSection(props: Props): JSX.Element {
     const validator = useRef(new Validator());
 
     const [projects, setProjects] = useState<ReactSelectOption[] | null>(null);
+    const [projectsFailed, setProjectsFailed] = useState(false);
+    const [projectsAttempt, setProjectsAttempt] = useState(0);
     const [projectKey, setProjectKey] = useState('');
     const [issueTypeID, setIssueTypeID] = useState('');
     const [metadata, setMetadata] = useState<IssueMetadata | null>(null);
@@ -180,15 +181,18 @@ export default function CreateSection(props: Props): JSX.Element {
         setProjects(null);
         setProjectKey('');
         setMetadata(null);
+        setError('');
         props.fetchJiraProjectMetadata(instanceID).then(({data, error: projectError}) => {
             if (cancelled) {
                 return;
             }
             if (projectError || !data) {
-                setError(errorText(projectError));
+                setError(rhsReadableError(projectError, RHS_STRINGS.createProjectsFailed));
+                setProjectsFailed(true);
                 setProjects([]);
                 return;
             }
+            setProjectsFailed(false);
             setProjects(data.projects || []);
             const saved = data.saved_field_values;
             savedIssueType.current = saved?.issue_type || '';
@@ -202,9 +206,9 @@ export default function CreateSection(props: Props): JSX.Element {
             cancelled = true;
         };
 
-    // Projects depend on the instance only; the loaders are stable.
+    // Projects depend on the instance only (and a retry); the loaders are stable.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [instanceID]);
+    }, [instanceID, projectsAttempt]);
 
     const onProjectChange = (_: string, value: string) => {
         if (!value || value === projectKey) {
@@ -259,6 +263,9 @@ export default function CreateSection(props: Props): JSX.Element {
             props.openCreateModalWithoutPost(String(fields.description || ''), props.channelId);
         }
         props.clearRHSCreate();
+
+        // The work goes on in the modal: the panel goes back to its tab.
+        props.onBack?.();
     };
 
     const fieldDefs = panelFieldDefs(getFields(metadata, projectKey, issueTypeID));
@@ -432,6 +439,8 @@ export default function CreateSection(props: Props): JSX.Element {
             style={{'--jira-rhs-required-text': JSON.stringify(RHS_STRINGS.createRequired)} as React.CSSProperties}
             onSubmit={onSubmit}
             onKeyDown={(event) => {
+                preventImplicitSubmit(event);
+
                 // ⌘↵ / Ctrl+Enter creates the issue from any field.
                 if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
                     event.preventDefault();
@@ -470,9 +479,20 @@ export default function CreateSection(props: Props): JSX.Element {
                         {error}
                     </div>
                 )}
-                {projectOptions.length === 0 ? (
+                {projectOptions.length === 0 && projectsFailed && (
+                    <button
+                        type='button'
+                        className='btn btn-secondary btn-sm'
+                        data-testid='rhs-create-retry'
+                        onClick={() => setProjectsAttempt((n) => n + 1)}
+                    >
+                        {RHS_STRINGS.retry}
+                    </button>
+                )}
+                {projectOptions.length === 0 && !projectsFailed && projects !== null && (
                     <p className='jira-rhs-muted'>{RHS_STRINGS.createNoProjects}</p>
-                ) : (
+                )}
+                {projectOptions.length > 0 && (
                     <div className='jira-rhs-form-two'>
                         <SelectSetting
                             name='project'

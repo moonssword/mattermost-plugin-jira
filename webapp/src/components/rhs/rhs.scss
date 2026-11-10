@@ -2510,7 +2510,8 @@
 }
 
 .jira-rhs-settings-select {
-    flex: 0 1 190px;
+    // Wide enough for "По умолчанию (Компактный)".
+    flex: 0 1 230px;
     min-width: 0;
     height: 32px;
     padding: 4px 8px;

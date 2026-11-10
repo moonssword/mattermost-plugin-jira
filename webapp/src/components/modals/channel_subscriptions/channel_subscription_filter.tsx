@@ -33,6 +33,7 @@ import JiraAutoCompleteSelector from 'components/data_selectors/jira_autocomplet
 import JiraCommentVisibilitySelector from 'components/data_selectors/jira_commentvisibility_selector';
 import JiraTeamSelector from 'components/data_selectors/jira_team_selector';
 import {tr} from 'utils/i18n';
+import {jqlFieldName} from 'utils/jql_field_name';
 
 export type Props = {
     fields: FilterField[];
@@ -341,7 +342,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
             valueSelector = (
                 <JiraAutoCompleteSelector
                     {...selectProps}
-                    fieldName={field.name}
+                    fieldName={jqlFieldName(field.key, field.schema, field.name)}
                     value={value.values}
                     onChange={this.handleValueChangeWithoutName}
                 />

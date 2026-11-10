@@ -249,6 +249,8 @@ export default class BackendSelector extends React.PureComponent<Props, State> {
                 menuPortalTarget={document.body}
                 menuPlacement='auto'
                 styles={getStyleForReactSelect(this.props.theme)}
+                noOptionsMessage={({inputValue}: {inputValue: string}) => (inputValue ? tr('Ничего не найдено') : tr('Начните вводить…'))}
+                loadingMessage={() => tr('Загрузка…')}
             />
         );
 
