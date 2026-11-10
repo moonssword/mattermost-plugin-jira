@@ -279,8 +279,8 @@ export const LOCALIZED_SETTINGS: SettingDescriptor[] = [
         kind: 'secret',
         label: {ru: 'API-токен администратора:', en: 'Admin API Token'},
         help: {
-            ru: 'Задайте [API-токен](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/), чтобы получать уведомления о комментариях и новых задачах, когда их автор не подключён к Jira. Токен также нужен для настройки автоссылок.\n**Важно:** создавайте токен от аккаунта администратора Jira, иначе уведомления по недоступным ему проектам не придут и автоссылки работать не будут.',
-            en: 'Set this [API token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) to get notified for comment and issue created events when the user triggering the event is not connected to Jira. This is also used for setting up autolink in the plugin.\n**Note:** API token should be created using an admin Jira account. Otherwise, the notification will not be delivered for projects that the user cannot access and autolink will not work.',
+            ru: 'Токен нужен, чтобы получать уведомления о комментариях и новых задачах, когда их автор не подключён к Jira, и для настройки автоссылок.\n**Важно:** токен должен принадлежать администратору Jira, иначе уведомления по недоступным ему проектам не придут и автоссылки работать не будут.\n• **Jira Cloud:** [API-токен](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) вместе с почтой администратора ниже.\n• **Jira Server / Data Center:** [персональный токен доступа](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html) (Personal Access Token). Почта администратора не нужна.',
+            en: 'Set this to get notified for comment and issue created events when the user triggering the event is not connected to Jira. This is also used for setting up autolink in the plugin.\n**Note:** This token should belong to an admin Jira account. Otherwise, the notification will not be delivered for projects that the user cannot access and autolink will not work.\n• **Jira Cloud:** use an [API token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/) together with Admin Email below.\n• **Jira Server/Data Center:** use a [Personal Access Token](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html). Admin Email is not required.',
         },
     },
     {
@@ -288,8 +288,8 @@ export const LOCALIZED_SETTINGS: SettingDescriptor[] = [
         kind: 'text',
         label: {ru: 'Почта администратора:', en: 'Admin Email'},
         help: {
-            ru: '**Важно:** почта нужна для настройки автоссылок и для уведомлений о комментариях и новых задачах, когда их автор не подключён к Jira.',
-            en: '**Note:** Admin email is necessary to setup autolink for the Jira plugin and to to get notified for comment and issue created events when the user triggering the event is not connected to Jira',
+            ru: '**Важно:** нужна только для Jira Cloud: для автоссылок и для уведомлений о комментариях и новых задачах, когда их автор не подключён к Jira. Для Jira Server / Data Center не используется, там достаточно токена администратора.',
+            en: '**Note:** Required for Jira Cloud to set up autolink and to get notified for comment and issue created events when the user triggering the event is not connected to Jira. Not used for Jira Server/Data Center, which authenticates with the Admin API Token alone.',
         },
     },
     {

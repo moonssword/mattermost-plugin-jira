@@ -21,6 +21,7 @@ func newCreateIssueTestPlugin(api *plugintest.API) *Plugin {
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(&model.Post{}, (*model.AppError)(nil))
 	api.On("PublishWebSocketEvent", "update_defaults", mock.AnythingOfType("map[string]interface {}"), mock.AnythingOfType("*model.WebsocketBroadcast"))
 	api.On("LogError", mockAnythingOfTypeBatch("string", 13)...).Return().Maybe()
+	api.On("GetChannelMember", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(&model.ChannelMember{}, (*model.AppError)(nil)).Maybe()
 
 	p := &Plugin{}
 	p.initializeRouter()

@@ -17,6 +17,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	textTemplate "text/template"
 
 	"github.com/andygrunwald/go-jira"
@@ -49,6 +50,10 @@ const (
 	PluginRepo               = "https://github.com/mattermost/mattermost-plugin-jira"
 )
 
+// Every field needs an explicit lowercase json tag: the server stores and
+// reads plugin settings under strings.ToLower of the plugin.json key, so an
+// untagged field makes storeConfig write a second, colliding PascalCase copy
+// of the same setting.
 type externalConfig struct {
 	// Setting to turn on/off the webapp components of this plugin
 	EnableJiraUI bool `json:"enablejiraui"`
@@ -63,50 +68,50 @@ type externalConfig struct {
 	Secret string `json:"secret"`
 
 	// What MM roles that can create subscriptions
-	RolesAllowedToEditJiraSubscriptions string
+	RolesAllowedToEditJiraSubscriptions string `json:"rolesallowedtoeditjirasubscriptions"`
 
 	// Comma separated list of jira groups with permission. Empty is all.
-	GroupsAllowedToEditJiraSubscriptions string
+	GroupsAllowedToEditJiraSubscriptions string `json:"groupsallowedtoeditjirasubscriptions"`
 
 	// Maximum attachment size allowed to be uploaded to Jira, can be a
 	// number, optionally followed by one of [b, kb, mb, gb, tb]
-	MaxAttachmentSize string
+	MaxAttachmentSize string `json:"maxattachmentsize"`
 
 	// Additional Help Text to be shown in the output of '/jira help' command
-	JiraAdminAdditionalHelpText string
+	JiraAdminAdditionalHelpText string `json:"jiraadminadditionalhelptext"`
 
 	// When enabled, a subscription without security level rules will filter out an issue that has a security level assigned
-	SecurityLevelEmptyForJiraSubscriptions bool
+	SecurityLevelEmptyForJiraSubscriptions bool `json:"securitylevelemptyforjirasubscriptions"`
 
 	// RHSDefaultStyle is the panel style for users who did not choose their own.
-	RHSDefaultStyle string
+	RHSDefaultStyle string `json:"rhsdefaultstyle"`
 
 	// RHSDevMode limits the whole plugin to the RHSAllowedUsers logins.
-	RHSDevMode bool
+	RHSDevMode bool `json:"rhsdevmode"`
 
 	// RHSAllowedUsers are the development mode users.
-	RHSAllowedUsers string
+	RHSAllowedUsers string `json:"rhsallowedusers"`
 
 	// Hide issue descriptions and comments in Webhook and Subscription messages
-	HideDecriptionComment bool
+	HideDecriptionComment bool `json:"hidedecriptioncomment"`
 
 	// Enable slash command autocomplete
-	EnableAutocomplete bool
+	EnableAutocomplete bool `json:"enableautocomplete"`
 
 	// Enable Webhook Event Logging
-	EnableWebhookEventLogging bool
+	EnableWebhookEventLogging bool `json:"enablewebhookeventlogging"`
 
 	// Display subscription name in notifications
-	DisplaySubscriptionNameInNotifications bool
+	DisplaySubscriptionNameInNotifications bool `json:"displaysubscriptionnameinnotifications"`
 
 	// The encryption key used to encrypt stored api tokens
-	EncryptionKey string
+	EncryptionKey string `json:"encryptionkey"`
 
 	// API token from Jira
-	AdminAPIToken string
+	AdminAPIToken string `json:"adminapitoken"`
 
 	// Email of the admin
-	AdminEmail string
+	AdminEmail string `json:"adminemail"`
 
 	// Number of days Jira comments will be posted as threaded replies instead of a new post
 	ThreadedJiraCommentSubscriptionDuration string `json:"threadedjiracommentsubscriptionduration"`
@@ -118,8 +123,8 @@ type externalConfig struct {
 }
 
 type TeamList struct {
-	Name string
-	ID   string
+	Name string `json:"name"`
+	ID   string `json:"id"`
 }
 
 const defaultMaxAttachmentSize = types.ByteSize(100 * 1024 * 1024) // 100Mb
@@ -188,6 +193,10 @@ type Plugin struct {
 	rhsStatusCache     map[rhsStatusCacheKey]*rhsStatusCacheEntry
 	rhsStatusCacheLock sync.RWMutex
 	rhsStatusFlights   map[rhsStatusCacheKey]*rhsStatusFlight
+
+	// Set when the Server/DC Basic auth retry of the Admin API Token is also
+	// rejected, so a bad credential doesn't add a failed login on every request.
+	adminBasicFallbackFailed atomic.Bool
 }
 
 func (p *Plugin) getConfig() config {
@@ -221,6 +230,7 @@ func (p *Plugin) OnConfigurationChange() error {
 	if err != nil {
 		return errors.WithMessage(err, "failed to load plugin configuration")
 	}
+	p.adminBasicFallbackFailed.Store(false)
 
 	ec.MaxAttachmentSize = strings.TrimSpace(ec.MaxAttachmentSize)
 	maxAttachmentSize := defaultMaxAttachmentSize
@@ -235,24 +245,37 @@ func (p *Plugin) OnConfigurationChange() error {
 		}
 	}
 
-	jsonBytes, err := json.Marshal(ec.AdminAPIToken)
-	if err != nil {
-		p.client.Log.Warn("Error marshaling the admin API token", "error", err.Error())
-		return err
+	prevExternal := p.getConfig().externalConfig
+
+	switch {
+	case ec.AdminAPIToken == model.FakeSetting:
+		ec.AdminAPIToken = prevExternal.AdminAPIToken
+	case ec.AdminAPIToken == "":
+	case ec.AdminAPIToken == prevExternal.AdminAPIToken:
+	default:
+		if ec.EncryptionKey == "" {
+			p.client.Log.Warn("Encryption key required to encrypt admin API token")
+			return errors.New("failed to encrypt admin token. Encryption key not generated")
+		}
+		if _, decErr := decrypt([]byte(ec.AdminAPIToken), []byte(ec.EncryptionKey)); decErr == nil {
+			break
+		}
+		jsonBytes, err := json.Marshal(ec.AdminAPIToken)
+		if err != nil {
+			p.client.Log.Warn("Error marshaling the admin API token", "error", err.Error())
+			return err
+		}
+		encryptedAdminAPIToken, err := encrypt(jsonBytes, []byte(ec.EncryptionKey))
+		if err != nil {
+			p.client.Log.Warn("Error encrypting the admin API token", "error", err.Error())
+			return err
+		}
+		ec.AdminAPIToken = string(encryptedAdminAPIToken)
 	}
 
-	encryptionKey := ec.EncryptionKey
-	if ec.AdminAPIToken != "" && encryptionKey == "" {
-		p.client.Log.Warn("Encryption key required to encrypt admin API token")
-		return errors.New("failed to encrypt admin token. Encryption key not generated")
+	if ec.AdminEmail == model.FakeSetting {
+		ec.AdminEmail = prevExternal.AdminEmail
 	}
-
-	encryptedAdminAPIToken, err := encrypt(jsonBytes, []byte(encryptionKey))
-	if err != nil {
-		p.client.Log.Warn("Error encrypting the admin API token", "error", err.Error())
-		return err
-	}
-	ec.AdminAPIToken = string(encryptedAdminAPIToken)
 
 	// Default to 30 days if not set
 	if ec.ThreadedJiraCommentSubscriptionDuration == "" {
@@ -470,15 +493,16 @@ func (p *Plugin) SetupAutolink(instances *Instances) {
 			continue
 		}
 
-		if p.getConfig().AdminAPIToken == "" || p.getConfig().AdminEmail == "" {
-			p.client.Log.Info("unable to setup autolink due to missing API Token or Admin Email")
-			continue
-		}
-
 		switch instance.(type) {
 		case *cloudInstance, *cloudOAuthInstance:
 		default:
 			p.client.Log.Info("only cloud and cloud-oauth instances supported for autolink")
+			continue
+		}
+
+		// Cloud instances require both the token and admin email for Basic auth.
+		if p.getConfig().AdminAPIToken == "" || p.getConfig().AdminEmail == "" {
+			p.client.Log.Info("unable to setup autolink due to missing API Token or Admin Email")
 			continue
 		}
 
@@ -526,7 +550,7 @@ func (p *Plugin) AddAutolinksForCloudInstance(ci *cloudInstance) error {
 }
 
 func (p *Plugin) AddAutolinksForCloudOAuthInstance(coi *cloudOAuthInstance) error {
-	plist, err := p.GetProjectListWithAPIToken(string(coi.InstanceID))
+	plist, err := p.GetProjectListWithAPIToken(coi)
 	if err != nil {
 		return fmt.Errorf("error getting project list: %w", err)
 	}
@@ -691,6 +715,10 @@ func (c *externalConfig) setDefaults() (bool, error) {
 }
 
 func (p *Plugin) setDefaultConfiguration() error {
+	if err := p.normalizeStoredPluginConfig(); err != nil {
+		return err
+	}
+
 	ec := externalConfig{}
 	err := p.client.Configuration.LoadPluginConfiguration(&ec)
 	if err != nil {

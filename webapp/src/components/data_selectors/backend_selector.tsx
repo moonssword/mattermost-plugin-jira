@@ -20,7 +20,7 @@ import {jiraImageURL} from 'utils/jira_image_url';
 
 const searchDebounceDelay = 400;
 
-export type Props = ReactSelectSettingProps & {
+export type Props = Omit<ReactSelectSettingProps, 'onChange' | 'value'> & {
     hideRequiredStar?: boolean;
     onChange: (values: string | string[]) => void;
     value?: string | string[];

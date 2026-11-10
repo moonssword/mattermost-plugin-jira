@@ -72,8 +72,8 @@ func (jwh *JiraWebhook) expandIssue(p *Plugin, instanceID types.ID) error {
 				// User is not connected, so we try to fall back to JWT bot
 				if instance.JWTInstance == nil {
 					// Using API token to fetch the issue details as users were not getting notified for the events triggered by a non connected user i.e. oauth token is absent
-					if p.getConfig().AdminAPIToken != "" {
-						issue, apiTokenErr := p.GetIssueDataWithAPIToken(jwh.Issue.Key, instance.GetID().String())
+					if p.hasAdminAPIToken(instance) {
+						issue, apiTokenErr := p.GetIssueDataWithAPIToken(jwh.Issue.Key, instance)
 						if apiTokenErr != nil {
 							return apiTokenErr
 						}
@@ -207,7 +207,22 @@ func mdUser(user *jira.User) string {
 	if user == nil {
 		return ""
 	}
-	return user.DisplayName
+	if v := strings.TrimSpace(user.DisplayName); v != "" {
+		return v
+	}
+	if v := strings.TrimSpace(user.Name); v != "" {
+		return v
+	}
+	if v := strings.TrimSpace(user.AccountID); v != "" {
+		return v
+	}
+	if v := strings.TrimSpace(user.Key); v != "" {
+		return v
+	}
+	if v := strings.TrimSpace(user.EmailAddress); v != "" {
+		return v
+	}
+	return "Someone"
 }
 
 func truncate(s string, maxLen int) string {

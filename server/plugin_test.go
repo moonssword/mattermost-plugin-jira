@@ -123,6 +123,7 @@ func TestPlugin(t *testing.T) {
 			api.On("LogWarn", mockAnythingOfTypeBatch("string", 13)...).Return(nil)
 
 			api.On("KVGet", mock.AnythingOfType("string")).Return(make([]byte, 0), (*model.AppError)(nil))
+			api.On("KVSetWithOptions", mock.AnythingOfType("string"), mock.Anything, mock.Anything).Return(true, (*model.AppError)(nil))
 			api.On("GetDirectChannel", mockAnythingOfTypeBatch("string", 2)...).Return(
 				&model.Channel{}, (*model.AppError)(nil))
 			api.On("GetUserByUsername", "theuser").Return(&model.User{
@@ -165,14 +166,14 @@ func TestSetupAutolink(t *testing.T) {
 			name: "Missing API token or Admin email",
 			setup: func(p *Plugin, mockAPI *plugintest.API, dummyInstanceStore *mockInstanceStore) {
 				mockAPI.On("LogInfo", "unable to setup autolink due to missing API Token or Admin Email").Return(nil).Times(1)
-				dummyInstanceStore.On("LoadInstance", mock.Anything).Return(&serverInstance{}, nil).Times(1)
+				dummyInstanceStore.On("LoadInstance", mock.Anything).Return(&cloudInstance{}, nil).Times(1)
 
 				p.updateConfig(func(c *config) {
 					c.AdminAPIToken = ""
 					c.AdminEmail = ""
 				})
 			},
-			InstanceType: ServerInstanceType,
+			InstanceType: CloudInstanceType,
 		},
 		{
 			name: "Unsupported instance type",

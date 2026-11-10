@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	jira "github.com/andygrunwald/go-jira"
 	"github.com/pkg/errors"
@@ -340,11 +341,6 @@ func (p *Plugin) CreateIssue(in *InCreateIssue) (*jira.Issue, int, error) {
 		}
 		permalink := getPermaLink(instance, in.PostID, in.CurrentTeam)
 
-		_, err = p.client.Channel.GetMember(post.ChannelId, in.mattermostUserID.String())
-		if err != nil {
-			return nil, http.StatusForbidden, errors.New("User does not have access to this post")
-		}
-
 		if len(in.Fields.Description) > 0 {
 			in.Fields.Description += fmt.Sprintf(p.jiraFormat("\n\n_Issue created from a [message in Mattermost|%v]_."), permalink)
 		} else {
@@ -367,6 +363,14 @@ func (p *Plugin) CreateIssue(in *InCreateIssue) (*jira.Issue, int, error) {
 	channelID := in.ChannelID
 	if post != nil {
 		channelID = post.ChannelId
+	}
+
+	if channelID == "" {
+		return nil, http.StatusBadRequest, errors.New("either post_id or channel_id must be provided")
+	}
+
+	if _, err = p.client.Channel.GetMember(channelID, in.mattermostUserID.String()); err != nil {
+		return nil, http.StatusForbidden, errors.New("User does not have access to this channel")
 	}
 
 	for i, notCovered := range in.RequiredFieldsNotCovered {
@@ -960,8 +964,14 @@ func (p *Plugin) GetSearchIssues(instanceID, mattermostUserID types.ID, q, jqlSt
 		fieldsStr = "key,summary"
 	}
 	if len(jqlString) == 0 {
-		escaped := strings.ReplaceAll(q, `"`, `\"`)
-		jqlString = fmt.Sprintf(`text ~ "%s" OR text ~ "%s*"`, escaped, escaped)
+		q = strings.TrimSpace(q)
+		if len(q) == 0 {
+			jqlString = "updated >= -4w ORDER BY updated DESC"
+		} else {
+			escaped := strings.ReplaceAll(q, `\`, `\\`)
+			escaped = strings.ReplaceAll(escaped, `"`, `\"`)
+			jqlString = fmt.Sprintf(`text ~ "%s" OR text ~ "%s*"`, escaped, escaped)
+		}
 	}
 
 	limit := 50
@@ -987,12 +997,11 @@ func (p *Plugin) GetSearchIssues(instanceID, mattermostUserID types.ID, q, jqlSt
 	var found []jira.Issue
 	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		found, _ = client.SearchIssues(jqlString, &jira.SearchOptions{
 			MaxResults: limit,
 			Fields:     fields,
 		})
-
-		wg.Done()
 	}()
 
 	wg.Wait()
@@ -1655,19 +1664,14 @@ func (p *Plugin) GetIssueByKey(instanceID, mattermostUserID types.ID, issueKey s
 	return issue, nil
 }
 
-func (p *Plugin) GetIssueDataWithAPIToken(issueID, instanceID string) (*jira.Issue, error) {
+func (p *Plugin) GetIssueDataWithAPIToken(issueID string, instance Instance) (*jira.Issue, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/api/2/issue/%s", instanceID, issueID), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/api/2/issue/%s", instance.GetJiraBaseURL(), issueID), nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create http request for fetching issue data. IssueID: %s", issueID)
 	}
 
-	err = p.SetAdminAPITokenRequestHeader(req)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := client.Do(req)
+	resp, err := p.doAdminAPITokenRequest(client, req, instance)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get issue data. IssueID: %s", issueID)
 	}
@@ -1697,6 +1701,63 @@ func (p *Plugin) GetIssueDataWithAPIToken(issueID, instanceID string) (*jira.Iss
 	return issue, nil
 }
 
+// GetWatchersWithAPIToken fetches the watcher list for an issue using the
+// admin API token configured in plugin settings. This serves as a fallback
+// when none of the issue's Creator, Assignee, or Reporter have connected
+// Jira accounts. Works with both Jira Cloud (email + API token via HTTP
+// Basic auth) and Server/Data Center (PAT via HTTP Bearer auth).
+func (p *Plugin) GetWatchersWithAPIToken(issueKeyOrID string, instance Instance) (*jira.Watches, error) {
+	isCloud := instance.Common().IsCloudInstance()
+	apiVersion := "2"
+	if isCloud {
+		apiVersion = "3"
+	}
+
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/api/%s/issue/%s/watchers", instance.GetJiraBaseURL(), apiVersion, issueKeyOrID), nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to create HTTP request for fetching watchers. Issue: %s", issueKeyOrID)
+	}
+
+	resp, err := p.doAdminAPITokenRequest(httpClient, req, instance)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to fetch watchers. Issue: %s", issueKeyOrID)
+	}
+	if resp == nil || resp.Body == nil {
+		return nil, errors.Errorf("missing response data for watchers. Issue: %s", issueKeyOrID)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to read watchers response. StatusCode: %d, Issue: %s", resp.StatusCode, issueKeyOrID)
+	}
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+	case http.StatusNotFound:
+		return nil, errors.Errorf("issue does not exist or admin does not have permission to view watchers. StatusCode: %d, Issue: %s", resp.StatusCode, issueKeyOrID)
+	case http.StatusUnauthorized, http.StatusForbidden:
+		// Log the auth rejection reason (never the token) to help diagnose cases like
+		// expired/invalid credentials, CAPTCHA challenges, or missing project permissions.
+		p.client.Log.Debug("Admin API token request for watchers was rejected",
+			"statusCode", resp.StatusCode,
+			"seraphLoginReason", resp.Header.Get("X-Seraph-LoginReason"),
+			"isCloud", isCloud,
+			"issue", issueKeyOrID)
+		return nil, errors.Errorf("admin does not have permission to view watchers. StatusCode: %d, Issue: %s", resp.StatusCode, issueKeyOrID)
+	default:
+		return nil, errors.Errorf("unexpected status code when fetching watchers. StatusCode: %d, Issue: %s", resp.StatusCode, issueKeyOrID)
+	}
+
+	var watchers jira.Watches
+	if err = json.Unmarshal(body, &watchers); err != nil {
+		return nil, errors.Wrapf(err, "failed to unmarshal watchers data. Issue: %s", issueKeyOrID)
+	}
+
+	return &watchers, nil
+}
+
 func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 	if !wh.eventTypes.ContainsAny(createdCommentEvent) {
 		return
@@ -1713,15 +1774,51 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 		commentMessage = fmt.Sprintf("%s **commented** on %s\n\n*You are watching this %s*",
 			commentAuthor, jwhook.mdKeySummaryLink(), jwhook.mdIssueType())
 	}
+
+	var watchers *jira.Watches
+	lookupSource := "connected_user"
 	client, connection, err := wh.fetchConnectedUser(p, instanceID)
-	if err != nil || client == nil {
-		p.errorf("error while fetching connected users for the instanceID %v , Error : %v", instanceID, err)
+	if err != nil {
+		p.errorf("error while fetching connected users for the instanceID %v, Error: %v", instanceID, err)
 		return
 	}
+	if client == nil {
+		instance, loadErr := p.instanceStore.LoadInstance(instanceID)
+		if loadErr != nil {
+			p.errorf("error loading instance for admin-token watcher lookup, instanceID %v, err: %v", instanceID, loadErr)
+			return
+		}
 
-	watchers, err := client.GetWatchers(instanceID.String(), wh.Issue.ID, connection)
-	if err != nil {
-		p.errorf("error while getting watchers for the issue id %v , err : %v", wh.Issue.ID, err)
+		if !p.hasAdminAPIToken(instance) {
+			p.errorf("no connected user found and no admin API token configured for instanceID %v", instanceID)
+			return
+		}
+
+		issueRef := wh.Issue.ID
+		if wh.Issue.Key != "" {
+			issueRef = wh.Issue.Key
+		}
+		p.client.Log.Info("No connected users found for watcher lookup, falling back to admin API token",
+			"instanceID", instanceID.String(), "issue", issueRef)
+
+		lookupSource = "admin_api_token"
+		watchers, err = p.GetWatchersWithAPIToken(issueRef, instance)
+		if err != nil {
+			p.errorf("error while getting watchers with admin API token for issue %v, err: %v", issueRef, err)
+			return
+		}
+	} else {
+		watchers, err = client.GetWatchers(instanceID.String(), wh.Issue.ID, connection)
+		if err != nil {
+			p.errorf("error while getting watchers for the issue id %v, err: %v", wh.Issue.ID, err)
+			return
+		}
+	}
+
+	if watchers.WatchCount > 0 && len(watchers.Watchers) == 0 {
+		p.client.Log.Warn("Jira returned a non-zero watch count but an empty watcher list; "+
+			"the Jira account used for watcher lookup likely lacks the 'View voters and watchers' project permission",
+			"issue_id", wh.Issue.ID, "watch_count", watchers.WatchCount, "instance_id", instanceID.String(), "lookup_source", lookupSource)
 		return
 	}
 
@@ -1733,6 +1830,12 @@ func (p *Plugin) checkIssueWatchers(wh *webhook, instanceID types.ID) {
 	for idx, watcherUser := range watchers.Watchers {
 		if watcherUser == nil {
 			p.client.Log.Warn("nil watcherUser in watchers.Watchers", "issue_id", wh.Issue.ID, "index", idx)
+			continue
+		}
+		if watcherUser.AccountID == "" && watcherUser.Name == "" {
+			p.client.Log.Warn("Skipping watcher with empty accountId and name; cannot map to a Mattermost user",
+				"issue_id", wh.Issue.ID, "index", idx, "lookup_source", lookupSource,
+				"display_name", watcherUser.DisplayName)
 			continue
 		}
 		if !shouldNotifyWatcherUser(*watcherUser, author) {
@@ -1894,19 +1997,15 @@ type ProjectSearchResponse struct {
 	Values     jira.ProjectList `json:"values"`
 }
 
-func (p *Plugin) GetProjectListWithAPIToken(instanceID string) (*jira.ProjectList, error) {
+func (p *Plugin) GetProjectListWithAPIToken(instance Instance) (*jira.ProjectList, error) {
+	instanceID := instance.GetID().String()
 	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/api/3/project/search", instanceID), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/api/3/project/search", instance.GetJiraBaseURL()), nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create HTTP request for fetching project list data. InstanceID: %s", instanceID)
 	}
 
-	err = p.SetAdminAPITokenRequestHeader(req)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := client.Do(req)
+	resp, err := p.doAdminAPITokenRequest(client, req, instance)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to fetch project list data. InstanceID: %s", instanceID)
 	}

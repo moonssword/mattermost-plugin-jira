@@ -48,7 +48,7 @@ export type Props = {
     removeValidate: (isValid: () => boolean) => void;
     instanceID: string;
     securityLevelEmptyForJiraSubscriptions?: boolean;
-    searchTeamFields: (params: {fieldValue: string; instance_id: string}) => Promise<{data: {items: {name: string; id: string}[]}; error?: Error}>;
+    searchTeamFields: (params: {fieldValue: string; instance_id: string}) => Promise<{data: {name: string; id: string}[]}>;
     projectKey: string;
 };
 
@@ -352,7 +352,7 @@ export default class ChannelSubscriptionFilter extends React.PureComponent<Props
                 <JiraTeamSelector
                     {...selectProps}
                     fieldName={field.name}
-                    value={value.values}
+                    value={value.values[0] || ''}
                     onChange={this.handleTeamSelection}
                     searchTeamFields={this.props.searchTeamFields}
                 />
