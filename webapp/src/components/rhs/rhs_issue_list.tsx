@@ -6,11 +6,13 @@ import React, {useState} from 'react';
 import {RHSErrorCode, RHSIssue} from 'types/rhs';
 
 import {RHSGroupKey, groupRHSIssues} from 'utils/rhs_group';
+import {lazyRHSGroups} from 'utils/rhs_group_lazy';
 
 import RHSIssueRow from './rhs_issue_row';
 import RHSLoadMore from './rhs_load_more';
 import {RHSSkeletonRows} from './rhs_skeleton';
 import {RHS_STRINGS} from './rhs_strings';
+import {LoadRHSLaneCounts, LoadRHSLanePage, useRHSLanes} from './sections/my_issues/use_rhs_lanes';
 
 const groupTitles: Record<RHSGroupKey, string> = {
     get indeterminate() {
@@ -35,7 +37,26 @@ export type Props = {
     onLoadMore: () => void;
     onRetry: () => void;
     onOpenIssue?: (key: string) => void;
+
+    // Each group loads on its own, with its counter first: a folded group
+    // shows the counter only and loads when unfolded. Without these the
+    // list pages through the first-page list as before.
+    lanesEnabled?: boolean;
+    lanesResetKey?: string;
+    lanesRefreshKey?: string | number;
+    loadLaneCounts?: LoadRHSLaneCounts;
+    loadLanePage?: LoadRHSLanePage;
 };
+
+type ShownGroup = {
+    key: RHSGroupKey;
+    lane: string;
+    issues: RHSIssue[];
+    count: number;
+};
+
+const noCounts: LoadRHSLaneCounts = () => Promise.resolve({data: {supported: false, lanes: []}});
+const noPage: LoadRHSLanePage = () => Promise.resolve({error: true});
 
 // Finished work starts folded, like "Готово" in the design.
 const COLLAPSED_BY_DEFAULT: RHSGroupKey[] = ['done'];
@@ -57,12 +78,82 @@ export default function RHSIssueList(props: Props): JSX.Element {
         });
     };
 
+    const lazyWanted = Boolean(props.loadLaneCounts && props.loadLanePage) && props.lanesEnabled !== false;
+    const openLanes = (['indeterminate', 'new', 'done'] as RHSGroupKey[]).filter((key) => !isCollapsed(key)).map((key) => 'category:' + key);
+    const lanes = useRHSLanes({
+        enabled: lazyWanted,
+        resetKey: props.lanesResetKey || '',
+        refreshKey: props.lanesRefreshKey ?? '',
+        activeLanes: openLanes,
+        loadCounts: props.loadLaneCounts || noCounts,
+        loadPage: props.loadLanePage || noPage,
+    });
+    const lazy = lazyWanted && lanes.supported !== false;
+
+    const groups: ShownGroup[] = lazy ? lazyRHSGroups(props.issues, lanes.counts, lanes.pages).map((g) => ({
+        ...g,
+        count: g.count === null ? g.issues.length : g.count,
+    })) : groupRHSIssues(props.issues).map((g) => ({...g, lane: '', count: g.issues.length}));
+
+    // Under a folded group new rows would not show, the end of the list would
+    // stay in view and load page after page: unfolding loads instead.
+    const lastGroup = groups[groups.length - 1];
+    const autoLoad = !lastGroup || !isCollapsed(lastGroup.key);
+
+    const groupTail = (group: ShownGroup) => {
+        if (!lazy) {
+            return null;
+        }
+        const page = lanes.pages.get(group.lane);
+        if (!page) {
+            return null;
+        }
+        if (page.error) {
+            return (
+                <div
+                    className='jira-rhs-list-error'
+                    data-testid={'rhs-group-error-' + group.key}
+                >
+                    <span>{RHS_STRINGS.error}</span>
+                    <button
+                        type='button'
+                        className='btn btn-secondary btn-sm'
+                        onClick={() => lanes.retry(group.lane)}
+                    >
+                        {RHS_STRINGS.retry}
+                    </button>
+                </div>
+            );
+        }
+        if (page.loading && group.issues.length === 0) {
+            return (
+                <div
+                    role='status'
+                    aria-label={RHS_STRINGS.loading}
+                    data-testid='rhs-list-loading'
+                >
+                    <RHSSkeletonRows count={2}/>
+                </div>
+            );
+        }
+        if (!page.isLast && page.issues.length > 0) {
+            return (
+                <RHSLoadMore
+                    loading={page.loading}
+                    onLoadMore={() => lanes.loadMore(group.lane)}
+                    testId={'rhs-group-more-' + group.key}
+                />
+            );
+        }
+        return null;
+    };
+
     return (
         <div
             className='jira-rhs-list'
             data-testid='rhs-issue-list'
         >
-            {groupRHSIssues(props.issues).map((group) => {
+            {groups.map((group) => {
                 const collapsed = isCollapsed(group.key);
                 return (
                     <section
@@ -85,7 +176,7 @@ export default function RHSIssueList(props: Props): JSX.Element {
                                     aria-hidden={true}
                                 />
                                 <span>{groupTitles[group.key]}</span>
-                                <span className='jira-rhs-group-count'>{group.issues.length}</span>
+                                <span className='jira-rhs-group-count'>{group.count}</span>
                             </button>
                         </h5>
                         {!collapsed && group.issues.map((issue) => (
@@ -96,10 +187,11 @@ export default function RHSIssueList(props: Props): JSX.Element {
                                 onOpen={props.onOpenIssue}
                             />
                         ))}
+                        {!collapsed && groupTail(group)}
                     </section>
                 );
             })}
-            {props.loading && props.isLast && (
+            {props.loading && !lazy && props.isLast && (
                 <div
                     role='status'
                     aria-label={RHS_STRINGS.loading}
@@ -123,7 +215,7 @@ export default function RHSIssueList(props: Props): JSX.Element {
                     </button>
                 </div>
             )}
-            {!props.isLast && props.error === null && (
+            {!lazy && !props.isLast && props.error === null && autoLoad && (
                 <RHSLoadMore
                     loading={props.loading}
                     onLoadMore={props.onLoadMore}

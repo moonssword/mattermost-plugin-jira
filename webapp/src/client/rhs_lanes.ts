@@ -9,10 +9,14 @@ import {buildRHSIssuesQuery, rhsRequest} from './rhs';
 import {buildQueryString} from './index';
 
 // getRHSLanes counts the issues of every column of the board view for the
-// current filter or search.
-export async function getRHSLanes(baseUrl: string, params: GetRHSIssuesParams): Promise<RHSLanesResponse> {
+// current filter or search; with group 'category', of every status category,
+// for the groups of the list view.
+export async function getRHSLanes(baseUrl: string, params: GetRHSIssuesParams, group = ''): Promise<RHSLanesResponse> {
     const query = buildRHSIssuesQuery({...params, nextPageToken: '', lane: ''});
     delete query.estimate_field;
+    if (group) {
+        query.group = group;
+    }
     const raw = await rhsRequest<Partial<RHSLanesResponse>>(`${baseUrl}/api/v2/rhs/lanes${buildQueryString(query)}`);
     return {
         supported: Boolean(raw.supported),

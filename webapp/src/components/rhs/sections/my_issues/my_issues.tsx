@@ -1,7 +1,12 @@
 // Copyright (c) 2017-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 
 import type {ResolveAndFetchArgs} from 'actions';
 
@@ -74,6 +79,7 @@ export type Props = {
     loadRHSIssueTransitions: (key: string) => Promise<{data?: RHSTransition[]; error?: unknown}>;
     moveRHSIssue: (key: string, transitionID: string) => Promise<{data?: unknown; error?: unknown}>;
     loadRHSLaneCounts?: LoadRHSLaneCounts;
+    loadRHSGroupCounts?: LoadRHSLaneCounts;
     loadRHSLanePage?: LoadRHSLanePage;
 };
 
@@ -135,6 +141,18 @@ export default function MyIssues(props: Props): JSX.Element {
         settledRequest.current = props.requestId ?? 0;
     }
     const currentBoard = props.board && props.board.id === props.boardId ? props.board : null;
+    const lanesResetKey = [instanceID, filter, query, props.sort, props.boardId, currentBoard?.estimateField || ''].join('|');
+
+    // The board view is rebuilt when the list reloads from scratch (a new
+    // sort or filter); the chosen column stays. Another board starts over.
+    const boardLane = useRef({key: '', lane: '', picked: false});
+    const boardLaneKey = instanceID + '|' + props.boardId;
+    if (boardLane.current.key !== boardLaneKey) {
+        boardLane.current = {key: boardLaneKey, lane: '', picked: false};
+    }
+    const onLaneChange = useCallback((lane: string, picked: boolean) => {
+        boardLane.current = {...boardLane.current, lane, picked};
+    }, []);
 
     // Fetch on first mount unless this instance's list is already in the
     // store, and again whenever the active instance changes.
@@ -234,10 +252,13 @@ export default function MyIssues(props: Props): JSX.Element {
                 loadTransitions={props.loadRHSIssueTransitions}
                 moveIssue={props.moveRHSIssue}
                 lanesEnabled={!props.boardId || currentBoard !== null}
-                lanesResetKey={[instanceID, filter, query, props.sort, props.boardId, currentBoard?.estimateField || ''].join('|')}
+                lanesResetKey={lanesResetKey}
                 lanesRefreshKey={settledRequest.current}
                 loadLaneCounts={props.loadRHSLaneCounts}
                 loadLanePage={props.loadRHSLanePage}
+                initialLane={boardLane.current.lane}
+                initialLanePicked={boardLane.current.picked}
+                onLaneChange={onLaneChange}
             />
         ) : (
             <RHSIssueList
@@ -248,6 +269,11 @@ export default function MyIssues(props: Props): JSX.Element {
                 onLoadMore={onLoadMore}
                 onRetry={onRetry}
                 onOpenIssue={props.openRHSIssue}
+                lanesEnabled={!props.boardId || currentBoard !== null}
+                lanesResetKey={lanesResetKey}
+                lanesRefreshKey={settledRequest.current}
+                loadLaneCounts={props.loadRHSGroupCounts}
+                loadLanePage={props.loadRHSLanePage}
             />
         );
         break;

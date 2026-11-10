@@ -27,15 +27,18 @@ function laneParams(state: GlobalState): GetRHSIssuesParams {
     };
 }
 
-export const loadRHSLaneCounts = (): Thunk<Promise<{data?: RHSLanesResponse; error?: unknown}>> => {
+export const loadRHSLaneCounts = (group = ''): Thunk<Promise<{data?: RHSLanesResponse; error?: unknown}>> => {
     return async (dispatch, getState) => {
         try {
-            return {data: await getRHSLanes(getPluginServerRoute(getState()), laneParams(getState()))};
+            return {data: await getRHSLanes(getPluginServerRoute(getState()), laneParams(getState()), group)};
         } catch (error) {
             return {error};
         }
     };
 };
+
+// loadRHSGroupCounts counts the status category groups of the list view.
+export const loadRHSGroupCounts = (): Thunk<Promise<{data?: RHSLanesResponse; error?: unknown}>> => loadRHSLaneCounts('category');
 
 export const loadRHSLanePage = (lane: string, nextPageToken = ''): Thunk<Promise<{data?: RHSIssuesResponse; error?: unknown}>> => {
     return async (dispatch, getState) => {

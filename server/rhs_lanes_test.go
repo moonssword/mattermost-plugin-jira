@@ -59,7 +59,7 @@ func TestRHSLaneClause(t *testing.T) {
 		require.NoError(t, err, lane)
 		assert.Equal(t, want, got, lane)
 	}
-	for _, lane := range []string{"column:2", "column:-1", "column:x", "category:done", ""} {
+	for _, lane := range []string{"column:2", "column:-1", "column:x", ""} {
 		_, err := rhsLaneClause(testLaneScope, lane)
 		assert.ErrorIs(t, err, ErrInvalidRHSBoard, lane)
 	}
@@ -74,6 +74,13 @@ func TestRHSLaneClause(t *testing.T) {
 		assert.Equal(t, want, got, lane)
 	}
 	_, err := rhsLaneClause(nil, "column:0")
+	assert.ErrorIs(t, err, ErrInvalidRHSBoard)
+
+	// The list view groups by category on a board too.
+	got, err := rhsLaneClause(testLaneScope, "category:done")
+	require.NoError(t, err)
+	assert.Equal(t, "statusCategory = done", got)
+	_, err = rhsLaneClause(testLaneScope, "category:other")
 	assert.ErrorIs(t, err, ErrInvalidRHSBoard)
 
 	_, err = rhsLaneClause(&rhsBoardScope{columns: []RHSBoardColumn{{StatusIDs: []string{"1) OR (1=1"}}}}, "column:0")
@@ -108,7 +115,7 @@ func TestCountRHSLanes(t *testing.T) {
 			"status not in (1, 1000": 2,
 		}}
 		q := &rhsFilteredQuery{client: client, sort: "updated", kind: rhsSearchNone, scope: testLaneScope, jql: "filter = 7" + testLaneOrder}
-		lanes, err := countRHSLanes(q, map[string]string{"1": "new", "10000": "indeterminate", "10001": "done"})
+		lanes, err := countRHSLanes(q, map[string]string{"1": "new", "10000": "indeterminate", "10001": "done"}, false)
 		require.NoError(t, err)
 		assert.True(t, lanes.Supported)
 		require.Len(t, lanes.Lanes, 3)
@@ -127,7 +134,7 @@ func TestCountRHSLanes(t *testing.T) {
 	t.Run("status categories without a board", func(t *testing.T) {
 		client := &countingRHSClient{noTotal: true}
 		q := &rhsFilteredQuery{client: client, sort: "updated", kind: rhsSearchNone, jql: "assignee = currentUser()" + testLaneOrder}
-		lanes, err := countRHSLanes(q, nil)
+		lanes, err := countRHSLanes(q, nil, false)
 		require.NoError(t, err)
 		require.Len(t, lanes.Lanes, 3)
 		assert.Equal(t, "category:new", lanes.Lanes[0].ID)
@@ -135,10 +142,23 @@ func TestCountRHSLanes(t *testing.T) {
 		assert.Nil(t, lanes.Lanes[0].Count)
 	})
 
+	t.Run("status categories on a board for the list view", func(t *testing.T) {
+		client := &countingRHSClient{totals: map[string]int{"statusCategory = done": 29}}
+		q := &rhsFilteredQuery{client: client, sort: "updated", kind: rhsSearchNone, scope: testLaneScope, jql: "filter = 7" + testLaneOrder}
+		lanes, err := countRHSLanes(q, nil, true)
+		require.NoError(t, err)
+		require.Len(t, lanes.Lanes, 3)
+		assert.Equal(t, "category:done", lanes.Lanes[2].ID)
+		assert.Equal(t, 29, *lanes.Lanes[2].Count)
+		for _, jql := range client.jqls {
+			assert.True(t, strings.HasPrefix(jql, "(filter = 7) AND statusCategory"), jql)
+		}
+	})
+
 	t.Run("a search that cannot be split", func(t *testing.T) {
 		client := &countingRHSClient{}
 		q := &rhsFilteredQuery{client: client, sort: "updated", kind: rhsSearchKey, jql: `key = "A-1"`}
-		lanes, err := countRHSLanes(q, nil)
+		lanes, err := countRHSLanes(q, nil, false)
 		require.NoError(t, err)
 		assert.False(t, lanes.Supported)
 		assert.Empty(t, client.jqls)
@@ -147,7 +167,7 @@ func TestCountRHSLanes(t *testing.T) {
 	t.Run("nothing can match", func(t *testing.T) {
 		client := &countingRHSClient{}
 		q := &rhsFilteredQuery{client: client, sort: "updated", kind: rhsSearchText, scope: testLaneScope}
-		lanes, err := countRHSLanes(q, nil)
+		lanes, err := countRHSLanes(q, nil, false)
 		require.NoError(t, err)
 		assert.True(t, lanes.Supported)
 		for _, lane := range lanes.Lanes {

@@ -48,6 +48,12 @@ export type Props = {
     lanesRefreshKey?: string | number;
     loadLaneCounts?: LoadRHSLaneCounts;
     loadLanePage?: LoadRHSLanePage;
+
+    // The column chosen before the view was rebuilt, for example by a new
+    // sort, and whether the user chose it.
+    initialLane?: string;
+    initialLanePicked?: boolean;
+    onLaneChange?: (lane: string, picked: boolean) => void;
 };
 
 const noCounts: LoadRHSLaneCounts = () => Promise.resolve({data: {supported: false, lanes: []}});
@@ -62,16 +68,25 @@ function cacheKey(issue: RHSIssue): string {
 // active card to the next column.
 export default function BoardView(props: Props): JSX.Element {
     const listLanes = buildRHSLanes(props.issues, props.board, RHS_STRINGS.boardOutside);
-    const [laneId, setLaneId] = useState(() => defaultRHSLane(listLanes));
+    const [laneId, setLaneId] = useState(() => {
+        if (props.initialLane && listLanes.some((l) => l.id === props.initialLane)) {
+            return props.initialLane;
+        }
+        return defaultRHSLane(listLanes);
+    });
 
     // Set once the user opens a column: the counters no longer choose it.
-    const picked = useRef(false);
+    const picked = useRef(Boolean(props.initialLanePicked && props.initialLane === laneId));
+    const onLaneChange = props.onLaneChange;
+    useEffect(() => {
+        onLaneChange?.(laneId, picked.current);
+    }, [laneId, onLaneChange]);
     const lazyWanted = Boolean(props.loadLaneCounts && props.loadLanePage);
     const lanesData = useRHSLanes({
         enabled: lazyWanted && props.lanesEnabled !== false,
         resetKey: props.lanesResetKey || '',
         refreshKey: props.lanesRefreshKey ?? '',
-        activeLane: laneId,
+        activeLanes: [laneId],
         loadCounts: props.loadLaneCounts || noCounts,
         loadPage: props.loadLanePage || noPage,
     });
@@ -163,6 +178,7 @@ export default function BoardView(props: Props): JSX.Element {
                         onClick={() => {
                             picked.current = true;
                             setLaneId(l.id);
+                            onLaneChange?.(l.id, true);
                         }}
                     >
                         {l.name}

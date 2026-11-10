@@ -152,6 +152,23 @@ describe('board view with columns loaded one at a time', () => {
         expect(screen.getByTestId('rhs-bcard-TES-20')).toBeInTheDocument();
     });
 
+    test('a column chosen by the user survives a rebuilt view', async () => {
+        const onLaneChange = jest.fn();
+        const first = renderLazy({onLaneChange});
+        await waitFor(() => expect(screen.getByTestId('rhs-bcard-TES-20')).toBeInTheDocument());
+        await act(async () => {
+            fireEvent.click(screen.getByTestId('rhs-lane-column:2'));
+        });
+        expect(onLaneChange).toHaveBeenLastCalledWith('column:2', true);
+        first.unmount();
+
+        // A new sort reloads the list and builds the view again.
+        renderLazy({initialLane: 'column:2', initialLanePicked: true, lanesResetKey: 'b'});
+        await waitFor(() => expect(screen.getByTestId('rhs-lane-column:2')).toHaveTextContent('40'));
+        expect(screen.getByTestId('rhs-lane-column:2')).toHaveAttribute('aria-selected', 'true');
+        await waitFor(() => expect(screen.getByTestId('rhs-bcard-TES-30')).toBeInTheDocument());
+    });
+
     test('a search the server cannot split keeps the loaded list in columns', async () => {
         const {props} = renderLazy({
             issues: [issue('TES-1', '3', 'indeterminate')],

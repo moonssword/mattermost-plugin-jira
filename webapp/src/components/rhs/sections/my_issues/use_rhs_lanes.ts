@@ -50,7 +50,9 @@ type Args = {
     // A change reloads the counters and the open column in place: the list
     // was refreshed after a move or a Jira event.
     refreshKey: string | number;
-    activeLane: string;
+
+    // Open columns or groups, loaded as they open.
+    activeLanes: string[];
 };
 
 const EMPTY_PAGE: RHSLanePage = {issues: [], nextPageToken: '', isLast: false, loading: true, error: false};
@@ -58,7 +60,9 @@ const EMPTY_PAGE: RHSLanePage = {issues: [], nextPageToken: '', isLast: false, l
 // useRHSLanes loads the counters of every column at once and the issues of a
 // column when it is opened, page by page.
 export function useRHSLanes(args: Args): RHSLanesData {
-    const {enabled, resetKey, refreshKey, activeLane, loadCounts, loadPage} = args;
+    const {enabled, resetKey, refreshKey, loadCounts, loadPage} = args;
+    const activeKey = args.activeLanes.filter(Boolean).join('\n');
+    const activeLanes = activeKey ? activeKey.split('\n') : [];
     const [supported, setSupported] = useState<boolean | null>(null);
     const [counts, setCounts] = useState<Map<string, number | null>>(() => new Map());
     const [categories, setCategories] = useState<Map<string, string>>(() => new Map());
@@ -145,11 +149,9 @@ export function useRHSLanes(args: Args): RHSLanesData {
             return;
         }
         fetchCounts();
-        if (activeLane) {
-            fetchPage(activeLane, '', false);
-        }
+        activeLanes.forEach((lane) => fetchPage(lane, '', false));
 
-    // The open column is loaded by the effect below when it changes.
+    // The open columns are loaded by the effect below when they change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [resetKey, enabled]);
 
@@ -164,11 +166,17 @@ export function useRHSLanes(args: Args): RHSLanesData {
         requested.current = new Set();
         fetchCounts();
         setPages((current) => {
-            const page = current.get(activeLane);
-            return page ? new Map([[activeLane, page]]) : new Map();
+            const kept = new Map<string, RHSLanePage>();
+            activeLanes.forEach((lane) => {
+                const page = current.get(lane);
+                if (page) {
+                    kept.set(lane, page);
+                }
+            });
+            return kept;
         });
-        if (activeLane && supportedRef.current !== false) {
-            fetchPage(activeLane, '', true);
+        if (supportedRef.current !== false) {
+            activeLanes.forEach((lane) => fetchPage(lane, '', true));
         }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,10 +184,14 @@ export function useRHSLanes(args: Args): RHSLanesData {
 
     // Opening a column loads it.
     useEffect(() => {
-        if (enabled && activeLane && supported !== false && !requested.current.has(activeLane)) {
-            fetchPage(activeLane, '', false);
+        if (!enabled || supported === false) {
+            return;
         }
-    }, [enabled, activeLane, supported, fetchPage]);
+        activeLanes.filter((lane) => !requested.current.has(lane)).forEach((lane) => fetchPage(lane, '', false));
+
+    // activeKey stands for activeLanes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [enabled, activeKey, supported, fetchPage]);
 
     const loadMore = useCallback((lane: string) => {
         const page = pagesRef.current.get(lane);

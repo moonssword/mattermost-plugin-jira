@@ -24,6 +24,11 @@ const (
 	routeAPIRHSLanes = "/rhs/lanes"
 	queryRHSLane     = "lane"
 
+	// queryRHSLaneGroup=category counts the status categories even on a
+	// board: the list view groups issues by category.
+	queryRHSLaneGroup    = "group"
+	rhsLaneGroupCategory = "category"
+
 	rhsLaneColumnPrefix   = "column:"
 	rhsLaneCategoryPrefix = "category:"
 	rhsLaneOutside        = "outside"
@@ -55,8 +60,8 @@ func (p *Plugin) registerRHSLaneRoutes(apiRouter *mux.Router) {
 
 // rhsLaneIDs lists the columns of a query: the board's own, plus the issues
 // whose status is not on the board, or the status categories.
-func rhsLaneIDs(scope *rhsBoardScope) []string {
-	if scope == nil || len(scope.columns) == 0 {
+func rhsLaneIDs(scope *rhsBoardScope, byCategory bool) []string {
+	if byCategory || scope == nil || len(scope.columns) == 0 {
 		ids := make([]string, 0, len(rhsLaneCategories))
 		for _, key := range rhsLaneCategories {
 			ids = append(ids, rhsLaneCategoryPrefix+key)
@@ -82,8 +87,8 @@ func rhsStatusList(ids []string) (string, error) {
 // rhsLaneClause is the JQL that limits a list to one column.
 func rhsLaneClause(scope *rhsBoardScope, lane string) (string, error) {
 	invalid := fmt.Errorf("%w: unknown column %q", ErrInvalidRHSBoard, lane)
-	if scope == nil || len(scope.columns) == 0 {
-		switch strings.TrimPrefix(lane, rhsLaneCategoryPrefix) {
+	if key, ok := strings.CutPrefix(lane, rhsLaneCategoryPrefix); ok {
+		switch key {
 		case statusCategoryKeyNew:
 			// Like the webapp: anything neither in progress nor done.
 			return "statusCategory not in (" + statusCategoryKeyIndeterminate + ", " + statusCategoryKeyDone + ")", nil
@@ -92,6 +97,9 @@ func rhsLaneClause(scope *rhsBoardScope, lane string) (string, error) {
 		case statusCategoryKeyDone:
 			return "statusCategory = " + statusCategoryKeyDone, nil
 		}
+		return "", invalid
+	}
+	if scope == nil || len(scope.columns) == 0 {
 		return "", invalid
 	}
 	if lane == rhsLaneOutside {
@@ -169,8 +177,8 @@ func rhsLaneCategory(scope *rhsBoardScope, lane string, categoryOf map[string]st
 
 // countRHSLanes asks Jira for the size of every column at once. categoryOf
 // maps status ids to their category keys.
-func countRHSLanes(q *rhsFilteredQuery, categoryOf map[string]string) (*RHSLanes, error) {
-	ids := rhsLaneIDs(q.scope)
+func countRHSLanes(q *rhsFilteredQuery, categoryOf map[string]string, byCategory bool) (*RHSLanes, error) {
+	ids := rhsLaneIDs(q.scope, byCategory)
 	result := &RHSLanes{Supported: true, Lanes: make([]RHSLaneCount, len(ids))}
 	for i, id := range ids {
 		result.Lanes[i] = RHSLaneCount{ID: id, CategoryKey: rhsLaneCategory(q.scope, id, categoryOf)}
@@ -242,7 +250,7 @@ func (p *Plugin) httpRHSGetLanes(w http.ResponseWriter, r *http.Request) (int, e
 			}
 		}
 	}
-	lanes, err := countRHSLanes(q, categoryOf)
+	lanes, err := countRHSLanes(q, categoryOf, r.FormValue(queryRHSLaneGroup) == rhsLaneGroupCategory)
 	if err != nil {
 		return respondRHSErr(w, err)
 	}

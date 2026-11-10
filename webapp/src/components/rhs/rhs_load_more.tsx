@@ -13,6 +13,9 @@ type Props = {
     loading: boolean;
     onLoadMore: () => void;
     testId?: string;
+
+    // Shows the button even where scrolling could load.
+    manual?: boolean;
 };
 
 // RHSLoadMore loads the next page when the end of a list scrolls into view.
@@ -21,7 +24,7 @@ export default function RHSLoadMore(props: Props): JSX.Element {
     const marker = useRef<HTMLDivElement>(null);
     const onLoadMore = useRef(props.onLoadMore);
     onLoadMore.current = props.onLoadMore;
-    const observable = typeof window !== 'undefined' && typeof window.IntersectionObserver === 'function';
+    const observable = !props.manual && typeof window !== 'undefined' && typeof window.IntersectionObserver === 'function';
 
     // Observing again after every load fires once more while the marker is
     // still in view, so a short page is followed by the next one.
