@@ -1,26 +1,87 @@
 name: ci
+
 on:
-  schedule:
-    - cron: "0 0 * * *"
   push:
     branches:
-      - master
+      - main
     tags:
       - "v*"
   pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
-  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  plugin-ci:
-    uses: mattermost/actions-workflows/.github/workflows/plugin-ci.yml@main
-    secrets: inherit
+  check:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  dist:
-    uses: mattermost/actions-workflows/.github/workflows/plugin-dist-pr.yml@main
-    secrets: inherit
-    with:
-      dist-target: "dist"
-      s3-prefix: "mattermost-plugin-jira"
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Lint
+        run: make check-style
+
+      - name: Test
+        run: make test
+
+  release:
+    name: Build and publish the bundle
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: webapp/package-lock.json
+
+      - name: Build
+        run: make dist
+
+      - name: Checksum
+        run: |
+          cd dist
+          for bundle in *.tar.gz; do sha256sum "$bundle" > "$bundle.sha256"; done
+          cat ./*.sha256
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A release made by hand keeps its notes; the bundle is replaced.
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes "See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md)." \
+              --verify-tag
+          fi
+          gh release upload "$GITHUB_REF_NAME" dist/*.tar.gz dist/*.sha256 --clobber

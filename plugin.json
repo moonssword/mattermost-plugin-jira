@@ -2,8 +2,8 @@
     "id": "jira",
     "name": "Jira",
     "description": "Atlassian Jira plugin for Mattermost.",
-    "homepage_url": "https://github.com/mattermost/mattermost-plugin-jira",
-    "support_url": "https://github.com/mattermost/mattermost-plugin-jira/issues",
+    "homepage_url": "https://github.com/moonssword/mattermost-plugin-jira",
+    "support_url": "https://github.com/moonssword/mattermost-plugin-jira/issues",
     "icon_path": "assets/icon.svg",
     "min_server_version": "10.7.0",
     "server": {

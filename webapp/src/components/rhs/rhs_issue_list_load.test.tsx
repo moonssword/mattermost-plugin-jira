@@ -86,9 +86,9 @@ describe('RHSIssueList with groups loaded on their own', () => {
                 {id: 'category:indeterminate', count: 1, categoryKey: 'indeterminate'},
                 {id: 'category:done', count: 29, categoryKey: 'done'},
             ]}}));
-        const loadLanePage = jest.fn(async (lane: string) => {
+        const loadLanePage = jest.fn(async (lane: string, token?: string) => {
             if (lane === 'category:done') {
-                return page([issue('D-1', 'done')], '20');
+                return token ? page([issue('D-2', 'done')]) : page([issue('D-1', 'done')], '20');
             }
             if (lane === 'category:new') {
                 return page([issue('N-1', 'new'), issue('N-2', 'new')]);
@@ -128,5 +128,7 @@ describe('RHSIssueList with groups loaded on their own', () => {
             fireEvent.click(screen.getByTestId('rhs-group-more-done'));
         });
         expect(loadLanePage).toHaveBeenCalledWith('category:done', '20');
+        await waitFor(() => expect(screen.getByText('Summary D-2')).toBeInTheDocument());
+        expect(screen.queryByTestId('rhs-group-more-done')).not.toBeInTheDocument();
     });
 });

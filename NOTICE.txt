@@ -2,6 +2,11 @@ Mattermost Jira Plugin
 
 ©2017-present Mattermost, Inc. All Rights Reserved. See LICENSE.txt for license information.
 
+This distribution is a modified version of the Mattermost Jira Plugin, maintained
+at https://github.com/moonssword/mattermost-plugin-jira. The modifications (the
+right-hand sidebar and the related changes listed in CHANGELOG.md) are licensed
+under the Apache License, Version 2.0, like the original.
+
 NOTICES:
 --------
 
