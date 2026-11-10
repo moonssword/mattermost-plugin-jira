@@ -145,9 +145,22 @@ func TestKanbanProgressCounts(t *testing.T) {
 		path + "|statusCategory = indeterminate": `{"total":2,"issues":[]}`,
 		path + "|" + rhsKanbanDoneJQL:            `{"total":5,"issues":[]}`,
 	}}
-	progress, err := kanbanProgress(client, 1)
+	progress, err := kanbanProgress(client, 1, "")
 	require.NoError(t, err)
 	assert.Equal(t, &RHSBoardProgress{Unit: rhsProgressIssues, ToDo: 8, InProgress: 2, Done: 5}, progress)
+}
+
+func TestKanbanProgressAppliesSubFilter(t *testing.T) {
+	path := "rest/agile/1.0/board/1/issue"
+	sub := "(fixVersion in unreleasedVersions() OR fixVersion is EMPTY) AND "
+	client := &testAgileClient{responses: map[string]string{
+		path + "|" + sub + "statusCategory = new":           `{"total":6,"issues":[]}`,
+		path + "|" + sub + "statusCategory = indeterminate": `{"total":1,"issues":[]}`,
+		path + "|" + sub + rhsKanbanDoneJQL:                 `{"total":3,"issues":[]}`,
+	}}
+	progress, err := kanbanProgress(client, 1, " fixVersion in unreleasedVersions() OR fixVersion is EMPTY ")
+	require.NoError(t, err)
+	assert.Equal(t, &RHSBoardProgress{Unit: rhsProgressIssues, ToDo: 6, InProgress: 1, Done: 3}, progress)
 }
 
 func TestLoadRHSBoardScrum(t *testing.T) {

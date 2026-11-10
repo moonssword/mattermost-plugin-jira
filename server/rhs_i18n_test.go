@@ -33,3 +33,20 @@ func TestLocalizeIsOffWithoutActivation(t *testing.T) {
 	var missing *Plugin
 	assert.Equal(t, "Share publicly", missing.localizeForChannel("Share publicly"))
 }
+
+func TestTranslateRHSRussianJiraMe(t *testing.T) {
+	in := " * Mattermost site URL: https://mm.example.com\n * Mattermost user ID: `abc`\n" +
+		"###### Connected to 1 Jira instances:\n" +
+		" * **http://jira**: Server, connected as **Admin** (Name:admin, Key:JIRAUSER1, EmailAddress:a@example.com)\n"
+	out := translateRHSRussian(in)
+	assert.Contains(t, out, " * Адрес Mattermost: https://mm.example.com")
+	assert.Contains(t, out, " * ID пользователя Mattermost: `abc`")
+	assert.Contains(t, out, "Data Center, подключён как **Admin** (логин: admin, ключ: JIRAUSER1, почта: a@example.com)")
+
+	settings := translateRHSRussian("   * \t- Notifications for assignee: on \n\t- Notifications for mention: off \n   * Default project: `AUTOPS`\n\n###### Available Jira instances:\n * http://jira: server (`aHR0`)\n")
+	assert.Contains(t, settings, "   * \t- Уведомления исполнителю: вкл. ")
+	assert.Contains(t, settings, "\t- Уведомления об упоминаниях: выкл. ")
+	assert.Contains(t, settings, "   * Проект по умолчанию: `AUTOPS`")
+	assert.Contains(t, settings, "###### Установленные инстансы Jira:")
+	assert.Contains(t, settings, " * http://jira: Data Center (`aHR0`)")
+}

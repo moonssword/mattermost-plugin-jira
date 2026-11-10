@@ -74,6 +74,30 @@ var rhsRussianCatalog = func() []rhsTranslation {
 	return out
 }()
 
+// rhsRussianLines are rules for single lines only: ending in a value, they
+// would take a whole message of several lines for that value.
+var rhsRussianLines = [][2]string{
+	{" * Mattermost site URL: %s", " * Адрес Mattermost: {1}"},
+	{" * Mattermost user ID: %s", " * ID пользователя Mattermost: {1}"},
+	{" * %s: Server, connected as **%s** (Name:%s, Key:%s, EmailAddress:%s)", " * {1}: Data Center, подключён как **{2}** (логин: {3}, ключ: {4}, почта: {5})"},
+	{" * %s: Cloud, connected as **%s** (AccountID: %s)", " * {1}: Cloud, подключён как **{2}** (AccountID: {3})"},
+	{"   * \t- Notifications for assignee: on ", "   * \t- Уведомления исполнителю: вкл. "},
+	{"   * \t- Notifications for assignee: off ", "   * \t- Уведомления исполнителю: выкл. "},
+	{"   * Default project: %s", "   * Проект по умолчанию: {1}"},
+	{"###### Available Jira instances:", "###### Установленные инстансы Jira:"},
+	{" * %s: server (%s)", " * {1}: Data Center ({2})"},
+	{" * %s: cloud (%s)", " * {1}: Cloud ({2})"},
+}
+
+// rhsRussianLineCatalog holds the line rules, then the message rules.
+var rhsRussianLineCatalog = func() []rhsTranslation {
+	out := make([]rhsTranslation, 0, len(rhsRussianLines)+len(rhsRussianCatalog))
+	for _, pair := range rhsRussianLines {
+		out = append(out, compileRHSTranslation(pair[0], pair[1]))
+	}
+	return append(out, rhsRussianCatalog...)
+}()
+
 // translateRHSRussian translates a whole message, or else its lines one by
 // one. Quoted text is safe: it sits in a placeholder of a whole-message rule.
 func translateRHSRussian(message string) string {
@@ -84,7 +108,7 @@ func translateRHSRussian(message string) string {
 	}
 	lines := strings.Split(message, "\n")
 	for i, line := range lines {
-		for _, t := range rhsRussianCatalog {
+		for _, t := range rhsRussianLineCatalog {
 			if out, ok := t.apply(line); ok {
 				lines[i] = out
 				break

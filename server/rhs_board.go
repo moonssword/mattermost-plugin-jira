@@ -339,9 +339,16 @@ func sprintProgress(client Client, boardID, sprintID int, estimateField string) 
 
 // kanbanProgress counts the board's issues per status category with three
 // count-only queries.
-func kanbanProgress(client Client, boardID int) (*RHSBoardProgress, error) {
+// kanbanProgress counts the board's issues by category. subQuery is the
+// board's Kanban sub-filter: the board API leaves it out, Jira's board and
+// the list in the panel apply it.
+func kanbanProgress(client Client, boardID int, subQuery string) (*RHSBoardProgress, error) {
 	progress := &RHSBoardProgress{Unit: rhsProgressIssues}
 	endpoint := fmt.Sprintf("rest/agile/1.0/board/%d/issue", boardID)
+	prefix := ""
+	if sub := strings.TrimSpace(subQuery); sub != "" {
+		prefix = "(" + sub + ") AND "
+	}
 	queries := []struct {
 		jql string
 		dst *float64
@@ -353,7 +360,7 @@ func kanbanProgress(client Client, boardID int) (*RHSBoardProgress, error) {
 	for _, q := range queries {
 		var res jiraAgileIssues
 		err := client.RESTGetRaw(endpoint, map[string]string{
-			"jql":        q.jql,
+			"jql":        prefix + q.jql,
 			"fields":     "status",
 			"maxResults": "1",
 		}, &res)
@@ -411,7 +418,7 @@ func (p *Plugin) loadRHSBoard(instance Instance, client Client, boardID int) (*R
 	board.EstimateField, board.EstimateName = rhsBoardEstimate(&cfg)
 
 	if board.Type == "kanban" {
-		progress, err := kanbanProgress(client, boardID)
+		progress, err := kanbanProgress(client, boardID, cfg.SubQuery.Query)
 		if err != nil {
 			return nil, err
 		}

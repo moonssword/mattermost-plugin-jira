@@ -352,7 +352,13 @@ func (p *Plugin) getRHSFilteredIssues(params rhsIssueQuery) (*rhsIssuesResult, e
 			// Jira rejects `key = X` when X does not exist: that is "not found".
 			return empty, nil
 		case badRequest:
-			return nil, fmt.Errorf("%w: %s", ErrInvalidRHSQuery, strings.TrimSpace(strings.TrimPrefix(restErr.Error(), " - ")))
+			message := strings.TrimSpace(strings.TrimPrefix(restErr.Error(), " - "))
+			if kind == rhsSearchJQL {
+				if own := rhsUserJQLError(client, params.query); own != "" {
+					message = own
+				}
+			}
+			return nil, fmt.Errorf("%w: %s", ErrInvalidRHSQuery, message)
 		default:
 			return nil, err
 		}
