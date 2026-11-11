@@ -161,6 +161,13 @@
     color: var(--error-text);
 }
 
+// Only in the desktop app: what to do when its sign-in window stays blank.
+.jira-rhs-connect-desktop {
+    max-width: 300px;
+    margin: 4px 0 0;
+    line-height: 16px;
+}
+
 .jira-rhs-field {
     display: flex;
     flex-direction: column;

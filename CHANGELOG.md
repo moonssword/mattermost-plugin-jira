@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 
 ## [Unreleased]
 
+### Added
+
+- In the Mattermost desktop app the connect screen suggests connecting from a browser when the sign-in window stays blank. The app's window has no cookies of the browser, and a Jira behind single sign-on (ADFS with Windows sign-in) may show nothing there; a connection made in a browser works in the app too.
+
 ### Fixed
 
 - Panel shortcuts (C for a new issue, / for search) worked only after a click on a button in the panel. The panel now takes the focus when it opens, on a click anywhere in it and after going back from the card, the settings or a form; C works in any keyboard layout. Typing in the message box is left alone.

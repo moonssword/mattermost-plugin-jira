@@ -6,6 +6,7 @@ import React, {useEffect, useState} from 'react';
 import {Instance} from 'types/model';
 
 import {rhsInstanceOptionLabel} from './rhs_instance_label';
+import {isMattermostDesktop} from './rhs_desktop';
 import {RHS_STRINGS} from './rhs_strings';
 
 function JiraLogo(): JSX.Element {
@@ -88,6 +89,14 @@ export function RHSConnectScreen(props: ConnectProps): JSX.Element {
             <span className='jira-rhs-connect-hint'>
                 {waiting ? RHS_STRINGS.connectWaiting : RHS_STRINGS.connectHint}
             </span>
+            {isMattermostDesktop() && (
+                <p
+                    className='jira-rhs-connect-hint jira-rhs-connect-desktop'
+                    data-testid='rhs-connect-desktop-hint'
+                >
+                    {RHS_STRINGS.connectDesktopHint}
+                </p>
+            )}
         </div>
     );
 }
