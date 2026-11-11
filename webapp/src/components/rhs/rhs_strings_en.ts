@@ -157,7 +157,10 @@ export const RHS_STRINGS_EN: {[key in RHSStringKey]: string} = {
     connect: 'Connect Jira account',
     connectHint: 'The plugin gets access to issues on your behalf. You can disconnect in the settings.',
     connectWaiting: 'Finish signing in on the opened tab. The panel updates by itself.',
-    connectDesktopHint: 'If the sign-in window stays blank in the Mattermost app, connect from a browser: open Mattermost in Chrome or Edge and press this button there. The panel then works in the app too.',
+    connectDesktopHint: 'Sign-in opens in the computer’s browser. If Mattermost asks you to sign in there, do: the connection then finishes by itself.',
+    connectWaitingBrowser: 'Finish signing in in the computer’s browser. The panel updates by itself.',
+    connectCompleteTitle: 'Finishing the Jira connection…',
+    connectCompleteInvalid: 'The link to finish the connection is not valid. Press "Connect Jira account" in the Jira panel again.',
     notConnected: 'Connect your Jira account to see your issues',
 
     noInstanceTitle: 'Jira is not connected yet',

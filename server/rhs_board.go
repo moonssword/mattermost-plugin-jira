@@ -57,6 +57,7 @@ func (p *Plugin) registerRHSBoardRoutes(apiRouter *mux.Router) {
 	apiRouter.HandleFunc(routeAPIRHSIssueTransitions, p.checkAuth(p.handleResponse(p.httpRHSIssueTransitions))).Methods(http.MethodGet)
 	apiRouter.HandleFunc(routeAPIRHSIcon, p.checkAuth(p.handleResponse(p.httpRHSGetIcon))).Methods(http.MethodGet)
 	p.registerRHSLaneRoutes(apiRouter)
+	p.registerRHSConnectRoutes(apiRouter)
 }
 
 // RHSBoardRef is one entry of the board picker.

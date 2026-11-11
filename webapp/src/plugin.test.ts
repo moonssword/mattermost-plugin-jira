@@ -73,6 +73,7 @@ function makeRegistry() {
         registerSlashCommandWillBePostedHook: jest.fn(),
         registerWebSocketEventHandler: jest.fn(),
         registerAppBarComponent: jest.fn(),
+        registerCustomRoute: jest.fn(),
         registerChannelHeaderButtonAction: jest.fn(),
         registerChannelHeaderMenuAction: jest.fn(),
     };

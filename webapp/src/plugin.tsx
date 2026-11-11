@@ -48,6 +48,7 @@ import {
     getUILanguage,
     isUserConnected,
 } from './selectors';
+import RHSConnectComplete from './components/rhs/rhs_connect_complete';
 
 export const setupUILater = (registry: any, store: Store<object, Action<object>>): () => Promise<void> => async () => {
     registry.registerReducer(reducers);
@@ -158,6 +159,10 @@ export default class Plugin {
         // custom settings and the plugin reducer must register here — not in setupUILater.
         registry.registerReducer(reducers);
         registerLocalizedSettings(registry);
+
+        // Where the computer's browser comes back after signing in to
+        // Mattermost while connecting Jira from the desktop app.
+        registry.registerCustomRoute('connect-complete', RHSConnectComplete);
 
         // Modals and forms outside the panel read the language while rendering.
         const syncLanguage = () => setUILanguage(getUILanguage(store.getState() as GlobalState));

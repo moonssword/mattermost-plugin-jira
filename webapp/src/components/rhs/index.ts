@@ -9,7 +9,6 @@ import {getCurrentTeamId} from 'mattermost-redux/selectors/entities/teams';
 
 import {
     getConnected,
-    handleConnectFlow,
     openRHSSettings,
     restoreRHSViewState,
     selectRHSInstance,
@@ -35,6 +34,8 @@ import {
 
 import {GlobalState} from 'types/store';
 import {setUILanguage} from 'utils/i18n';
+
+import {connectJiraAccount} from '../../actions/rhs_connect';
 
 import Rhs, {Props} from './rhs';
 
@@ -64,7 +65,9 @@ const mapStateToProps = (state: GlobalState) => {
 
 const rhsDispatch = {
     getConnected,
-    handleConnectFlow,
+
+    // In the desktop app the Jira sign-in opens in the computer's browser.
+    handleConnectFlow: connectJiraAccount,
     openRHSSettings,
     restoreRHSViewState,
     selectRHSInstance,

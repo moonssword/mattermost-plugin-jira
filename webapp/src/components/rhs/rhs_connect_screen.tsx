@@ -37,6 +37,8 @@ export type ConnectProps = {
 export function RHSConnectScreen(props: ConnectProps): JSX.Element {
     const [instanceID, setInstanceID] = useState(props.instances[0]?.instance_id || '');
     const [waiting, setWaiting] = useState(false);
+    const desktop = isMattermostDesktop();
+    const waitingText = desktop ? RHS_STRINGS.connectWaitingBrowser : RHS_STRINGS.connectWaiting;
 
     useEffect(() => {
         if (!props.instances.some((instance) => instance.instance_id === instanceID)) {
@@ -87,9 +89,9 @@ export function RHSConnectScreen(props: ConnectProps): JSX.Element {
                 {RHS_STRINGS.connect}
             </button>
             <span className='jira-rhs-connect-hint'>
-                {waiting ? RHS_STRINGS.connectWaiting : RHS_STRINGS.connectHint}
+                {waiting ? waitingText : RHS_STRINGS.connectHint}
             </span>
-            {isMattermostDesktop() && (
+            {desktop && !waiting && (
                 <p
                     className='jira-rhs-connect-hint jira-rhs-connect-desktop'
                     data-testid='rhs-connect-desktop-hint'

@@ -8,7 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 
 ### Added
 
-- In the Mattermost desktop app the connect screen suggests connecting from a browser when the sign-in window stays blank. The app's window has no cookies of the browser, and a Jira behind single sign-on (ADFS with Windows sign-in) may show nothing there; a connection made in a browser works in the app too.
+- In the Mattermost desktop app, *Connect* opens the Jira sign-in in the computer's browser instead of a window of the app. That window has no cookies of the browser, and a Jira behind single sign-on (ADFS with Windows sign-in) could leave it blank. Back from Jira, a browser not signed in to Mattermost goes through the Mattermost sign-in and then finishes the connection; the callback still checks that the same Mattermost user started it. Jira Server/Data Center only; Cloud connects as before.
 
 ### Fixed
 
