@@ -4,7 +4,7 @@ All notable changes of this fork. Changes of the upstream plugin are in its [rel
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions are `<upstream version>-rhs.<n>`.
 
-## [Unreleased]
+## [4.8.3-rhs.2] — 2026-11-11
 
 ### Added
 
