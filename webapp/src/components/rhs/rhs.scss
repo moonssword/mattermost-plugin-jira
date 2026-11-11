@@ -1,6 +1,11 @@
 /* The host body also holds the RHS header, so take the remaining space
    instead of 100% height; otherwise the bottom of the panel (form buttons,
    "load more") ends below the window. */
+// Focusable for the shortcuts; the focus itself is not drawn.
+.jira-rhs:focus {
+    outline: none;
+}
+
 .jira-rhs {
     display: flex;
     overflow: hidden;

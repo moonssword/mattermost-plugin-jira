@@ -79,6 +79,9 @@ function connectableInstances(installed: Instance[], connected: Instance[], issu
     return rest.length > 0 ? rest : installed;
 }
 
+// How long after the panel opens it takes the focus.
+export const RHS_FOCUS_DELAY_MS = 100;
+
 function isTypingTarget(target: EventTarget | null): boolean {
     const el = target as HTMLElement | null;
     if (!el || !el.tagName) {
@@ -104,6 +107,35 @@ export default function Rhs(props: Props): JSX.Element {
 
     // The tab to return to from a full-panel section such as "Создать".
     const lastTab = useRef<RHSSectionID>('my_issues');
+
+    // The panel takes the focus when it opens, unless the user is typing
+    // somewhere, so its shortcuts work at once; a click on any part of it
+    // keeps the focus inside (tabIndex -1), not only a click on a button.
+    const root = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        // After the click that opened the panel: Mattermost leaves the focus
+        // on the App Bar button once that click is over.
+        const timer = setTimeout(() => {
+            const active = document.activeElement;
+            if (root.current && !isTypingTarget(active) && !root.current.contains(active)) {
+                root.current.focus({preventScroll: true});
+            }
+        }, RHS_FOCUS_DELAY_MS);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // Going back from the card, the settings or a form removes the button
+    // that had the focus, and the browser drops it to the page: Mattermost
+    // then sends the keys to the message box. The panel takes it back.
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const active = document.activeElement;
+            if (root.current && (!active || active === document.body)) {
+                root.current.focus({preventScroll: true});
+            }
+        }, 0);
+        return () => clearTimeout(timer);
+    }, [section, props.issueKey, props.attachPostId, props.settingsOpen]);
     if (findRHSSection(section).tab !== false) {
         lastTab.current = section;
     }
@@ -275,8 +307,10 @@ export default function Rhs(props: Props): JSX.Element {
         if (event.ctrlKey || event.metaKey || event.altKey || isTypingTarget(event.target)) {
             return;
         }
+
+        // The physical key, so C works in any keyboard layout.
         const key = event.key.toLowerCase();
-        if ((key === 'c' || key === 'с') && section !== 'create') {
+        if ((key === 'c' || key === 'с' || event.code === 'KeyC') && section !== 'create') {
             event.preventDefault();
             props.setRHSSection('create');
         } else if (key === '/' && findRHSSection(section).tab !== false) {
@@ -290,10 +324,12 @@ export default function Rhs(props: Props): JSX.Element {
 
     return (
         <div
+            ref={root}
             key={props.uiLanguage}
             className='jira-rhs'
             data-testid='jira-rhs'
             data-style={props.uiStyle}
+            tabIndex={-1}
             onKeyDown={onKeyDown}
         >
             {content}

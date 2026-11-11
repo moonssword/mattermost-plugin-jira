@@ -4,6 +4,12 @@ All notable changes of this fork. Changes of the upstream plugin are in its [rel
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions are `<upstream version>-rhs.<n>`.
 
+## [Unreleased]
+
+### Fixed
+
+- Panel shortcuts (C for a new issue, / for search) worked only after a click on a button in the panel. The panel now takes the focus when it opens, on a click anywhere in it and after going back from the card, the settings or a form; C works in any keyboard layout. Typing in the message box is left alone.
+
 ## [4.8.3-rhs.1] — 2026-11-10
 
 First release of the fork, built on upstream [v4.8.3](https://github.com/mattermost/mattermost-plugin-jira/releases/tag/v4.8.3). Requires Mattermost 10.7 or later.

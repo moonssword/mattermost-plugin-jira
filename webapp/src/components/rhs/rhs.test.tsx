@@ -11,7 +11,7 @@ import {
 
 import {Instance, InstanceType} from 'types/model';
 
-import Rhs, {Props, rhsScreen} from './rhs';
+import Rhs, {Props, RHS_FOCUS_DELAY_MS, rhsScreen} from './rhs';
 import {RHS_STRINGS} from './rhs_strings';
 
 jest.mock('./rhs_sections', () => {
@@ -157,6 +157,42 @@ describe('components/rhs', () => {
         (props.setRHSSection as jest.Mock).mockClear();
         fireEvent.keyDown(screen.getByTestId('stub-my_issues'), {key: 'с'});
         expect(props.setRHSSection).toHaveBeenCalledWith('create');
+    });
+
+    test('the panel takes the focus when it opens and keeps it on a click anywhere', async () => {
+        await renderSettled();
+        const panel = screen.getByTestId('jira-rhs');
+        expect(panel).toHaveAttribute('tabindex', '-1');
+        await waitFor(() => expect(document.activeElement).toBe(panel));
+    });
+
+    test('the panel takes back a focus lost when a view closes', async () => {
+        const {props, rerender} = await renderSettled();
+        (document.activeElement as HTMLElement | null)?.blur();
+        expect(document.activeElement).toBe(document.body);
+        rerender(
+            <Rhs
+                {...props}
+                section='channel'
+            />,
+        );
+        await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('jira-rhs')));
+    });
+
+    test('C works in any keyboard layout', async () => {
+        const {props} = await renderSettled();
+        fireEvent.keyDown(screen.getByTestId('stub-my_issues'), {key: 'ы', code: 'KeyC'});
+        expect(props.setRHSSection).toHaveBeenCalledWith('create');
+    });
+
+    test('opening the panel does not take the focus from a field being typed in', async () => {
+        const input = document.createElement('input');
+        document.body.appendChild(input);
+        input.focus();
+        await renderSettled();
+        await new Promise((resolve) => setTimeout(resolve, RHS_FOCUS_DELAY_MS + 50));
+        expect(document.activeElement).toBe(input);
+        input.remove();
     });
 
     test('typing in a field does not trigger shortcuts', async () => {
